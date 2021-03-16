@@ -1,27 +1,39 @@
 import pkg_resources
+from typing import List
 
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile
 from fastapi.openapi.utils import get_openapi
+from starlette.responses import RedirectResponse
 
 from instagrapi import Client
+from instagrapi.types import (Location, Media, Story, StoryHashtag, StoryLink,
+                              StoryLocation, StoryMention, StorySticker,
+                              Usertag)
 
 app = FastAPI()
 cl = Client()
 
 
-@app.get("/")
-async def root():
-    return "Open http://localhost:8000/docs"
-
-
-@app.get("/media/pk_from_code")
+@app.get("/media/pk_from_code", tags=["media"])
 async def media_pk_from_code(code: str) -> int:
     """Get media pk from code
     """
     return cl.media_pk_from_code(code)
 
 
-@app.get("/version")
+@app.get("/media/info", response_model=Media, tags=["media"])
+async def media_info(pk: int) -> Media:
+    """Get media info by pk
+    """
+    return cl.media_info(pk)
+
+
+@app.get("/", tags=["system"])
+async def root():
+    return RedirectResponse(url="/docs")
+
+
+@app.get("/version", tags=["system"])
 async def version():
     """Return package versions
     """
