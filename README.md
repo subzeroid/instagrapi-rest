@@ -1,2 +1,29 @@
-# instagrapi-rest
-RESTful API Service for instagrapi (to work with other programming languages)
+# RESTful API Service for instagrapi
+
+Allows you to use the [private Instagram API](https://github.com/adw0rd/instagrapi) on any operating system from any programming language to automate the work of your accounts
+
+# Install
+
+To run, you need to install Docker and clone the repository:
+
+```
+git clone https://github.com/adw0rd/instagrapi-rest.git
+cd instagrapi-rest
+```
+
+Run docker container:
+
+```
+docker build -t instagrapi-rest_api .
+docker run --rm -p 8000:8000 instagrapi-rest_api
+```
+
+Or you can use docker-compose:
+
+```
+docker-compose up -d
+```
+
+# Usage
+
+Open in browser [http://localhost:8000/docs](http://localhost:8000/docs) and follow the instructions
