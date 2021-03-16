@@ -2,6 +2,8 @@
 
 Allows you to use the [private Instagram API](https://github.com/adw0rd/instagrapi) on any operating system from any programming language to automate the work of your accounts
 
+[![Python application](https://github.com/adw0rd/instagrapi-rest/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/adw0rd/instagrapi-rest/actions/workflows/python-app.yml)
+
 # Installation
 
 To run, you need to install Docker and clone the repository:
