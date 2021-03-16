@@ -11,17 +11,26 @@ cl = Client()
 
 @app.get("/")
 async def root():
+    return "Open http://localhost:8000/docs"
+
+
+@app.get("/media/pk_from_code")
+async def media_pk_from_code(code: str) -> int:
+    """Get media pk from code
+    """
+    return cl.media_pk_from_code(code)
+
+
+@app.get("/version")
+async def version():
+    """Return package versions
+    """
     versions = {}
     for name in ('instagrapi', ):
         item = pkg_resources.require(name)
         if item:
             versions[name] = item[0].version
     return versions
-
-
-@app.get("/media/pk_from_code")
-async def media_pk_from_code(code: str) -> int:
-    return cl.media_pk_from_code(code)
 
 
 def custom_openapi():

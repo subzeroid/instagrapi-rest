@@ -2,7 +2,7 @@
 
 Allows you to use the [private Instagram API](https://github.com/adw0rd/instagrapi) on any operating system from any programming language to automate the work of your accounts
 
-# Install
+# Installation
 
 To run, you need to install Docker and clone the repository:
 
@@ -27,3 +27,9 @@ docker-compose up -d
 # Usage
 
 Open in browser [http://localhost:8000/docs](http://localhost:8000/docs) and follow the instructions
+
+# Testing
+
+Tests can be run like this:
+
+`docker run --rm -v $(pwd):/app instagrapi-rest_api pytest tests.py`
