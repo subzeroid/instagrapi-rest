@@ -28,14 +28,16 @@ async def media_info(pk: int) -> Media:
     return cl.media_info(pk)
 
 
-@app.get("/", tags=["system"])
+@app.get("/", tags=["system"], summary="Redirect to /docs")
 async def root():
+    """Redirect to /docs
+    """
     return RedirectResponse(url="/docs")
 
 
-@app.get("/version", tags=["system"])
+@app.get("/version", tags=["system"], summary="Get dependency versions")
 async def version():
-    """Return package versions
+    """Get dependency versions
     """
     versions = {}
     for name in ('instagrapi', ):

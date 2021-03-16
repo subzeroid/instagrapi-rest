@@ -24,7 +24,7 @@ async def test_media_info() -> None:
         )
     media = response.json()
     assert response.status_code == 200
-    assert media["pk"] == "2110901750722920960"
+    assert media["pk"] == 2110901750722920960
     assert media["id"] == "2110901750722920960_8572539084"
     assert media["code"] == "B1LbfVPlwIA"
     assert media["media_type"] == 1
