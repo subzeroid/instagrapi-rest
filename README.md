@@ -15,7 +15,7 @@ cd instagrapi-rest
 Run docker container:
 ```
 docker pull adw0rd/instagrapi-rest:latest
-docker run instagrapi-rest
+docker run adw0rd/instagrapi-rest
 ```
 
 Or you can build your image and run the container
@@ -37,4 +37,4 @@ Open in browser [http://localhost:8000/docs](http://localhost:8000/docs) and fol
 
 Tests can be run like this:
 
-`docker run --rm -v $(pwd):/app instagrapi-rest_api pytest tests.py`
+`docker run --rm -v $(pwd):/app instagrapi-rest pytest tests.py`
