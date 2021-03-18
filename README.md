@@ -7,21 +7,24 @@ Allows you to use the [private Instagram API](https://github.com/adw0rd/instagra
 # Installation
 
 To run, you need to install Docker and clone the repository:
-
 ```
 git clone https://github.com/adw0rd/instagrapi-rest.git
 cd instagrapi-rest
 ```
 
 Run docker container:
-
 ```
-docker build -t instagrapi-rest_api .
-docker run --rm -p 8000:8000 instagrapi-rest_api
+docker pull adw0rd/instagrapi-rest:latest
+docker run instagrapi-rest
+```
+
+Or you can build your image and run the container
+```
+docker build -t instagrapi-rest .
+docker run -p 8000:8000 instagrapi-rest
 ```
 
 Or you can use docker-compose:
-
 ```
 docker-compose up -d
 ```
