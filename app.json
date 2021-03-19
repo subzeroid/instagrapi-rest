@@ -1,7 +1,7 @@
 {
-   "name":"instagrapi-rest",
-   "description":"Deploy a Instagrapi RESTful API service (Instagram Private API)",
-   "keywords":[
+   "name": "instagrapi-rest",
+   "description": "Deploy a Instagrapi RESTful API service (Instagram Private API)",
+   "keywords": [
       "instagram",
       "instagram-private-api",
       "instagram-api",
@@ -16,12 +16,7 @@
       "private",
       "api"
    ],
-   "website":"https://github.com/adw0rd/instagrapi-rest",
-   "repository":"https://github.com/adw0rd/instagrapi-rest",
-   "success_url":"https://github.com/adw0rd/instagrapi-rest",
-   "env":{
-      "HEROKU_APP_NAME":{
-         "description":"Instagrapi RESTful API (Instagram Private API)"
-      },
-   }
+   "website": "https://github.com/adw0rd/instagrapi-rest",
+   "repository": "https://github.com/adw0rd/instagrapi-rest",
+   "success_url": "https://github.com/adw0rd/instagrapi-rest"
 }
