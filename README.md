@@ -1,8 +1,10 @@
 # RESTful API Service for instagrapi
 
+[![Tests](https://github.com/adw0rd/instagrapi-rest/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/adw0rd/instagrapi-rest/actions/workflows/tests.yml)
+
 Allows you to use the [private Instagram API](https://github.com/adw0rd/instagrapi) on any operating system from any programming language to automate the work of your accounts
 
-[![Tests](https://github.com/adw0rd/instagrapi-rest/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/adw0rd/instagrapi-rest/actions/workflows/tests.yml)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 # Installation
 
