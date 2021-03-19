@@ -18,5 +18,6 @@
    ],
    "website": "https://github.com/adw0rd/instagrapi-rest",
    "repository": "https://github.com/adw0rd/instagrapi-rest",
-   "success_url": "/docs"
+   "success_url": "/docs",
+   "logo": "https://github.com/adw0rd/instagrapi-rest/raw/main/logo.png"
 }
