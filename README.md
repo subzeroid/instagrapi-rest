@@ -5,6 +5,8 @@
 Allows you to use the [Instagram Private API](https://github.com/adw0rd/instagrapi) on any operating system from any programming language to automate the work of your accounts
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+[![Donate](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/adw0rd)
+
 
 # Installation
 
