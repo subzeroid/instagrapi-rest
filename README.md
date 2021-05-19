@@ -42,3 +42,9 @@ Open in browser [http://localhost:8000/docs](http://localhost:8000/docs) and fol
 Tests can be run like this:
 
 `docker run --rm -v $(pwd):/app instagrapi-rest pytest tests.py`
+
+# Development
+
+For debugging:
+
+`docker-compose run --service-ports api`

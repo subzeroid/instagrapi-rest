@@ -1,11 +1,14 @@
+import re
+import tempfile
 import pkg_resources
-from typing import List
+from typing import List, Optional
 
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.openapi.utils import get_openapi
 from starlette.responses import RedirectResponse
 
 from instagrapi import Client
+from instagrapi.story import StoryBuilder
 from instagrapi.types import (Location, Media, Story, StoryHashtag, StoryLink,
                               StoryLocation, StoryMention, StorySticker,
                               Usertag)
@@ -26,6 +29,86 @@ async def media_info(pk: int) -> Media:
     """Get media info by pk
     """
     return cl.media_info(pk)
+
+
+@app.post("/photo/upload_to_story", response_model=Story, tags=["upload"])
+async def photo_upload_to_story(sessionid: str = Form(...),
+                                file: UploadFile = File(...),
+                                caption: Optional[str] = '',
+                                mentions: List[StoryMention] = [],
+                                locations: List[StoryLocation] = [],
+                                links: List[StoryLink] = [],
+                                hashtags: List[StoryHashtag] = [],
+                                stickers: List[StorySticker] = []
+                                ) -> Story:
+    """Upload photo to story
+    """
+    cl.login_by_sessionid(sessionid)
+    with tempfile.NamedTemporaryFile(suffix='.jpg') as fp:
+        data = await file.read()
+        fp.write(data)
+        result = cl.photo_upload_to_story(
+            fp.name,
+            caption,
+            mentions=mentions,
+            links=links,
+            hashtags=hashtags,
+            locations=locations,
+            stickers=stickers
+        )
+    return result
+
+
+@app.post("/video/upload_to_story", response_model=Story, tags=["upload"])
+async def video_upload_to_story(sessionid: str = Form(...),
+                                file: UploadFile = File(...),
+                                caption: Optional[str] = '',
+                                mentions: List[StoryMention] = [],
+                                locations: List[StoryLocation] = [],
+                                links: List[StoryLink] = [],
+                                hashtags: List[StoryHashtag] = [],
+                                stickers: List[StorySticker] = []
+                                ) -> Story:
+    """Upload video to story
+    """
+    cl.login_by_sessionid(sessionid)
+    with tempfile.NamedTemporaryFile(suffix='.mp4') as fp:
+        data = await file.read()
+        fp.write(data)
+        video = StoryBuilder(fp.name, caption, mentions).video(15)
+        result = cl.video_upload_to_story(
+            video.path,
+            caption,
+            mentions=mentions,
+            links=links,
+            hashtags=hashtags,
+            locations=locations,
+            stickers=stickers
+        )
+    return result
+
+
+@app.get("/auth/login", tags=["auth"])
+async def auth_login(username: str, password: str, verification_code: Optional[str] = '') -> str:
+    """Login by username and password with 2FA
+    """
+    result = cl.login(username, password, verification_code)
+    if result:
+        cl.dump_settings(f'/tmp/{cl.user_id}.json')
+        return cl.sessionid
+    return result
+
+
+@app.get("/auth/login_by_sessionid", tags=["auth"])
+async def auth_login_by_sessionid(sessionid: str) -> str:
+    """Login by sessionid
+    """
+    user_id = int(re.match('^\d+', sessionid).group())
+    result = cl.login_by_sessionid(sessionid)
+    if result:
+        cl.dump_settings(f'/tmp/{user_id}.json')
+        return cl.sessionid
+    return result
 
 
 @app.get("/", tags=["system"], summary="Redirect to /docs")
@@ -50,6 +133,10 @@ async def version():
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
+    # for route in app.routes:
+    #     body_field = getattr(route, 'body_field', None)
+    #     if body_field:
+    #         body_field.type_.__name__ = 'name'
     openapi_schema = get_openapi(
         title="instagrapi-rest",
         version="1.0.0",
