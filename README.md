@@ -37,6 +37,9 @@ docker-compose up -d
 
 Open in browser [http://localhost:8000/docs](http://localhost:8000/docs) and follow the instructions
 
+![image](https://user-images.githubusercontent.com/546889/118844510-af160c00-b8d3-11eb-9f6b-e9773ab12028.png)
+
+
 # Testing
 
 Tests can be run like this:
