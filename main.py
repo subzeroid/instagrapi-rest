@@ -18,6 +18,12 @@ from instagrapi.types import (Media, Story, StoryHashtag, StoryLink,
 app = FastAPI()
 
 
+def make_client():
+    cl = Client()
+    cl.request_timeout = 0.1
+    return cl
+
+
 @app.get("/media/pk_from_code", tags=["media"])
 async def media_pk_from_code(code: str) -> int:
     """Get media pk from code
@@ -44,7 +50,7 @@ async def photo_upload_to_story(sessionid: str = Form(...),
                                 ) -> Story:
     """Upload photo to story
     """
-    cl = Client()
+    cl = make_client()
     cl.login_by_sessionid(sessionid)
     with tempfile.NamedTemporaryFile(suffix='.jpg') as fp:
         data = await file.read()
@@ -77,7 +83,7 @@ async def photo_upload_to_story_by_url(sessionid: str = Form(...),
         content = requests.get(url).content
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    cl = Client()
+    cl = make_client()
     cl.login_by_sessionid(sessionid)
     with tempfile.NamedTemporaryFile(suffix='.jpg') as fp:
         fp.write(content)
@@ -105,7 +111,7 @@ async def video_upload_to_story(sessionid: str = Form(...),
                                 ) -> Story:
     """Upload video to story
     """
-    cl = Client()
+    cl = make_client()
     cl.login_by_sessionid(sessionid)
     with tempfile.NamedTemporaryFile(suffix='.mp4') as fp:
         data = await file.read()
@@ -139,7 +145,7 @@ async def video_upload_to_story_by_url(sessionid: str = Form(...),
         content = requests.get(url).content
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    cl = Client()
+    cl = make_client()
     cl.login_by_sessionid(sessionid)
     with tempfile.NamedTemporaryFile(suffix='.mp4') as fp:
         fp.write(content)
@@ -161,7 +167,7 @@ async def video_upload_to_story_by_url(sessionid: str = Form(...),
 async def auth_login(username: str = Form(...), password: str = Form(...), verification_code: Optional[str] = Form('')) -> str:
     """Login by username and password with 2FA
     """
-    cl = Client()
+    cl = make_client()
     try:
         result = cl.login(username, password, verification_code=verification_code)
     except ClientError as e:
@@ -177,7 +183,7 @@ async def auth_login_by_sessionid(sessionid: str) -> str:
     """Login by sessionid
     """
     user_id = int(re.match(r'^\d+', sessionid).group())
-    cl = Client()
+    cl = make_client()
     result = cl.login_by_sessionid(sessionid)
     if result:
         cl.dump_settings(f'/tmp/{user_id}.json')
