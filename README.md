@@ -40,6 +40,38 @@ Open in browser [http://localhost:8000/docs](http://localhost:8000/docs) and fol
 ![image](https://user-images.githubusercontent.com/546889/118844510-af160c00-b8d3-11eb-9f6b-e9773ab12028.png)
 
 
+Get sessionid:
+
+```
+curl -X 'GET' \
+  'http://localhost:8000/auth/login' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'username=<USERNAME>&password=<PASSWORD>&verification_code=<2FA CODE>'
+```
+
+Upload photo:
+
+```
+curl -X 'POST' \
+  'http://localhost:8000/photo/upload_to_story' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'sessionid=<SESSIONID>' \
+  -F 'file=@photo.jpeg;type=image/jpeg'
+```
+
+Upload video:
+
+```
+curl -X 'POST' \
+  'http://localhost:8000/video/upload_to_story' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'sessionid=<SESSIONID>' \
+  -F 'file=@video.mp4;type=video/mp4'
+```
+
 # Testing
 
 Tests can be run like this:
