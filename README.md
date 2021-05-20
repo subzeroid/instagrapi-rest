@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/adw0rd/instagrapi-rest/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/adw0rd/instagrapi-rest/actions/workflows/tests.yml)
 
-Allows you to use the [Instagram Private API](https://github.com/adw0rd/instagrapi) on any operating system from any programming language to automate the work of your accounts
+Allows you to use the [Instagram Private API](https://github.com/adw0rd/instagrapi) on any operating system from any programming language (C++, C#, F#, Golang, Erlang, Haskell, Lisp, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Ruby, Rust, Swift, Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others) to automate the work of your accounts. 
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 [![Donate](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/adw0rd)
@@ -31,6 +31,15 @@ docker run -p 8000:8000 instagrapi-rest
 Or you can use docker-compose:
 ```
 docker-compose up -d
+```
+
+Or manual installation and launch:
+
+```
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -U wheel pip -Ur requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 # Usage
