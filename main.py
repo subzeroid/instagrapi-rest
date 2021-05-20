@@ -1,8 +1,10 @@
 import re
+import requests
 import tempfile
 import pkg_resources
 from typing import List, Optional
 
+from pydantic import HttpUrl
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.openapi.utils import get_openapi
 from starlette.responses import RedirectResponse
@@ -33,7 +35,7 @@ async def media_info(pk: int) -> Media:
 @app.post("/photo/upload_to_story", response_model=Story, tags=["upload"])
 async def photo_upload_to_story(sessionid: str = Form(...),
                                 file: UploadFile = File(...),
-                                caption: Optional[str] = '',
+                                caption: Optional[str] = Form(''),
                                 mentions: List[StoryMention] = [],
                                 locations: List[StoryLocation] = [],
                                 links: List[StoryLink] = [],
@@ -59,10 +61,42 @@ async def photo_upload_to_story(sessionid: str = Form(...),
     return result
 
 
+@app.post("/photo/upload_to_story/by_url", response_model=Story, tags=["upload"])
+async def photo_upload_to_story_by_url(sessionid: str = Form(...),
+                                url: HttpUrl = Form(...),
+                                caption: Optional[str] = Form(''),
+                                mentions: List[StoryMention] = [],
+                                locations: List[StoryLocation] = [],
+                                links: List[StoryLink] = [],
+                                hashtags: List[StoryHashtag] = [],
+                                stickers: List[StorySticker] = []
+                                ) -> Story:
+    """Upload photo to story by URL to file
+    """
+    try:
+        content = requests.get(url).content
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    cl = Client()
+    cl.login_by_sessionid(sessionid)
+    with tempfile.NamedTemporaryFile(suffix='.jpg') as fp:
+        fp.write(content)
+        result = cl.photo_upload_to_story(
+            fp.name,
+            caption,
+            mentions=mentions,
+            links=links,
+            hashtags=hashtags,
+            locations=locations,
+            stickers=stickers
+        )
+    return result
+
+
 @app.post("/video/upload_to_story", response_model=Story, tags=["upload"])
 async def video_upload_to_story(sessionid: str = Form(...),
                                 file: UploadFile = File(...),
-                                caption: Optional[str] = '',
+                                caption: Optional[str] = Form(''),
                                 mentions: List[StoryMention] = [],
                                 locations: List[StoryLocation] = [],
                                 links: List[StoryLink] = [],
@@ -87,6 +121,40 @@ async def video_upload_to_story(sessionid: str = Form(...),
             stickers=stickers
         )
     return result
+
+
+@app.post("/video/upload_to_story/by_url", response_model=Story, tags=["upload"])
+async def video_upload_to_story_by_url(sessionid: str = Form(...),
+                                url: HttpUrl = Form(...),
+                                caption: Optional[str] = Form(''),
+                                mentions: List[StoryMention] = [],
+                                locations: List[StoryLocation] = [],
+                                links: List[StoryLink] = [],
+                                hashtags: List[StoryHashtag] = [],
+                                stickers: List[StorySticker] = []
+) -> Story:
+    """Upload video to story by URL to file
+    """
+    try:
+        content = requests.get(url).content
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    cl = Client()
+    cl.login_by_sessionid(sessionid)
+    with tempfile.NamedTemporaryFile(suffix='.mp4') as fp:
+        fp.write(content)
+        video = StoryBuilder(fp.name, caption, mentions).video(15)
+        result = cl.video_upload_to_story(
+            video.path,
+            caption,
+            mentions=mentions,
+            links=links,
+            hashtags=hashtags,
+            locations=locations,
+            stickers=stickers
+        )
+    return result
+
 
 
 @app.get("/auth/login", tags=["auth"])
