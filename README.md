@@ -70,6 +70,16 @@ curl -X 'POST' \
   -F 'file=@photo.jpeg;type=image/jpeg'
 ```
 
+Upload photo by URL:
+
+```
+curl -X 'POST' \
+  'https://localhost:8000/photo/upload_to_story/by_url' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'sessionid=<SESSIONID>&url=https%3A%2F%2Fapi.telegram.org%2Ffile%2Ftest.jpg'
+```
+
 Upload video:
 
 ```
@@ -79,6 +89,16 @@ curl -X 'POST' \
   -H 'Content-Type: multipart/form-data' \
   -F 'sessionid=<SESSIONID>' \
   -F 'file=@video.mp4;type=video/mp4'
+```
+
+Upload video by URL:
+
+```
+curl -X 'POST' \
+  'https://localhost:8000/video/upload_to_story/by_url' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'sessionid=<SESSIONID>&url=https%3A%2F%2Fapi.telegram.org%2Ffile%2Ftest.MP4'
 ```
 
 # Testing
