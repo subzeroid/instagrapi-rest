@@ -108,7 +108,7 @@ async def auth_login(username: str = Form(...), password: str = Form(...), verif
 async def auth_login_by_sessionid(sessionid: str) -> str:
     """Login by sessionid
     """
-    user_id = int(re.match('^\d+', sessionid).group())
+    user_id = int(re.match(r'^\d+', sessionid).group())
     cl = Client()
     result = cl.login_by_sessionid(sessionid)
     if result:
