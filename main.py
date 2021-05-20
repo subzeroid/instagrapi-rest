@@ -3,32 +3,31 @@ import tempfile
 import pkg_resources
 from typing import List, Optional
 
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.openapi.utils import get_openapi
 from starlette.responses import RedirectResponse
 
 from instagrapi import Client
+from instagrapi.exceptions import ClientError
 from instagrapi.story import StoryBuilder
-from instagrapi.types import (Location, Media, Story, StoryHashtag, StoryLink,
-                              StoryLocation, StoryMention, StorySticker,
-                              Usertag)
+from instagrapi.types import (Media, Story, StoryHashtag, StoryLink,
+                              StoryLocation, StoryMention, StorySticker)
 
 app = FastAPI()
-cl = Client()
 
 
 @app.get("/media/pk_from_code", tags=["media"])
 async def media_pk_from_code(code: str) -> int:
     """Get media pk from code
     """
-    return cl.media_pk_from_code(code)
+    return Client().media_pk_from_code(code)
 
 
 @app.get("/media/info", response_model=Media, tags=["media"])
 async def media_info(pk: int) -> Media:
     """Get media info by pk
     """
-    return cl.media_info(pk)
+    return Client().media_info(pk)
 
 
 @app.post("/photo/upload_to_story", response_model=Story, tags=["upload"])
@@ -43,6 +42,7 @@ async def photo_upload_to_story(sessionid: str = Form(...),
                                 ) -> Story:
     """Upload photo to story
     """
+    cl = Client()
     cl.login_by_sessionid(sessionid)
     with tempfile.NamedTemporaryFile(suffix='.jpg') as fp:
         data = await file.read()
@@ -71,6 +71,7 @@ async def video_upload_to_story(sessionid: str = Form(...),
                                 ) -> Story:
     """Upload video to story
     """
+    cl = Client()
     cl.login_by_sessionid(sessionid)
     with tempfile.NamedTemporaryFile(suffix='.mp4') as fp:
         data = await file.read()
@@ -89,10 +90,14 @@ async def video_upload_to_story(sessionid: str = Form(...),
 
 
 @app.get("/auth/login", tags=["auth"])
-async def auth_login(username: str, password: str, verification_code: Optional[str] = '') -> str:
+async def auth_login(username: str = Form(...), password: str = Form(...), verification_code: Optional[str] = Form('')) -> str:
     """Login by username and password with 2FA
     """
-    result = cl.login(username, password, verification_code)
+    cl = Client()
+    try:
+        result = cl.login(username, password, verification_code=verification_code)
+    except ClientError as e:
+        raise HTTPException(status_code=500, detail=str(e))
     if result:
         cl.dump_settings(f'/tmp/{cl.user_id}.json')
         return cl.sessionid
@@ -104,6 +109,7 @@ async def auth_login_by_sessionid(sessionid: str) -> str:
     """Login by sessionid
     """
     user_id = int(re.match('^\d+', sessionid).group())
+    cl = Client()
     result = cl.login_by_sessionid(sessionid)
     if result:
         cl.dump_settings(f'/tmp/{user_id}.json')
