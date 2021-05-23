@@ -183,7 +183,7 @@ async def version():
 
 @app.exception_handler(Exception)
 async def handle_exception(request, exc: Exception):
-    return JSONResponse({"detail": str(exc)}, status_code=500)
+    return JSONResponse({"detail": str(exc), "exc_type": str(type(exc).__name__)}, status_code=500)
 
 
 def custom_openapi():
