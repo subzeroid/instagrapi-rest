@@ -49,8 +49,9 @@ async def photo_upload_to_story(sessionid: str = Form(...),
     with tempfile.NamedTemporaryFile(suffix='.jpg') as fp:
         data = await file.read()
         fp.write(data)
+        photo = StoryBuilder(fp.name, caption, mentions).photo(15)
         result = cl.photo_upload_to_story(
-            fp.name,
+            photo.path,
             caption,
             mentions=mentions,
             links=links,
@@ -77,8 +78,9 @@ async def photo_upload_to_story_by_url(sessionid: str = Form(...),
     cl = clients.get(sessionid)
     with tempfile.NamedTemporaryFile(suffix='.jpg') as fp:
         fp.write(content)
+        photo = StoryBuilder(fp.name, caption, mentions).photo(15)
         result = cl.photo_upload_to_story(
-            fp.name,
+            photo.path,
             caption,
             mentions=mentions,
             links=links,
