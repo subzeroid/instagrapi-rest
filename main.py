@@ -1,5 +1,4 @@
 import requests
-import tempfile
 import pkg_resources
 from typing import List, Optional
 
@@ -9,9 +8,9 @@ from fastapi.openapi.utils import get_openapi
 from starlette.responses import RedirectResponse, JSONResponse
 
 from instagrapi import Client
-from instagrapi.story import StoryBuilder
 from instagrapi.types import (Media, Story, StoryHashtag, StoryLink,
                               StoryLocation, StoryMention, StorySticker)
+from helpers import photo_upload_story, video_upload_story
 from storages import ClientStorage
 
 
@@ -27,10 +26,11 @@ async def media_pk_from_code(code: str) -> int:
 
 
 @app.get("/media/info", response_model=Media, tags=["media"])
-async def media_info(pk: int) -> Media:
+async def media_info(sessionid: str = Form(...), pk: int = Form(...)) -> Media:
     """Get media info by pk
     """
-    return Client().media_info(pk)
+    cl = clients.get(sessionid)
+    return cl.media_info(pk)
 
 
 @app.post("/photo/upload_to_story", response_model=Story, tags=["upload"])
@@ -46,20 +46,15 @@ async def photo_upload_to_story(sessionid: str = Form(...),
     """Upload photo to story
     """
     cl = clients.get(sessionid)
-    with tempfile.NamedTemporaryFile(suffix='.jpg') as fp:
-        data = await file.read()
-        fp.write(data)
-        photo = StoryBuilder(fp.name, caption, mentions).photo(15)
-        result = cl.photo_upload_to_story(
-            photo.path,
-            caption,
-            mentions=mentions,
-            links=links,
-            hashtags=hashtags,
-            locations=locations,
-            stickers=stickers
-        )
-    return result
+    content = await file.read()
+    return await photo_upload_story(
+        cl, content, caption,
+        mentions=mentions,
+        links=links,
+        hashtags=hashtags,
+        locations=locations,
+        stickers=stickers
+    )
 
 
 @app.post("/photo/upload_to_story/by_url", response_model=Story, tags=["upload"])
@@ -74,21 +69,16 @@ async def photo_upload_to_story_by_url(sessionid: str = Form(...),
                                 ) -> Story:
     """Upload photo to story by URL to file
     """
-    content = requests.get(url).content
     cl = clients.get(sessionid)
-    with tempfile.NamedTemporaryFile(suffix='.jpg') as fp:
-        fp.write(content)
-        photo = StoryBuilder(fp.name, caption, mentions).photo(15)
-        result = cl.photo_upload_to_story(
-            photo.path,
-            caption,
-            mentions=mentions,
-            links=links,
-            hashtags=hashtags,
-            locations=locations,
-            stickers=stickers
-        )
-    return result
+    content = requests.get(url).content
+    return await photo_upload_story(
+        cl, content, caption,
+        mentions=mentions,
+        links=links,
+        hashtags=hashtags,
+        locations=locations,
+        stickers=stickers
+    )
 
 
 @app.post("/video/upload_to_story", response_model=Story, tags=["upload"])
@@ -104,58 +94,54 @@ async def video_upload_to_story(sessionid: str = Form(...),
     """Upload video to story
     """
     cl = clients.get(sessionid)
-    with tempfile.NamedTemporaryFile(suffix='.mp4') as fp:
-        data = await file.read()
-        fp.write(data)
-        video = StoryBuilder(fp.name, caption, mentions).video(15)
-        result = cl.video_upload_to_story(
-            video.path,
-            caption,
-            mentions=mentions,
-            links=links,
-            hashtags=hashtags,
-            locations=locations,
-            stickers=stickers
-        )
-    return result
+    content = await file.read()
+    return await video_upload_story(
+        cl, content, caption,
+        mentions=mentions,
+        links=links,
+        hashtags=hashtags,
+        locations=locations,
+        stickers=stickers
+    )
 
 
 @app.post("/video/upload_to_story/by_url", response_model=Story, tags=["upload"])
 async def video_upload_to_story_by_url(sessionid: str = Form(...),
-                                url: HttpUrl = Form(...),
-                                caption: Optional[str] = Form(''),
-                                mentions: List[StoryMention] = [],
-                                locations: List[StoryLocation] = [],
-                                links: List[StoryLink] = [],
-                                hashtags: List[StoryHashtag] = [],
-                                stickers: List[StorySticker] = []
-) -> Story:
+                                       url: HttpUrl = Form(...),
+                                       caption: Optional[str] = Form(''),
+                                       mentions: List[StoryMention] = [],
+                                       locations: List[StoryLocation] = [],
+                                       links: List[StoryLink] = [],
+                                       hashtags: List[StoryHashtag] = [],
+                                       stickers: List[StorySticker] = []
+                                       ) -> Story:
     """Upload video to story by URL to file
     """
-    content = requests.get(url).content
     cl = clients.get(sessionid)
-    with tempfile.NamedTemporaryFile(suffix='.mp4') as fp:
-        fp.write(content)
-        video = StoryBuilder(fp.name, caption, mentions).video(15)
-        result = cl.video_upload_to_story(
-            video.path,
-            caption,
-            mentions=mentions,
-            links=links,
-            hashtags=hashtags,
-            locations=locations,
-            stickers=stickers
-        )
-    return result
-
+    content = requests.get(url).content
+    return await video_upload_story(
+        cl, content, caption,
+        mentions=mentions,
+        links=links,
+        hashtags=hashtags,
+        locations=locations,
+        stickers=stickers
+    )
 
 
 @app.get("/auth/login", tags=["auth"])
-async def auth_login(username: str = Form(...), password: str = Form(...), verification_code: Optional[str] = Form('')) -> str:
+async def auth_login(username: str = Form(...),
+                     password: str = Form(...),
+                     verification_code: Optional[str] = Form('')
+                     ) -> str:
     """Login by username and password with 2FA
     """
     cl = clients.client()
-    result = cl.login(username, password, verification_code=verification_code)
+    result = cl.login(
+        username,
+        password,
+        verification_code=verification_code
+    )
     if result:
         clients.set(cl)
         return cl.sessionid
@@ -183,7 +169,10 @@ async def version():
 
 @app.exception_handler(Exception)
 async def handle_exception(request, exc: Exception):
-    return JSONResponse({"detail": str(exc), "exc_type": str(type(exc).__name__)}, status_code=500)
+    return JSONResponse({
+        "detail": str(exc),
+        "exc_type": str(type(exc).__name__)
+    }, status_code=500)
 
 
 def custom_openapi():
