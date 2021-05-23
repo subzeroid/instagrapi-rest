@@ -16,7 +16,10 @@ class ClientStorage:
         """Get client settings
         """
         key = parse.unquote(sessionid.strip())
-        return self.storage.get(key, None)
+        try:
+            return self.storage[key]
+        except KeyError:
+            raise Exception('Session not found (e.g. after reload process), please relogin')
 
     def set(self, cl: Client) -> bool:
         """Set client settings
