@@ -4,12 +4,11 @@ import pkg_resources
 from typing import List, Optional
 
 from pydantic import HttpUrl
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.openapi.utils import get_openapi
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, JSONResponse
 
 from instagrapi import Client
-from instagrapi.exceptions import ClientError
 from instagrapi.story import StoryBuilder
 from instagrapi.types import (Media, Story, StoryHashtag, StoryLink,
                               StoryLocation, StoryMention, StorySticker)
@@ -74,10 +73,7 @@ async def photo_upload_to_story_by_url(sessionid: str = Form(...),
                                 ) -> Story:
     """Upload photo to story by URL to file
     """
-    try:
-        content = requests.get(url).content
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    content = requests.get(url).content
     cl = clients.get(sessionid)
     with tempfile.NamedTemporaryFile(suffix='.jpg') as fp:
         fp.write(content)
@@ -134,10 +130,7 @@ async def video_upload_to_story_by_url(sessionid: str = Form(...),
 ) -> Story:
     """Upload video to story by URL to file
     """
-    try:
-        content = requests.get(url).content
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    content = requests.get(url).content
     cl = clients.get(sessionid)
     with tempfile.NamedTemporaryFile(suffix='.mp4') as fp:
         fp.write(content)
@@ -160,10 +153,7 @@ async def auth_login(username: str = Form(...), password: str = Form(...), verif
     """Login by username and password with 2FA
     """
     cl = clients.client()
-    try:
-        result = cl.login(username, password, verification_code=verification_code)
-    except ClientError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    result = cl.login(username, password, verification_code=verification_code)
     if result:
         clients.set(cl)
         return cl.sessionid
@@ -187,6 +177,11 @@ async def version():
         if item:
             versions[name] = item[0].version
     return versions
+
+
+@app.exception_handler(Exception)
+async def handle_exception(request, exc: Exception):
+    return JSONResponse({"detail": str(exc)}, status_code=500)
 
 
 def custom_openapi():
