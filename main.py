@@ -1,151 +1,15 @@
-import requests
 import pkg_resources
-from typing import List, Optional
 
-from pydantic import HttpUrl
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from starlette.responses import RedirectResponse, JSONResponse
-
-from instagrapi import Client
-from instagrapi.types import (Media, Story, StoryHashtag, StoryLink,
-                              StoryLocation, StoryMention, StorySticker)
-from helpers import photo_upload_story, video_upload_story
-from storages import ClientStorage
-
+from routers import auth, media, video, photo
 
 app = FastAPI()
-clients = ClientStorage()
-
-
-@app.get("/media/pk_from_code", tags=["media"])
-async def media_pk_from_code(code: str) -> int:
-    """Get media pk from code
-    """
-    return Client().media_pk_from_code(code)
-
-
-@app.get("/media/info", response_model=Media, tags=["media"])
-async def media_info(sessionid: str = Form(...), pk: int = Form(...)) -> Media:
-    """Get media info by pk
-    """
-    cl = clients.get(sessionid)
-    return cl.media_info(pk)
-
-
-@app.post("/photo/upload_to_story", response_model=Story, tags=["upload"])
-async def photo_upload_to_story(sessionid: str = Form(...),
-                                file: UploadFile = File(...),
-                                caption: Optional[str] = Form(''),
-                                mentions: List[StoryMention] = [],
-                                locations: List[StoryLocation] = [],
-                                links: List[StoryLink] = [],
-                                hashtags: List[StoryHashtag] = [],
-                                stickers: List[StorySticker] = []
-                                ) -> Story:
-    """Upload photo to story
-    """
-    cl = clients.get(sessionid)
-    content = await file.read()
-    return await photo_upload_story(
-        cl, content, caption,
-        mentions=mentions,
-        links=links,
-        hashtags=hashtags,
-        locations=locations,
-        stickers=stickers
-    )
-
-
-@app.post("/photo/upload_to_story/by_url", response_model=Story, tags=["upload"])
-async def photo_upload_to_story_by_url(sessionid: str = Form(...),
-                                url: HttpUrl = Form(...),
-                                caption: Optional[str] = Form(''),
-                                mentions: List[StoryMention] = [],
-                                locations: List[StoryLocation] = [],
-                                links: List[StoryLink] = [],
-                                hashtags: List[StoryHashtag] = [],
-                                stickers: List[StorySticker] = []
-                                ) -> Story:
-    """Upload photo to story by URL to file
-    """
-    cl = clients.get(sessionid)
-    content = requests.get(url).content
-    return await photo_upload_story(
-        cl, content, caption,
-        mentions=mentions,
-        links=links,
-        hashtags=hashtags,
-        locations=locations,
-        stickers=stickers
-    )
-
-
-@app.post("/video/upload_to_story", response_model=Story, tags=["upload"])
-async def video_upload_to_story(sessionid: str = Form(...),
-                                file: UploadFile = File(...),
-                                caption: Optional[str] = Form(''),
-                                mentions: List[StoryMention] = [],
-                                locations: List[StoryLocation] = [],
-                                links: List[StoryLink] = [],
-                                hashtags: List[StoryHashtag] = [],
-                                stickers: List[StorySticker] = []
-                                ) -> Story:
-    """Upload video to story
-    """
-    cl = clients.get(sessionid)
-    content = await file.read()
-    return await video_upload_story(
-        cl, content, caption,
-        mentions=mentions,
-        links=links,
-        hashtags=hashtags,
-        locations=locations,
-        stickers=stickers
-    )
-
-
-@app.post("/video/upload_to_story/by_url", response_model=Story, tags=["upload"])
-async def video_upload_to_story_by_url(sessionid: str = Form(...),
-                                       url: HttpUrl = Form(...),
-                                       caption: Optional[str] = Form(''),
-                                       mentions: List[StoryMention] = [],
-                                       locations: List[StoryLocation] = [],
-                                       links: List[StoryLink] = [],
-                                       hashtags: List[StoryHashtag] = [],
-                                       stickers: List[StorySticker] = []
-                                       ) -> Story:
-    """Upload video to story by URL to file
-    """
-    cl = clients.get(sessionid)
-    content = requests.get(url).content
-    return await video_upload_story(
-        cl, content, caption,
-        mentions=mentions,
-        links=links,
-        hashtags=hashtags,
-        locations=locations,
-        stickers=stickers
-    )
-
-
-@app.get("/auth/login", tags=["auth"])
-async def auth_login(username: str = Form(...),
-                     password: str = Form(...),
-                     verification_code: Optional[str] = Form('')
-                     ) -> str:
-    """Login by username and password with 2FA
-    """
-    cl = clients.client()
-    result = cl.login(
-        username,
-        password,
-        verification_code=verification_code
-    )
-    if result:
-        clients.set(cl)
-        return cl.sessionid
-    return result
+app.include_router(auth.router)
+app.include_router(media.router)
+app.include_router(video.router)
+app.include_router(photo.router)
 
 
 @app.get("/", tags=["system"], summary="Redirect to /docs")
@@ -190,6 +54,5 @@ def custom_openapi():
     )
     app.openapi_schema = openapi_schema
     return app.openapi_schema
-
 
 app.openapi = custom_openapi

@@ -9,3 +9,8 @@ pytest-asyncio==0.14.0
 httpx==0.17.1
 pudb
 ipdb
+
+requests~=2.25.1
+pydantic~=1.8.2
+starlette~=0.14.2
+pytest~=6.2.4

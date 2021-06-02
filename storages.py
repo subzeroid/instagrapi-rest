@@ -27,3 +27,6 @@ class ClientStorage:
         key = parse.unquote(cl.sessionid)
         self.storage[key] = cl
         return True
+
+    def close(self):
+        self.storage = {}
