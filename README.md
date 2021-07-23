@@ -104,7 +104,7 @@ curl -X 'POST' \
 
 Tests can be run like this:
 
-`docker run --rm -v $(pwd):/app instagrapi-rest pytest tests.py`
+`docker run --rm -v "$(pwd):/app" instagrapi-rest pytest tests.py`
 
 # Development
 
