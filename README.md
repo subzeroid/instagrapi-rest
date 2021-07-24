@@ -10,6 +10,16 @@ Allows you to use the [Instagram Private API](https://github.com/adw0rd/instagra
 
 # Installation
 
+Install ImageMagick library:
+```
+sudo apt install imagemagick
+```
+
+...and comment the line with strict security policies of ImageMagick in `/etc/ImageMagick-6/policy.xml`:
+```
+<!--<policy domain="path" rights="none" pattern="@*"/>-->
+```
+
 Run docker container:
 ```
 docker run adw0rd/instagrapi-rest
