@@ -33,7 +33,7 @@ async def auth_login(username: str = Form(...),
 
 
 @router.post("/relogin")
-async def auth_relogin(sessionid: str,
+async def auth_relogin(sessionid: str = Form(...),
                        clients: ClientStorage = Depends(get_clients)) -> str:
     """Relogin by username and password (with clean cookies)
     """
