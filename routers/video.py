@@ -35,7 +35,7 @@ async def video_upload_to_story(sessionid: str = Form(...),
     cl = clients.get(sessionid)
     content = await file.read()
     return await video_upload_story(
-        cl, content, caption,
+        cl, content, caption=caption,
         mentions=mentions,
         links=links,
         hashtags=hashtags,
@@ -60,7 +60,7 @@ async def video_upload_to_story_by_url(sessionid: str = Form(...),
     cl = clients.get(sessionid)
     content = requests.get(url).content
     return await video_upload_story(
-        cl, content, caption,
+        cl, content, caption=caption,
         mentions=mentions,
         links=links,
         hashtags=hashtags,
