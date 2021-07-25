@@ -38,12 +38,23 @@ func pkFromCode(code string) string {
 	return resp.String()
 }
 
-func login(username string, password string, settings string) string {
+func pkFromUrl(url string) string {
+	resp, err := client.R().
+		SetQueryParams(map[string]string{
+			"url": url,
+		}).
+		Get("/media/pk_from_url")
+	if err != nil {
+		log.Println(err)
+	}
+	return resp.String()
+}
+
+func login(username, password string) string {
 	resp, err := client.R().
 		SetFormData(map[string]string{
 			"username": username,
 			"password": password,
-			"settings": settings,
 		}).Post("/auth/login")
 	if err != nil {
 		log.Println(err)
@@ -68,14 +79,33 @@ func relogin(sessionid string) {
 	}
 }
 
-func photo_download(sessionid, url, folder string) string {
+func photo_download(sessionid, media_pk, folder string) string {
 	resp, err := client.R().
 		SetFormData(map[string]string{
 			"sessionid":  sessionid,
-			"url":        url,
+			"media_pk":   media_pk,
 			"folder":     folder,
 			"returnFile": "false",
-		}).Post("/photo/download/by_url")
+		}).Post("/photo/download")
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	if resp.StatusCode() != 200 {
+		log.Println(resp.String())
+		return ""
+	}
+	return resp.String()
+}
+
+func video_download(sessionid, media_pk, folder string) string {
+	resp, err := client.R().
+		SetFormData(map[string]string{
+			"sessionid":  sessionid,
+			"media_pk":   media_pk,
+			"folder":     folder,
+			"returnFile": "false",
+		}).Post("/video/download")
 	if err != nil {
 		log.Println(err)
 		return ""
@@ -91,7 +121,23 @@ func getSettings(sessionid string) string {
 	resp, err := client.R().
 		SetQueryParams(map[string]string{
 			"sessionid": sessionid,
-		}).Get("/auth/settings")
+		}).Get("/auth/settings/get")
+	if err != nil {
+		log.Println(err)
+	}
+	if resp.StatusCode() != 200 {
+		log.Println(resp.String())
+		return "{}"
+	}
+	return resp.String()
+}
+
+func setSettings(sessionid, settings string) string {
+	resp, err := client.R().
+		SetFormData(map[string]string{
+			"sessionid": sessionid,
+			"settings":  settings,
+		}).Post("/auth/settings/set")
 	if err != nil {
 		log.Println(err)
 	}
@@ -105,7 +151,7 @@ func getSettings(sessionid string) string {
 func loadSettings(file string) string {
 	if _, err := os.Stat(file); err != nil {
 		if os.IsNotExist(err) {
-			return ""
+			return "{}"
 		}
 	}
 	content, err := ioutil.ReadFile(file)
@@ -129,7 +175,12 @@ func main() {
 	log.Println("Version: ", getVersion())
 	log.Println("pkFromCode: B1LbfVPlwIA -> ", pkFromCode("B1LbfVPlwIA"))
 	settings := loadSettings("./settings.json")
-	sessionid := login("adw0rd", "test", settings)
+	sessionid := ""
+	if settings != "{}" {
+		sessionid = setSettings("", settings)
+	} else {
+		sessionid = login("adw0rd", "test")
+	}
 	if sessionid != "" {
 		log.Println("SESSIONID: ", sessionid)
 		settings = getSettings(sessionid)
@@ -140,6 +191,6 @@ func main() {
 	} else {
 		log.Fatal("Login error!")
 	}
-	// relogin(sessionid)
-	log.Println("photo_download:", photo_download(sessionid, "https://www.instagram.com/p/COQebHWhRUg/", ""))
+	log.Println("photo_download:", photo_download(sessionid, pkFromUrl("https://www.instagram.com/p/COQebHWhRUg/"), ""))
+	log.Println("video_download:", video_download(sessionid, pkFromUrl("https://www.instagram.com/p/CGgDsi7JQdS/"), ""))
 }
