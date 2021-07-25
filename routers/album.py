@@ -5,6 +5,7 @@ from pydantic import HttpUrl
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from dependencies import ClientStorage, get_clients
 from instagrapi.types import Media, Location, Usertag
+from helpers import album_upload_post
 
 
 router = APIRouter(
@@ -49,10 +50,7 @@ async def album_upload(sessionid: str = Form(...),
     """Upload album to feed
     """
     cl = clients.get(sessionid)
-    filesdata = []
-    for file in files:
-        filesdata.append(await file.read())
     return await album_upload_post(
-        cl, filesdata, caption=caption,
+        cl, files, caption=caption,
         usertags=usertags,
         location=location)

@@ -6,7 +6,7 @@ from pydantic import HttpUrl
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from dependencies import ClientStorage, get_clients
 from instagrapi.types import Media, Location, Usertag
-
+from helpers import igtv_upload_post
 
 router = APIRouter(
     prefix="/igtv",

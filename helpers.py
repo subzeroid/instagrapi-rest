@@ -1,5 +1,5 @@
 import tempfile
-
+import os
 from instagrapi.story import StoryBuilder
 
 
@@ -39,12 +39,13 @@ async def video_upload_post(cl, content, **kwargs):
         return cl.video_upload(fp.name, **kwargs)
 
 
-async def album_upload_post(cl, filesdata, **kwargs):
+async def album_upload_post(cl, files, **kwargs):
     with tempfile.TemporaryDirectory() as td:
         paths = []
-        for content in filesdata:
-            fp = tempfile.NamedTemporaryFile(suffix='.mp4', delete=False)
-            fp.write(content)
+        for i in range(len(files)):
+            filename, ext = os.path.splitext(files[i].filename)
+            fp = tempfile.NamedTemporaryFile(suffix=ext, delete=False)
+            fp.write(await files[i].read())
             fp.close()
             paths.append(fp.name)
         return cl.album_upload(paths, **kwargs)

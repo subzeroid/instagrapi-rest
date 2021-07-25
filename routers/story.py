@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, Form
 from instagrapi.types import (
         Story
 )
-
 from dependencies import ClientStorage, get_clients
 
 

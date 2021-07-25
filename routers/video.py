@@ -10,7 +10,7 @@ from instagrapi.types import (
     Media, Usertag, Location
 )
 
-from helpers import video_upload_story
+from helpers import video_upload_story, video_upload_post
 from dependencies import ClientStorage, get_clients
 
 
