@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -44,6 +49,18 @@ func pkFromUrl(url string) string {
 			"url": url,
 		}).
 		Get("/media/pk_from_url")
+	if err != nil {
+		log.Println(err)
+	}
+	return resp.String()
+}
+
+func id_from_username(sessionid, username string) string {
+	resp, err := client.R().
+		SetFormData(map[string]string{
+			"sessionid": sessionid,
+			"username":  username,
+		}).Post("/user/id_from_username")
 	if err != nil {
 		log.Println(err)
 	}
@@ -171,6 +188,98 @@ func saveSettings(file string, settings string) {
 	}
 }
 
+func user_stories(sessionid, id string, amount int) []string {
+	resp, err := client.R().
+		SetFormData(map[string]string{
+			"sessionid": sessionid,
+			"user_id":   id,
+			"amount":    strconv.Itoa(amount),
+		}).Post("/story/user_stories")
+	if err != nil {
+		log.Println(err)
+		return []string{}
+	}
+	if resp.StatusCode() != 200 {
+		log.Println(resp.String())
+		return []string{}
+	}
+
+	log.Println(resp.String())
+
+	var (
+		stories []map[string]interface{}
+		result  []string
+	)
+
+	json.Unmarshal([]byte(resp.String()), &stories)
+	for _, v := range stories {
+		result = append(result, strings.SplitN(v["id"].(string), "_", 2)[0])
+	}
+	return result
+}
+
+func igtv_download(sessionid, media_pk, folder string) string {
+	resp, err := client.R().
+		SetFormData(map[string]string{
+			"sessionid":  sessionid,
+			"media_pk":   media_pk,
+			"folder":     folder,
+			"returnFile": "false",
+		}).Post("/igtv/download")
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	if resp.StatusCode() != 200 {
+		log.Println(resp.String())
+		return ""
+	}
+	return resp.String()
+}
+
+func story_download(sessionid, story_pk, folder string) string {
+	resp, err := client.R().
+		SetFormData(map[string]string{
+			"sessionid":  sessionid,
+			"story_pk":   story_pk,
+			"folder":     folder,
+			"returnFile": "false",
+		}).Post("/story/download")
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	if resp.StatusCode() != 200 {
+		log.Println(resp.String())
+		return ""
+	}
+	return resp.String()
+}
+
+func album_upload(sessionid string, files []string, caption string) string {
+	r := client.R()
+	for _, path := range files {
+		path = strings.Trim(path, "\" ")
+		filedata, _ := ioutil.ReadFile(path)
+		r = r.SetFileReader("files", filepath.Base(path), bytes.NewReader(filedata))
+	}
+
+	resp, err := r.SetFormData(map[string]string{
+		"sessionid": sessionid,
+		"caption":   caption,
+	}).Post("/album/upload")
+
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	if resp.StatusCode() != 200 {
+		log.Println(resp.String())
+		return ""
+	}
+	return resp.String()
+}
+
 func main() {
 	log.Println("Version: ", getVersion())
 	log.Println("pkFromCode: B1LbfVPlwIA -> ", pkFromCode("B1LbfVPlwIA"))
@@ -191,6 +300,24 @@ func main() {
 	} else {
 		log.Fatal("Login error!")
 	}
-	log.Println("photo_download:", photo_download(sessionid, pkFromUrl("https://www.instagram.com/p/COQebHWhRUg/"), ""))
-	log.Println("video_download:", video_download(sessionid, pkFromUrl("https://www.instagram.com/p/CGgDsi7JQdS/"), ""))
+
+	photo := photo_download(sessionid, pkFromUrl("https://www.instagram.com/p/COQebHWhRUg/"), "")
+	log.Println("photo_download:", photo)
+
+	video := video_download(sessionid, pkFromUrl("https://www.instagram.com/p/CGgDsi7JQdS/"), "")
+	log.Println("video_download:", video)
+
+	igtv := igtv_download(sessionid, pkFromUrl("https://www.instagram.com/p/CRHO6N6HLvQ/"), "")
+	log.Println("igtv_download:", igtv)
+
+	stories := user_stories(sessionid, id_from_username(sessionid, "therock"), 1)
+	log.Println(stories)
+
+	if len(stories) > 0 {
+		story := story_download(sessionid, stories[0], "")
+		log.Println("story_download:", story)
+	}
+
+	result := album_upload(sessionid, []string{photo, video}, "hello world")
+	log.Println(result)
 }
