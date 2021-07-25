@@ -6,9 +6,10 @@ from fastapi import APIRouter, Depends, File, UploadFile, Form
 from fastapi.responses import FileResponse
 from instagrapi.types import (
     Story, StoryHashtag, StoryLink,
-    StoryLocation, StoryMention, StorySticker
+    StoryLocation, StoryMention, StorySticker,
+    Media, Location, Usertag
 )
-from helpers import photo_upload_story_as_video, photo_upload_story_as_photo
+from helpers import photo_upload_story_as_video, photo_upload_story_as_photo, photo_upload_post
 from dependencies import ClientStorage, get_clients
 
 
@@ -119,3 +120,23 @@ async def photo_download_by_url(sessionid: str = Form(...),
         return FileResponse(result)
     else:
         return result
+
+
+@router.post("/upload", response_model=Media)
+async def photo_upload(sessionid: str = Form(...),
+                       file: UploadFile = File(...),
+                       caption: str = Form(...),
+                       upload_id: Optional[str] = Form(""),
+                       usertags: Optional[List[Usertag]] = Form([]),
+                       location: Optional[Location] = Form(None),
+                       clients: ClientStorage = Depends(get_clients)
+                       ) -> Media:
+    """Upload photo and configure to feed
+    """
+    cl = clients.get(sessionid)
+    content = await file.read()
+    return await photo_upload_post(
+        cl, content, caption=caption,
+        upload_id=upload_id,
+        usertags=usertags,
+        location=location)
