@@ -13,13 +13,10 @@ router = APIRouter(
 async def auth_login(username: str = Form(...),
                      password: str = Form(...),
                      verification_code: Optional[str] = Form(""),
-                     settings: Optional[str] = Form(""),
                      clients: ClientStorage = Depends(get_clients)) -> str:
     """Login by username and password with 2FA
     """
     cl = clients.client()
-    if settings is not None and settings != "":
-        cl.set_settings(json.loads(settings))
 
     result = cl.login(
         username,
@@ -42,10 +39,24 @@ async def auth_relogin(sessionid: str = Form(...),
     return result
 
 
-@router.get("/settings")
-async def settings(sessionid: str,
+@router.get("/settings/get")
+async def settings_get(sessionid: str,
                    clients: ClientStorage = Depends(get_clients)) -> Dict:
     """Get client's settings
     """
     cl = clients.get(sessionid)
     return cl.get_settings()
+
+@router.post("/settings/set")
+async def settings_set(settings: str = Form(...),
+                       sessionid: Optional[str] = Form(""),
+                       clients: ClientStorage = Depends(get_clients)) -> str:
+    """Set client's settings
+    """
+    if sessionid != "":
+        cl = clients.get(sessionid)
+    else:
+        cl = clients.client()
+    cl.set_settings(json.loads(settings))
+    clients.set(cl)
+    return cl.sessionid
