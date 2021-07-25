@@ -47,6 +47,7 @@ async def settings_get(sessionid: str,
     cl = clients.get(sessionid)
     return cl.get_settings()
 
+
 @router.post("/settings/set")
 async def settings_set(settings: str = Form(...),
                        sessionid: Optional[str] = Form(""),
@@ -58,5 +59,6 @@ async def settings_set(settings: str = Form(...),
     else:
         cl = clients.client()
     cl.set_settings(json.loads(settings))
+    cl.expose()
     clients.set(cl)
     return cl.sessionid
