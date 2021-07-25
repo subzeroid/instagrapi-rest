@@ -1,5 +1,5 @@
 from typing import List, Optional
-
+from pathlib import Path
 import requests
 from pydantic import HttpUrl
 from fastapi import APIRouter, Depends, File, UploadFile, Form
@@ -68,3 +68,35 @@ async def video_upload_to_story_by_url(sessionid: str = Form(...),
         stickers=stickers
     )
 
+
+@router.post("/download")
+async def video_download(sessionid: str = Form(...),
+                         media_pk: int = Form(...),
+                         folder: Optional[Path] = Form(""),
+                         returnFile: Optional[bool] = Form(True),
+                         clients: ClientStorage = Depends(get_clients)):
+    """Download photo using media pk
+    """
+    cl = clients.get(sessionid)
+    result = cl.video_download(media_pk, folder)
+    if returnFile:
+        return FileResponse(result)
+    else:
+        return result
+
+
+@router.post("/download/by_url")
+async def video_download_by_url(sessionid: str = Form(...),
+                         url: str = Form(...),
+                         filename: Optional[str] = Form(""),
+                         folder: Optional[Path] = Form(""),
+                         returnFile: Optional[bool] = Form(True),
+                         clients: ClientStorage = Depends(get_clients)):
+    """Download photo using URL
+    """
+    cl = clients.get(sessionid)
+    result = cl.video_download_by_url(url, filename, folder)
+    if returnFile:
+        return FileResponse(result)
+    else:
+        return result

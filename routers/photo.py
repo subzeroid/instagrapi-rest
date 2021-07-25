@@ -88,7 +88,7 @@ async def photo_upload_to_story_by_url(sessionid: str = Form(...),
 
 
 
-@router.post("/download", response_model=Story)
+@router.post("/download")
 async def photo_download(sessionid: str = Form(...),
                          media_pk: int = Form(...),
                          folder: Optional[Path] = Form(""),
@@ -104,7 +104,7 @@ async def photo_download(sessionid: str = Form(...),
         return result
 
 
-@router.post("/download/by_url", response_model=Story)
+@router.post("/download/by_url")
 async def photo_download_by_url(sessionid: str = Form(...),
                          url: str = Form(...),
                          filename: Optional[str] = Form(""),
