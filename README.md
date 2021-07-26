@@ -55,7 +55,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 Open in browser [http://localhost:8000/docs](http://localhost:8000/docs) and follow the instructions
 
-![image](https://user-images.githubusercontent.com/546889/119222084-427d5600-bafb-11eb-9e03-22b1c65a69cd.png)
+![swagger](https://user-images.githubusercontent.com/546889/126989357-8214aa5c-fe42-4be4-b118-bd3585cd3292.png)
 
 
 Get sessionid:
