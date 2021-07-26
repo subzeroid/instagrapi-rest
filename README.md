@@ -114,6 +114,14 @@ curl -X 'POST' \
 
 Tests can be run like this:
 
+`docker-compose run api pytest tests.py`
+
+One test:
+
+`docker-compose run api pytest tests.py::test_media_pk_from_code`
+
+or without docker-compose:
+
 `docker run --rm -v "$(pwd):/app" instagrapi-rest pytest tests.py`
 
 # Development
