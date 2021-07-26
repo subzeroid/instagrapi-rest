@@ -1,6 +1,6 @@
 import json
 from typing import Optional, Dict
-from fastapi import APIRouter, Depends, Form, File, UploadFile
+from fastapi import APIRouter, Depends, Form
 from dependencies import ClientStorage, get_clients
 
 router = APIRouter(

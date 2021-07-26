@@ -1,7 +1,5 @@
-from typing import List, Optional, Dict
+from typing import Optional, Dict
 
-import requests
-from pydantic import HttpUrl
 from fastapi import APIRouter, Depends, Form
 from instagrapi.types import (
         User, UserShort
