@@ -15,7 +15,7 @@ class ClientStorage:
     def get(self, sessionid: str) -> Client:
         """Get client settings
         """
-        key = parse.unquote(sessionid.strip())
+        key = parse.unquote(sessionid.strip(" \""))
         try:
             return self.storage[key]
         except KeyError:
@@ -24,7 +24,7 @@ class ClientStorage:
     def set(self, cl: Client) -> bool:
         """Set client settings
         """
-        key = parse.unquote(cl.sessionid)
+        key = parse.unquote(cl.sessionid.strip(" \""))
         self.storage[key] = cl
         return True
 

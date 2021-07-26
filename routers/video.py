@@ -1,14 +1,16 @@
 from typing import List, Optional
-
+from pathlib import Path
 import requests
 from pydantic import HttpUrl
+from fastapi.responses import FileResponse
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from instagrapi.types import (
     Story, StoryHashtag, StoryLink,
-    StoryLocation, StoryMention, StorySticker
+    StoryLocation, StoryMention, StorySticker,
+    Media, Usertag, Location
 )
 
-from helpers import video_upload_story
+from helpers import video_upload_story, video_upload_post
 from dependencies import ClientStorage, get_clients
 
 
@@ -35,7 +37,7 @@ async def video_upload_to_story(sessionid: str = Form(...),
     cl = clients.get(sessionid)
     content = await file.read()
     return await video_upload_story(
-        cl, content, caption,
+        cl, content, caption=caption,
         mentions=mentions,
         links=links,
         hashtags=hashtags,
@@ -60,7 +62,7 @@ async def video_upload_to_story_by_url(sessionid: str = Form(...),
     cl = clients.get(sessionid)
     content = requests.get(url).content
     return await video_upload_story(
-        cl, content, caption,
+        cl, content, caption=caption,
         mentions=mentions,
         links=links,
         hashtags=hashtags,
@@ -68,3 +70,57 @@ async def video_upload_to_story_by_url(sessionid: str = Form(...),
         stickers=stickers
     )
 
+
+@router.post("/download")
+async def video_download(sessionid: str = Form(...),
+                         media_pk: int = Form(...),
+                         folder: Optional[Path] = Form(""),
+                         returnFile: Optional[bool] = Form(True),
+                         clients: ClientStorage = Depends(get_clients)):
+    """Download video using media pk
+    """
+    cl = clients.get(sessionid)
+    result = cl.video_download(media_pk, folder)
+    if returnFile:
+        return FileResponse(result)
+    else:
+        return result
+
+
+@router.post("/download/by_url")
+async def video_download_by_url(sessionid: str = Form(...),
+                         url: str = Form(...),
+                         filename: Optional[str] = Form(""),
+                         folder: Optional[Path] = Form(""),
+                         returnFile: Optional[bool] = Form(True),
+                         clients: ClientStorage = Depends(get_clients)):
+    """Download video using URL
+    """
+    cl = clients.get(sessionid)
+    result = cl.video_download_by_url(url, filename, folder)
+    if returnFile:
+        return FileResponse(result)
+    else:
+        return result
+
+
+@router.post("/upload", response_model=Media)
+async def video_upload(sessionid: str = Form(...),
+                       file: UploadFile = File(...),
+                       caption: str = Form(...),
+                       thumbnail: Optional[UploadFile] = File(None),
+                       usertags: Optional[List[Usertag]] = Form([]),
+                       location: Optional[Location] = Form(None),
+                       clients: ClientStorage = Depends(get_clients)
+                       ) -> Media:
+    """Upload photo and configure to feed
+    """
+    cl = clients.get(sessionid)
+    content = await file.read()
+    if thumbnail is not None:
+        thumb = await thumbnail.read()
+    return await video_upload_post(
+        cl, content, caption=caption,
+        thumbnail=thumb,
+        usertags=usertags,
+        location=location)
