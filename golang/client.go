@@ -280,6 +280,24 @@ func album_upload(sessionid string, files []string, caption string) string {
 	return resp.String()
 }
 
+func photo_upload_to_story(sessionid, filephoto string) string {
+	resp, err := client.R().
+		SetFile("file", strings.Trim(filephoto, "\" ")).
+		SetFormData(map[string]string{
+			"sessionid": sessionid,
+		}).Post("/photo/upload_to_story")
+
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	if resp.StatusCode() != 200 {
+		log.Println(resp.String())
+		return ""
+	}
+	return resp.String()
+}
+
 func main() {
 	log.Println("Version: ", getVersion())
 	log.Println("pkFromCode: B1LbfVPlwIA -> ", pkFromCode("B1LbfVPlwIA"))
@@ -304,6 +322,9 @@ func main() {
 	photo := photo_download(sessionid, pkFromUrl("https://www.instagram.com/p/COQebHWhRUg/"), "")
 	log.Println("photo_download:", photo)
 
+	photo_story := photo_upload_to_story(sessionid, photo)
+	log.Println("photo_upload_to_story:", photo_story)
+
 	video := video_download(sessionid, pkFromUrl("https://www.instagram.com/p/CGgDsi7JQdS/"), "")
 	log.Println("video_download:", video)
 
@@ -320,4 +341,5 @@ func main() {
 
 	result := album_upload(sessionid, []string{photo, video}, "hello world")
 	log.Println(result)
+
 }

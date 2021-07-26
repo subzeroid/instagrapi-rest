@@ -1,7 +1,7 @@
 fastapi==0.65.1
 uvicorn==0.11.3
 ipython==7.16.1
-instagrapi>=1.8.7
+instagrapi>=1.8.9
 python-multipart==0.0.5
 Pillow==8.1.1
 moviepy==1.0.3
