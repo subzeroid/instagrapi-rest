@@ -1,13 +1,11 @@
-from typing import List, Optional, Dict
+from typing import List, Optional
 from pathlib import Path
-import requests
-from pydantic import HttpUrl
+
 from fastapi import APIRouter, Depends, Form
 from fastapi.responses import FileResponse
-from instagrapi.types import (
-        Story
-)
 from instagrapi import Client
+from instagrapi.types import Story
+
 from dependencies import ClientStorage, get_clients
 
 

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Form
+from fastapi.responses import FileResponse
 
 from typing import List, Dict, Optional
 
@@ -56,9 +57,9 @@ async def media_info(sessionid: str = Form(...),
 
 @router.post("/user_medias", response_model=List[Media])
 async def user_medias(sessionid: str = Form(...),
-                     user_id: int = Form(...),
-                     amount: Optional[int] = Form(50),
-                     clients: ClientStorage = Depends(get_clients)) -> List[Media]:
+                      user_id: int = Form(...),
+                      amount: Optional[int] = Form(50),
+                      clients: ClientStorage = Depends(get_clients)) -> List[Media]:
     """Get a user's media
     """
     cl = clients.get(sessionid)
@@ -67,8 +68,8 @@ async def user_medias(sessionid: str = Form(...),
 
 @router.post("/delete", response_model=bool)
 async def media_delete(sessionid: str = Form(...),
-                     media_id: str = Form(...),
-                     clients: ClientStorage = Depends(get_clients)) -> bool:
+                       media_id: str = Form(...),
+                       clients: ClientStorage = Depends(get_clients)) -> bool:
     """Delete media by Media ID
     """
     cl = clients.get(sessionid)
@@ -121,9 +122,9 @@ async def media_like(sessionid: str = Form(...),
 
 
 @router.post("/unlike", response_model=bool)
-async def media_delete(sessionid: str = Form(...),
-                     media_id: str = Form(...),
-                     clients: ClientStorage = Depends(get_clients)) -> bool:
+async def media_unlike(sessionid: str = Form(...),
+                       media_id: str = Form(...),
+                       clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unlike a media
     """
     cl = clients.get(sessionid)

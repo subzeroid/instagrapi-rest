@@ -1,10 +1,10 @@
 from typing import List, Optional
 from pathlib import Path
-import requests
-from pydantic import HttpUrl
+
 from fastapi import APIRouter, Depends, File, UploadFile, Form
-from dependencies import ClientStorage, get_clients
 from instagrapi.types import Media, Location, Usertag
+
+from dependencies import ClientStorage, get_clients
 from helpers import album_upload_post
 
 
