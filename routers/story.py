@@ -2,6 +2,7 @@ from typing import List, Optional
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form
+from fastapi.responses import FileResponse
 from instagrapi import Client
 from instagrapi.types import Story
 
