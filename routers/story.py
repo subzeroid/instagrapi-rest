@@ -3,9 +3,11 @@ from pathlib import Path
 import requests
 from pydantic import HttpUrl
 from fastapi import APIRouter, Depends, Form
+from fastapi.responses import FileResponse
 from instagrapi.types import (
         Story
 )
+from instagrapi import Client
 from dependencies import ClientStorage, get_clients
 
 
@@ -56,7 +58,7 @@ async def story_seen(sessionid: str = Form(...),
     """Mark a media as seen
     """
     cl = clients.get(sessionid)
-    return cl.story_seen(story_pks, skipped_media_ids)
+    return cl.story_seen(story_pks, skipped_story_pks)
 
 
 @router.get("/pk_from_url")
