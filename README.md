@@ -10,6 +10,19 @@ Allows you to use the [Instagram Private API](https://github.com/adw0rd/instagra
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg)
 
+# Features
+
+1. Authorization: Login, support 2FA and manage settings
+2. Media: info, delete, edit, like, archive and much more else
+3. Video: download, upload to feed and story
+4. Photo: download, upload to feed and story
+5. IGTV: download, upload to feed and story
+6. Clip (Reels): download, upload to feed and story
+7. Album: download, upload to feed and story
+8. Story: info, delete, seen, download and much more else
+9. User: followers/following, info, follow/unfollow, remove_follower and much more else
+10. Insights: media, account
+
 # Installation
 
 Install ImageMagick library:
