@@ -1,6 +1,6 @@
 fastapi==0.65.1
 uvicorn==0.11.3
-ipython==7.16.1
+ipython>=7.17.0
 instagrapi>=1.12.19
 python-multipart==0.0.5
 Pillow==8.1.1
