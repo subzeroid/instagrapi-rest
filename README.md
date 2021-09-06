@@ -1,4 +1,4 @@
-# RESTful API Service for instagrapi
+# RESTful API Service for [instagrapi](https://github.com/adw0rd/instagrapi)
 
 [![Tests](https://github.com/adw0rd/instagrapi-rest/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/adw0rd/instagrapi-rest/actions/workflows/tests.yml)
 
