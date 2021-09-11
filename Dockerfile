@@ -1,8 +1,8 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8-slim
+FROM python:3.8-slim
 
-# RUN apt-get update \
-#     && apt-get install --yes --no-install-recommends \
-#         build-essential python-dev
+RUN apt-get update \
+&& apt-get install gcc ffmpeg -y \
+&& apt-get clean
 
 EXPOSE 8000
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
