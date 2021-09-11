@@ -1,9 +1,10 @@
 from urllib import parse
 from instagrapi import Client
-
+from tinydb import TinyDB, Query
+import json
 
 class ClientStorage:
-    storage = {}
+    db = TinyDB('./db.json')
 
     def client(self):
         """Get new client (helper)
@@ -17,16 +18,19 @@ class ClientStorage:
         """
         key = parse.unquote(sessionid.strip(" \""))
         try:
-            return self.storage[key]
-        except KeyError:
+            settings = json.loads(self.db.search(Query().sessionid == key)[0]['settings'])
+            cl = Client()
+            cl.set_settings(settings)
+            return cl
+        except IndexError:
             raise Exception('Session not found (e.g. after reload process), please relogin')
 
     def set(self, cl: Client) -> bool:
         """Set client settings
         """
         key = parse.unquote(cl.sessionid.strip(" \""))
-        self.storage[key] = cl
+        self.db.insert({'sessionid': key, 'settings': json.dumps(cl.get_settings())})
         return True
 
     def close(self):
-        self.storage = {}
+        pass

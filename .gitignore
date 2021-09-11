@@ -129,3 +129,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# vscode user settings
+.vscode/
+
+# user database
+db.json
