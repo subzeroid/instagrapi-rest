@@ -62,3 +62,11 @@ async def settings_set(settings: str = Form(...),
     cl.expose()
     clients.set(cl)
     return cl.sessionid
+
+@router.get("/timeline_feed")
+async def timeline_feed(sessionid: str,
+                   clients: ClientStorage = Depends(get_clients)) -> Dict:
+    """Get your timeline feed
+    """
+    cl = clients.get(sessionid)
+    return cl.get_timeline_feed()
