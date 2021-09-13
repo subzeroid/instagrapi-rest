@@ -23,24 +23,24 @@ async def media_id(media_pk: int) -> str:
 
 
 @router.get("/pk")
-async def media_pk(media_id: str) -> int:
+async def media_pk(media_id: str) -> str:
     """Get short media id
     """
-    return Client().media_pk(media_id)
+    return str(Client().media_pk(media_id))
 
 
 @router.get("/pk_from_code")
-async def media_pk_from_code(code: str) -> int:
+async def media_pk_from_code(code: str) -> str:
     """Get media pk from code
     """
-    return Client().media_pk_from_code(code)
+    return str(Client().media_pk_from_code(code))
 
 
 @router.get("/pk_from_url")
-async def media_pk_from_url(url: str) -> int:
+async def media_pk_from_url(url: str) -> str:
     """Get Media PK from URL
     """
-    return Client().media_pk_from_url(url)
+    return str(Client().media_pk_from_url(url))
 
 
 @router.post("/info", response_model=Media)
