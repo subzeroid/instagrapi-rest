@@ -12,7 +12,7 @@ async def test_media_pk_from_code() -> None:
             params={"code": "B1LbfVPlwIA"}
         )
     assert response.status_code == 200
-    assert response.text == "2110901750722920960"
+    assert response.text == "\"2110901750722920960\""
 
 
 @pytest.mark.asyncio
