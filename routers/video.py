@@ -119,8 +119,12 @@ async def video_upload(sessionid: str = Form(...),
     content = await file.read()
     if thumbnail is not None:
         thumb = await thumbnail.read()
+        return await video_upload_post(
+            cl, content, caption=caption,
+            thumbnail=thumb,
+            usertags=usertags,
+            location=location)
     return await video_upload_post(
         cl, content, caption=caption,
-        thumbnail=thumb,
         usertags=usertags,
         location=location)

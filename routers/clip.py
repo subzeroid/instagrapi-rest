@@ -64,8 +64,12 @@ async def clip_upload(sessionid: str = Form(...),
     content = await file.read()
     if thumbnail is not None:
         thumb = await thumbnail.read()
+        return await clip_upload_post(
+            cl, content, caption=caption,
+            thumbnail=thumb,
+            usertags=usertags,
+            location=location)
     return await clip_upload_post(
-        cl, content, caption=caption,
-        thumbnail=thumb,
-        usertags=usertags,
-        location=location)
+            cl, content, caption=caption,
+            usertags=usertags,
+            location=location)
