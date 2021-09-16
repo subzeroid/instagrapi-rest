@@ -64,9 +64,14 @@ async def igtv_upload(sessionid: str = Form(...),
     content = await file.read()
     if thumbnail is not None:
         thumb = await thumbnail.read()
+        return await igtv_upload_post(
+            cl, content, title=title,
+            caption=caption,
+            thumbnail=thumb,
+            usertags=usertags,
+            location=location)
     return await igtv_upload_post(
         cl, content, title=title,
         caption=caption,
-        thumbnail=thumb,
         usertags=usertags,
         location=location)
