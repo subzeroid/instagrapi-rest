@@ -1,6 +1,25 @@
-# RESTful API Service for [instagrapi](https://github.com/adw0rd/instagrapi)
+## If you are tired of being blocked when receiving data from Instagram, I recommend using our service - [Lamadava SaaS](https://lamadava.com)
+
+Features:
+
+* Anonymous getting of user, posts, stories, highlights, followers and following users
+* Anonymous getting an email and phone number, if the user specified them in his business profile
+* Anonymous getting of post, story, album, Reels, IGTV data and the ability to download content
+* Anonymous getting of hashtag and location data, as well as a list of posts for them
+* Anonymous getting of all comments on a post and a list of users who liked it
+* Management of proxy servers, mobile devices, solving captcha and challenge resolver
+* Login by username and password, sessionid and support 2FA
+* Managing messages and threads for Direct and attach files
+* Download and upload a Photo, Video, IGTV, Reels, Albums and Stories
+* Work with Users, Posts, Comments, Insights, Collections, Location and Hashtag
+* Insights by account, posts and stories
+* Like, following, commenting, editing account (Bio) and much more else
+
+---
 
 [![Tests](https://github.com/adw0rd/instagrapi-rest/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/adw0rd/instagrapi-rest/actions/workflows/tests.yml)
+
+# RESTful API Service for [instagrapi](https://github.com/adw0rd/instagrapi)
 
 Allows you to use the [Instagram Private API](https://github.com/adw0rd/instagrapi) on any operating system from any programming language (C++, C#, F#, D, [Golang](golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others) to automate the work of your accounts. 
 
