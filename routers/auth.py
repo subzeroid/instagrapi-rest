@@ -13,10 +13,21 @@ router = APIRouter(
 async def auth_login(username: str = Form(...),
                      password: str = Form(...),
                      verification_code: Optional[str] = Form(""),
+                     proxy: Optional[str] = Form(""),
+                     locale: Optional[str] = Form(""),
+                     timezone: Optional[str] = Form(""),
                      clients: ClientStorage = Depends(get_clients)) -> str:
     """Login by username and password with 2FA
     """
     cl = clients.client()
+    if proxy != "":
+        cl.set_proxy(proxy)
+
+    if locale != "":
+        cl.set_locale(locale)
+
+    if timezone != "":
+        cl.set_timezone_offset(timezone)
 
     result = cl.login(
         username,
