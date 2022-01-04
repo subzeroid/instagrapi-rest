@@ -1,7 +1,7 @@
 fastapi==0.65.1
 uvicorn==0.11.3
 ipython>=7.17.0
-instagrapi>=1.12.19
+instagrapi>=1.16.11
 python-multipart==0.0.5
 Pillow==8.1.1
 moviepy==1.0.3
@@ -10,7 +10,7 @@ httpx==0.17.1
 pudb==2021.1
 ipdb==0.13.9
 aiofiles==0.7.0
-requests<3.0,>=2.25.1
+requests==2.26.0
 starlette~=0.14.2
 pytest~=6.2.4
 tinydb==4.5.1
