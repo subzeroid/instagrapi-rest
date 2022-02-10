@@ -9,6 +9,10 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
+
+def challenge_code_handler(username, choice):
+    return False
+
 @router.post("/login")
 async def auth_login(username: str = Form(...),
                      password: str = Form(...),
@@ -20,6 +24,8 @@ async def auth_login(username: str = Form(...),
     """Login by username and password with 2FA
     """
     cl = clients.client()
+    cl.challenge_code_handler = challenge_code_handler
+
     if proxy != "":
         cl.set_proxy(proxy)
 
@@ -47,6 +53,16 @@ async def auth_relogin(sessionid: str = Form(...),
     """
     cl = clients.get(sessionid)
     result = cl.relogin()
+    return result
+
+@router.post("/challenge_code")
+async def challenge_choice(sessionid: str = Form(...),
+                           code: str = Form(...),
+                           clients: ClientStorage = Depends(get_clients)) -> str:
+    """ Challenge code
+    """
+    cl = clients.get(sessionid)
+    # HERE, we would need to "resume" the previous challenge. How we would do that?
     return result
 
 
