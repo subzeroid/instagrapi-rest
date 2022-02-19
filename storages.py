@@ -30,7 +30,7 @@ class ClientStorage:
         """Set client settings
         """
         key = parse.unquote(cl.sessionid.strip(" \""))
-        self.db.insert({'sessionid': key, 'settings': json.dumps(cl.get_settings())})
+        self.db.upsert({'sessionid': key, 'settings': json.dumps(cl.get_settings())})
         return True
 
     def close(self):
