@@ -57,7 +57,7 @@ async def auth_relogin(sessionid: str = Form(...),
     return result
 
 @router.post("/challenge_code")
-async def challenge_choice(sessionid: str = Form(...),
+async def challenge_code(sessionid: str = Form(...),
                            code: str = Form(...),
                            clients: ClientStorage = Depends(get_clients)) -> str:
     """ Challenge code
@@ -65,7 +65,12 @@ async def challenge_choice(sessionid: str = Form(...),
     cl = clients.get(sessionid)
     
     ## Aqui você puxa os headers, os cookies e o challenge_url que você salvou na linha 14 e chama o checkpoint_resume
-    result = cl.resume_checkpoint(code, challenge_url, old_session)
+    old_session = ""
+    challenge_url = ""
+    if(old_session) 
+        result = cl.resume_checkpoint(code, challenge_url, old_session)
+    else
+        result = cl.send_checkpoint_code(code, challenge_url)
     return result
 
 
