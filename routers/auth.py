@@ -70,6 +70,7 @@ async def challenge_code(sessionid: str = Form(...),
     ## Aqui você puxa os headers, os cookies e o challenge_url que você salvou na linha 14 e chama o checkpoint_resume
     old_session = ""
     challenge_url = ""
+
     if(old_session):
         result = cl.resume_checkpoint(code, challenge_url, old_session)
     else:
