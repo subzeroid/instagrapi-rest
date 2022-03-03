@@ -9,6 +9,14 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
+
+def challenge_code_handler(username, choice, challenge_url,  session=None):
+    # Aqui salva o challenge_url e os headers e os cookies que tão nessa session
+    print(f"username:{username} \n CHOICE:{choice}")
+    print(f"URL:{challenge_url} \n session {session}")
+
+    return False
+
 @router.post("/login")
 async def auth_login(username: str = Form(...),
                      password: str = Form(...),
@@ -20,6 +28,8 @@ async def auth_login(username: str = Form(...),
     """Login by username and password with 2FA
     """
     cl = clients.client()
+    cl.challenge_code_handler = challenge_code_handler
+
     if proxy != "":
         cl.set_proxy(proxy)
 
@@ -47,6 +57,23 @@ async def auth_relogin(sessionid: str = Form(...),
     """
     cl = clients.get(sessionid)
     result = cl.relogin()
+    return result
+
+@router.post("/challenge_code")
+async def challenge_code(sessionid: str = Form(...),
+                           code: str = Form(...),
+                           clients: ClientStorage = Depends(get_clients)) -> str:
+    """ Challenge code
+    """
+    cl = clients.get(sessionid)
+    
+    ## Aqui você puxa os headers, os cookies e o challenge_url que você salvou na linha 14 e chama o checkpoint_resume
+    old_session = ""
+    challenge_url = ""
+    if(old_session):
+        result = cl.resume_checkpoint(code, challenge_url, old_session)
+    else:
+        result = cl.send_checkpoint_code(code, challenge_url)
     return result
 
 
