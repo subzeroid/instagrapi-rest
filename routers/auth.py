@@ -2,6 +2,10 @@ import json
 from typing import Optional, Dict
 from fastapi import APIRouter, Depends, Form
 from dependencies import ClientStorage, get_clients
+from instagrapi.exceptions import (
+    ChallengeRequired
+)
+
 
 router = APIRouter(
     prefix="/auth",
@@ -9,13 +13,14 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
+def handle_exception(client, e):
+    if isinstance(e, ChallengeRequired):
+        print("------ Challenge required \n\n")
+        api_path = client.last_json['challenge']['api_path']
+        client.set_challenge_url(api_path);
+        print(client.get_settings());
 
-def challenge_code_handler(username, choice, challenge_url,  session=None):
-    # Aqui salva o challenge_url e os headers e os cookies que tão nessa session
-    print(f"username:{username} \n CHOICE:{choice}")
-    print(f"URL:{challenge_url} \n session {session}")
-
-    return False
+    return True
 
 @router.post("/login")
 async def auth_login(username: str = Form(...),
@@ -27,8 +32,11 @@ async def auth_login(username: str = Form(...),
                      clients: ClientStorage = Depends(get_clients)) -> str:
     """Login by username and password with 2FA
     """
+
+    
     cl = clients.client()
-    cl.challenge_code_handler = challenge_code_handler
+   
+    cl.handle_exception = handle_exception
 
     if proxy != "":
         cl.set_proxy(proxy)
@@ -44,6 +52,8 @@ async def auth_login(username: str = Form(...),
         password,
         verification_code=verification_code
     )
+
+
     if result:
         clients.set(cl)
         return cl.sessionid
@@ -70,7 +80,6 @@ async def challenge_code(sessionid: str = Form(...),
     ## Aqui você puxa os headers, os cookies e o challenge_url que você salvou na linha 14 e chama o checkpoint_resume
     old_session = ""
     challenge_url = ""
-
     if(old_session):
         result = cl.resume_checkpoint(code, challenge_url, old_session)
     else:
