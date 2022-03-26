@@ -44,7 +44,7 @@ async def album_upload_post(cl, files, **kwargs):
         paths = []
         for i in range(len(files)):
             filename, ext = os.path.splitext(files[i].filename)
-            fp = tempfile.NamedTemporaryFile(suffix=ext, delete=False, dir=td.name)
+            fp = tempfile.NamedTemporaryFile(suffix=ext, delete=False, dir=td)
             fp.write(await files[i].read())
             fp.close()
             paths.append(fp.name)
