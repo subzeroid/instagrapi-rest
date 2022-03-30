@@ -140,3 +140,22 @@ async def photo_upload(sessionid: str = Form(...),
         upload_id=upload_id,
         usertags=usertags,
         location=location)
+
+@router.post("/upload/by_url", response_model=Media)
+async def photo_upload(sessionid: str = Form(...),
+                       url: HttpUrl = Form(...),
+                       caption: str = Form(...),
+                       upload_id: Optional[str] = Form(""),
+                       usertags: Optional[List[Usertag]] = Form([]),
+                       location: Optional[Location] = Form(None),
+                       clients: ClientStorage = Depends(get_clients)
+                       ) -> Media:
+    """Upload photo and configure to feed
+    """
+    cl = clients.get(sessionid)
+    content = requests.get(url).content
+    return await photo_upload_post(
+        cl, content, caption=caption,
+        upload_id=upload_id,
+        usertags=usertags,
+        location=location)
