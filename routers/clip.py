@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pathlib import Path
-
+import requests
 from fastapi.responses import FileResponse
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from instagrapi.types import Media, Location, Usertag
@@ -62,6 +62,31 @@ async def clip_upload(sessionid: str = Form(...),
     """
     cl = clients.get(sessionid)
     content = await file.read()
+    if thumbnail is not None:
+        thumb = await thumbnail.read()
+        return await clip_upload_post(
+            cl, content, caption=caption,
+            thumbnail=thumb,
+            usertags=usertags,
+            location=location)
+    return await clip_upload_post(
+            cl, content, caption=caption,
+            usertags=usertags,
+            location=location)
+
+@router.post("/upload/by_url", response_model=Media)
+async def clip_upload(sessionid: str = Form(...),
+                       url: str = Form(...),
+                       caption: str = Form(...),
+                       thumbnail: Optional[UploadFile] = File(None),
+                       usertags: Optional[List[Usertag]] = Form([]),
+                       location: Optional[Location] = Form(None),
+                       clients: ClientStorage = Depends(get_clients)
+                       ) -> Media:
+    """Upload photo by URL and configure to feed
+    """
+    cl = clients.get(sessionid)
+    content = requests.get(url).content
     if thumbnail is not None:
         thumb = await thumbnail.read()
         return await clip_upload_post(

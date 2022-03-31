@@ -128,3 +128,28 @@ async def video_upload(sessionid: str = Form(...),
         cl, content, caption=caption,
         usertags=usertags,
         location=location)
+
+@router.post("/upload/by_url", response_model=Media)
+async def video_upload(sessionid: str = Form(...),
+                       url: str = Form(...),
+                       caption: str = Form(...),
+                       thumbnail: Optional[UploadFile] = File(None),
+                       usertags: Optional[List[Usertag]] = Form([]),
+                       location: Optional[Location] = Form(None),
+                       clients: ClientStorage = Depends(get_clients)
+                       ) -> Media:
+    """Upload photo by URL and configure to feed
+    """
+    cl = clients.get(sessionid)
+    content = requests.get(url).content
+    if thumbnail is not None:
+        thumb = await thumbnail.read()
+        return await video_upload_post(
+            cl, content, caption=caption,
+            thumbnail=thumb,
+            usertags=usertags,
+            location=location)
+    return await video_upload_post(
+        cl, content, caption=caption,
+        usertags=usertags,
+        location=location)
