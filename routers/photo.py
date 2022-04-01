@@ -154,6 +154,8 @@ async def photo_upload(sessionid: str = Form(...),
     """
     cl = clients.get(sessionid)
     content = requests.get(url).content
+    print(url)
+    print(content)
     return await photo_upload_post(
         cl, content, caption=caption,
         upload_id=upload_id,
