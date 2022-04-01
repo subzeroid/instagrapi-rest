@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pathlib import Path
 import requests
-from pydantic import HttpUrl
+from pydantic import AnyHttpUrl
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from fastapi.responses import FileResponse
 from instagrapi.types import (
@@ -56,7 +56,7 @@ async def photo_upload_to_story(sessionid: str = Form(...),
 
 @router.post("/upload_to_story/by_url", response_model=Story)
 async def photo_upload_to_story_by_url(sessionid: str = Form(...),
-                                url: HttpUrl = Form(...),
+                                url: AnyHttpUrl = Form(...),
                                 as_video: Optional[bool] = Form(False),
                                 caption: Optional[str] = Form(""),
                                 mentions: Optional[List[StoryMention]] = Form([]),
@@ -143,7 +143,7 @@ async def photo_upload(sessionid: str = Form(...),
 
 @router.post("/upload/by_url", response_model=Media)
 async def photo_upload(sessionid: str = Form(...),
-                       url: HttpUrl = Form(...),
+                       url: AnyHttpUrl = Form(...),
                        caption: str = Form(...),
                        upload_id: Optional[str] = Form(""),
                        usertags: Optional[List[Usertag]] = Form([]),

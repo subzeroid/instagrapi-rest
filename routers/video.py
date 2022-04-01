@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pathlib import Path
 import requests
-from pydantic import HttpUrl
+from pydantic import AnyHttpUrl
 from fastapi.responses import FileResponse
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from instagrapi.types import (
@@ -48,7 +48,7 @@ async def video_upload_to_story(sessionid: str = Form(...),
 
 @router.post("/upload_to_story/by_url", response_model=Story)
 async def video_upload_to_story_by_url(sessionid: str = Form(...),
-                                       url: HttpUrl = Form(...),
+                                       url: AnyHttpUrl = Form(...),
                                        caption: Optional[str] = Form(''),
                                        mentions: List[StoryMention] = [],
                                        locations: List[StoryLocation] = [],
