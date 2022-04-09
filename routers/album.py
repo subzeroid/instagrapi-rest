@@ -1,5 +1,6 @@
 from typing import List, Optional
 from pathlib import Path
+import json
 
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from instagrapi.types import Media, Location, Usertag
@@ -43,14 +44,20 @@ async def album_download_by_urls(sessionid: str = Form(...),
 async def album_upload(sessionid: str = Form(...),
                        files: List[UploadFile] = File(...),
                        caption: str = Form(...),
-                       usertags: Optional[List[Usertag]] = Form([]),
+                       usertags: Optional[List[str]] = Form([]),
                        location: Optional[Location] = Form(None),
                        clients: ClientStorage = Depends(get_clients)
                        ) -> Media:
     """Upload album to feed
     """
     cl = clients.get(sessionid)
+    
+    usernames_tags = []
+    for usertag in usertags:
+        usertag_json = json.loads(usertag)
+        usernames_tags.append(Usertag(user=usertag_json['user'], x=usertag_json['x'], y=usertag_json['y']))
+        
     return await album_upload_post(
         cl, files, caption=caption,
-        usertags=usertags,
+        usertags=usernames_tags,
         location=location)
