@@ -144,6 +144,14 @@ curl -X 'POST' \
   -d 'sessionid=<SESSIONID>&url=https%3A%2F%2Fapi.telegram.org%2Ffile%2Ftest.MP4'
 ```
 
+# Generating client code
+
+You can use [this repo](https://www.npmjs.com/package/@openapitools/openapi-generator-cli) to generate client code for this rest api in any language you want to use.
+
+Exapmle:
+`openapi-generator-cli generate -g python -i https://localhost:8000]/openapi.json --skip-validate-spec`
+Note `skip-validate-spec` is not necesserily required, when running it on my pc it couldn't validate the spec for some reason.
+
 # Testing
 
 Tests can be run like this:
