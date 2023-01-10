@@ -95,7 +95,7 @@ Open in browser [http://localhost:8000/docs](http://localhost:8000/docs) and fol
 Get sessionid:
 
 ```
-curl -X 'GET' \
+curl -X 'POST' \
   'http://localhost:8000/auth/login' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/x-www-form-urlencoded' \
