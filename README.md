@@ -1,4 +1,4 @@
-## If you are tired of being blocked when receiving data from Instagram, I recommend using our service - [Lamadava SaaS](https://lamadava.com) and [Datalama SaaS](https://datalama.io/)
+## If you are tired of being blocked when receiving data from Instagram, I recommend using our service - [Lamadava SaaS](https://lamadava.com/p/7RAo9ACK) and [Datalama SaaS](https://datalama.io/)
 
 Features:
 
