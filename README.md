@@ -32,12 +32,12 @@ sudo apt install imagemagick
 
 Run docker container:
 ```
-docker run adw0rd/instagrapi-rest
+docker run subzeroid/instagrapi-rest
 ```
 
 Or clone the repository:
 ```
-git clone https://github.com/adw0rd/instagrapi-rest.git
+git clone https://github.com/subzeroid/instagrapi-rest.git
 cd instagrapi-rest
 ```
 
