@@ -3,18 +3,10 @@ name: Bug report
 about: Create a report to help us improve
 title: "[BUG] "
 labels: bug
-assignees: adw0rd
 
 ---
 
-### Compensate with donations ($5 and more) for the time I spent to fix problems or send  me your [Pull Request](https://github.com/adw0rd/instagrapi-rest/pulls) with fixes
-
-* Bitcoin: 3KHgnvNNWio6wyQ71cgNeBQojXStxzkzfd
-* Ethereum: 0x6e644c6b975B47801072b07a9a57DDfEC10DE74F
-* https://paypal.me/adw0rd
-* https://www.patreon.com/adw0rd
-* https://www.buymeacoffee.com/adw0rd
-* For Russia: СБП, Qiwi и тп: **+79118107609**
+### Try Instagrapi SaaS with a free trial https://hikerapi.com/p/5GBWznd3
 
 **Describe the bug**
 A clear and concise description of what the bug is.

@@ -16,8 +16,8 @@
       "private",
       "api"
    ],
-   "website": "https://github.com/adw0rd/instagrapi-rest",
-   "repository": "https://github.com/adw0rd/instagrapi-rest",
+   "website": "https://github.com/subzeroid/instagrapi-rest",
+   "repository": "https://github.com/subzeroid/instagrapi-rest",
    "success_url": "/docs",
-   "logo": "https://github.com/adw0rd/instagrapi-rest/raw/main/logo.png"
+   "logo": "https://github.com/subzeroid/instagrapi-rest/raw/main/logo.png"
 }

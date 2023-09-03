@@ -306,7 +306,7 @@ func main() {
 	if settings != "{}" {
 		sessionid = setSettings("", settings)
 	} else {
-		sessionid = login("adw0rd", "test")
+		sessionid = login("example", "test")
 	}
 	if sessionid != "" {
 		log.Println("SESSIONID: ", sessionid)

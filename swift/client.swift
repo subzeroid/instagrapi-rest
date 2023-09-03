@@ -3,7 +3,6 @@
 //  client.swift
 //  for instagrapi-rest
 //
-//  Created by adw0rd on 21.05.2021.
 //
 
 import Foundation
