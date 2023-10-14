@@ -65,6 +65,17 @@ async def user_medias(sessionid: str = Form(...),
     return cl.user_medias(user_id, amount)
 
 
+@router.post("/usertag_medias", response_model=List[Media])
+async def usertag_medias(sessionid: str = Form(...),
+                         user_id: int = Form(...),
+                         amount: Optional[int] = Form(50),
+                         clients: ClientStorage = Depends(get_clients)) -> List[Media]:
+    """Get medias where a user is tagged
+    """
+    cl = clients.get(sessionid)
+    return cl.usertag_medias(user_id, amount)
+
+
 @router.post("/delete", response_model=bool)
 async def media_delete(sessionid: str = Form(...),
                        media_id: str = Form(...),
