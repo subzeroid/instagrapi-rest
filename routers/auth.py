@@ -9,6 +9,7 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
+
 @router.post("/login")
 async def auth_login(username: str = Form(...),
                      password: str = Form(...),
@@ -40,6 +41,19 @@ async def auth_login(username: str = Form(...),
     return result
 
 
+@router.post("/login_by_sessionid")
+async def auth_login_by_sessionid(sessionid: str = Form(...),
+                                  clients: ClientStorage = Depends(get_clients)) -> str:
+    """Login by sessionid
+    """
+    cl = clients.client()
+    result = cl.login_by_sessionid(sessionid)
+    if result:
+        clients.set(cl)
+        return cl.sessionid
+    return result
+
+
 @router.post("/relogin")
 async def auth_relogin(sessionid: str = Form(...),
                        clients: ClientStorage = Depends(get_clients)) -> str:
@@ -52,7 +66,7 @@ async def auth_relogin(sessionid: str = Form(...),
 
 @router.get("/settings/get")
 async def settings_get(sessionid: str,
-                   clients: ClientStorage = Depends(get_clients)) -> Dict:
+                       clients: ClientStorage = Depends(get_clients)) -> Dict:
     """Get client's settings
     """
     cl = clients.get(sessionid)
@@ -74,9 +88,10 @@ async def settings_set(settings: str = Form(...),
     clients.set(cl)
     return cl.sessionid
 
+
 @router.get("/timeline_feed")
 async def timeline_feed(sessionid: str,
-                   clients: ClientStorage = Depends(get_clients)) -> Dict:
+                        clients: ClientStorage = Depends(get_clients)) -> Dict:
     """Get your timeline feed
     """
     cl = clients.get(sessionid)
