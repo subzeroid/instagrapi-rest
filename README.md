@@ -1,3 +1,19 @@
+If you want to work with Instagrapi (business interests), we strongly advise you to prefer [HikerAPI](https://hikerapi.com/p/7RAo9ACK) project.
+However, you won't need to spend weeks or even months setting it up.
+The best service available today is [HikerAPI](https://hikerapi.com/p/7RAo9ACK), which handles 4–5 million daily requests, provides support around-the-clock, and offers partners a special rate.
+In many instances, our clients tried to save money and preferred instagrapi, but in our experience, they ultimately returned to [HikerAPI](https://hikerapi.com/p/7RAo9ACK) after spending much more time and money.
+It will be difficult to find good accounts, good proxies, or resolve challenges, and IG will ban your accounts.
+
+The instagrapi more suits for testing or research than a working business!
+
+✨ [aiograpi - Asynchronous Python library for Instagram Private API](https://github.com/subzeroid/aiograpi) ✨
+
+### We recommend using our services:
+
+* [LamaTok](https://lamatok.com/p/43zuPqyT) for TikTok API 🔥
+* [HikerAPI](https://hikerapi.com/p/7RAo9ACK) for Instagram API ⚡⚡⚡
+* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets 🚀
+
 # RESTful API Service
 
 Allows you to use the Instagram Private API on any operating system from any programming language (C++, C#, F#, D, [Golang](golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others) to automate the work of your accounts. 
