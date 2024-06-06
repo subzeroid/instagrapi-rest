@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 from typing import Optional, Dict
 from fastapi import APIRouter, Depends, Form
 from dependencies import ClientStorage, get_clients
@@ -30,11 +31,10 @@ async def auth_login(username: str = Form(...),
     if timezone != "":
         cl.set_timezone_offset(timezone)
 
-    result = cl.login(
-        username,
-        password,
-        verification_code=verification_code
-    )
+    # We're mocking the input
+    with patch('builtins.input', return_value=verification_code):
+        result = cl.login(username, password)
+
     if result:
         clients.set(cl)
         return cl.sessionid
