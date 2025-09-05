@@ -31,8 +31,17 @@ async def auth_login(username: str = Form(...),
     if timezone != "":
         cl.set_timezone_offset(timezone)
 
-    # We're mocking the input
-    with patch('builtins.input', return_value=verification_code):
+    # Handle 2FA if verification code is provided
+    if verification_code:
+        # Try login with 2FA code directly
+        try:
+            result = cl.login(username, password, verification_code=verification_code)
+        except TypeError:
+            # Fallback to mocking input if the direct parameter doesn't work
+            with patch('builtins.input', return_value=verification_code):
+                result = cl.login(username, password)
+    else:
+        # Regular login without 2FA
         result = cl.login(username, password)
 
     if result:
