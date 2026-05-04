@@ -4,7 +4,7 @@
 
 This is the cross-language exit when your stack is not Python and the maintained Instagram libraries in your own language have gone stale or been archived (which, as of 2026, is most of them — see the [language-by-language survey](https://instagrapi.com/guides/instagram-api-libraries-by-language) on instagrapi.com).
 
-[Support chat on Telegram](https://t.me/instagrapi)
+Support chat on Telegram: https://t.me/aiograpi_support (the previous `@instagrapi` group was restricted by Meta and is no longer maintained)
 
 ## Why this exists
 
