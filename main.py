@@ -18,6 +18,19 @@ _TOKEN_OVERRIDES = {
     "url": "Url",
 }
 _HTTP_METHOD_PREFIXES = {"delete", "get", "patch", "post", "put"}
+OPENAPI_TAGS = [
+    {"name": "System", "description": "Service metadata and documentation redirects."},
+    {"name": "Auth", "description": "Login, session settings, and relogin operations."},
+    {"name": "User", "description": "Profile lookup and user relationship operations."},
+    {"name": "Media", "description": "Generic media lookup, edits, and interactions."},
+    {"name": "Photo", "description": "Feed photo download and upload operations."},
+    {"name": "Video", "description": "Feed video download and upload operations."},
+    {"name": "Clip (Reels)", "description": "Instagram Reels clip download and upload operations."},
+    {"name": "Album (Carousel)", "description": "Carousel album download and upload operations."},
+    {"name": "Story", "description": "Story lookup, upload, download, and interactions."},
+    {"name": "IGTV (Legacy)", "description": "Legacy IGTV operations still exposed by aiograpi."},
+    {"name": "Insights", "description": "Account and media insights."},
+]
 
 
 def _word_to_pascal(word: str) -> str:
@@ -84,7 +97,10 @@ def _rename_generated_body_schemas(openapi_schema: dict[str, Any]) -> None:
     _replace_schema_refs(openapi_schema, ref_replacements)
 
 
-app = FastAPI(generate_unique_id_function=generate_operation_id)
+app = FastAPI(
+    generate_unique_id_function=generate_operation_id,
+    openapi_tags=OPENAPI_TAGS,
+)
 app.include_router(auth.router)
 app.include_router(media.router)
 app.include_router(video.router)
@@ -97,14 +113,14 @@ app.include_router(story.router)
 app.include_router(insights.router)
 
 
-@app.get("/", tags=["system"], summary="Redirect to /docs")
+@app.get("/", tags=["System"], summary="Redirect to /docs")
 async def root():
     """Redirect to /docs
     """
     return RedirectResponse(url="/docs")
 
 
-@app.get("/version", tags=["system"], summary="Get dependency versions")
+@app.get("/version", tags=["System"], summary="Get dependency versions")
 async def version():
     """Get dependency versions
     """
@@ -134,9 +150,10 @@ def custom_openapi():
     #         body_field.type_.__name__ = 'name'
     openapi_schema = get_openapi(
         title="instagrapi-rest",
-        version="3.1.0",
+        version="3.1.1",
         description="RESTful API Service for aiograpi",
         routes=app.routes,
+        tags=OPENAPI_TAGS,
     )
     _rename_generated_body_schemas(openapi_schema)
     app.openapi_schema = openapi_schema

@@ -12,7 +12,7 @@ from helpers import clip_upload_post
 
 router = APIRouter(
     prefix="/clip",
-    tags=["clip"],
+    tags=["Clip (Reels)"],
     responses={404: {"description": "Not found"}},
 )
 

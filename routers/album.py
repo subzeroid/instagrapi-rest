@@ -10,7 +10,7 @@ from helpers import album_upload_post
 
 router = APIRouter(
     prefix="/album",
-    tags=["album"],
+    tags=["Album (Carousel)"],
     responses={404: {"description": "Not found"}},
 )
 

@@ -16,7 +16,7 @@ from helpers import video_upload_post
 
 router = APIRouter(
     prefix="/video",
-    tags=["video"],
+    tags=["Video"],
     responses={404: {"description": "Not found"}},
 )
 

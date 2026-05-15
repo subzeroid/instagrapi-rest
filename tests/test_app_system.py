@@ -40,7 +40,7 @@ async def test_openapi_reports_app_version_200():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get("/openapi.json")
     assert response.status_code == 200
-    assert response.json()["info"]["version"] == "3.1.0"
+    assert response.json()["info"]["version"] == "3.1.1"
 
 
 @pytest.mark.asyncio
@@ -155,6 +155,47 @@ async def test_openapi_uses_client_friendly_schema_names():
     ]
     assert not [operation_id for operation_id in operation_ids if "_" in operation_id]
     assert "postStoryUploadByUrl" in operation_ids
+
+
+@pytest.mark.asyncio
+async def test_openapi_uses_human_friendly_tag_names():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/openapi.json")
+
+    assert response.status_code == 200
+    schema = response.json()
+    operation_tags = {
+        tag
+        for methods in schema["paths"].values()
+        for operation in methods.values()
+        for tag in operation["tags"]
+    }
+    assert operation_tags == {
+        "Album (Carousel)",
+        "Auth",
+        "Clip (Reels)",
+        "IGTV (Legacy)",
+        "Insights",
+        "Media",
+        "Photo",
+        "Story",
+        "System",
+        "User",
+        "Video",
+    }
+    assert [tag["name"] for tag in schema["tags"]] == [
+        "System",
+        "Auth",
+        "User",
+        "Media",
+        "Photo",
+        "Video",
+        "Clip (Reels)",
+        "Album (Carousel)",
+        "Story",
+        "IGTV (Legacy)",
+        "Insights",
+    ]
 
 
 @pytest.mark.asyncio

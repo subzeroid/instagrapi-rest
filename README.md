@@ -27,7 +27,7 @@ If those line items sound like work you don't want, the same team behind `instag
 
 ## 30-second quick start
 
-Current API version: `3.1.0`. Version 3 uses REST-style methods and
+Current API version: `3.1.1`. Version 3 uses REST-style methods and
 slash-separated paths: `GET` for reads/downloads, `POST` for login and
 creates/uploads, `PATCH` for state changes, and `DELETE` for removals.
 

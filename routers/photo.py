@@ -17,7 +17,7 @@ from helpers import photo_upload_post
 
 router = APIRouter(
     prefix="/photo",
-    tags=["photo"],
+    tags=["Photo"],
     responses={404: {"description": "Not found"}},
 )
 

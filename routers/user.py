@@ -10,7 +10,7 @@ from dependencies import ClientStorage, get_clients
 
 router = APIRouter(
     prefix="/user",
-    tags=["user"],
+    tags=["User"],
     responses={404: {"description": "Not found"}},
 )
 

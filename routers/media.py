@@ -8,7 +8,7 @@ from dependencies import ClientStorage, get_clients
 
 router = APIRouter(
     prefix="/media",
-    tags=["media"],
+    tags=["Media"],
     responses={404: {"description": "Not found"}}
 )
 

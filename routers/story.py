@@ -20,7 +20,7 @@ from helpers import photo_upload_story_as_photo, photo_upload_story_as_video, vi
 
 router = APIRouter(
     prefix="/story",
-    tags=["story"],
+    tags=["Story"],
     responses={404: {"description": "Not found"}},
 )
 

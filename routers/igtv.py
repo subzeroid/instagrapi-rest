@@ -12,7 +12,7 @@ from helpers import igtv_upload_post
 
 router = APIRouter(
     prefix="/igtv",
-    tags=["igtv"],
+    tags=["IGTV (Legacy)"],
     responses={404: {"description": "Not found"}},
 )
 
