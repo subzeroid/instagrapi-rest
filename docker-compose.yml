@@ -1,3 +1,5 @@
+name: aiograpi-rest
+
 services:
   api:
     build: .

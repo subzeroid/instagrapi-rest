@@ -40,7 +40,9 @@ async def test_openapi_reports_app_version_200():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get("/openapi.json")
     assert response.status_code == 200
-    assert response.json()["info"]["version"] == "3.1.1"
+    data = response.json()
+    assert data["info"]["title"] == "aiograpi-rest"
+    assert data["info"]["version"] == "4.0.0"
 
 
 @pytest.mark.asyncio

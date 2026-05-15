@@ -1,4 +1,4 @@
-Examples of working with the instagrapi-rest service
+Examples of working with the aiograpi-rest service
 
 ## Build
 

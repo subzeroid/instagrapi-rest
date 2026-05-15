@@ -1,7 +1,7 @@
 #!/usr/bin/swift
 //
 //  client.swift
-//  for instagrapi-rest
+//  for aiograpi-rest
 //
 //
 

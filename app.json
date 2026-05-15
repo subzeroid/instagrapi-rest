@@ -1,23 +1,22 @@
 {
-   "name": "instagrapi-rest",
-   "description": "Deploy a Instagrapi RESTful API service (Instagram Private API)",
+   "name": "aiograpi-rest",
+   "description": "Deploy an Aiograpi RESTful API service (Instagram Private API)",
    "keywords": [
       "instagram",
       "instagram-private-api",
       "instagram-api",
       "instagram-bot",
+      "aiograpi-rest",
+      "aiograpi",
       "instagrapi",
-      "instagrapi-bot",
-      "instagrapi-rest",
       "python",
       "fastapi",
       "rest",
-      "instagrapi",
       "private",
       "api"
    ],
-   "website": "https://github.com/subzeroid/instagrapi-rest",
-   "repository": "https://github.com/subzeroid/instagrapi-rest",
+   "website": "https://github.com/subzeroid/aiograpi-rest",
+   "repository": "https://github.com/subzeroid/aiograpi-rest",
    "success_url": "/docs",
-   "logo": "https://github.com/subzeroid/instagrapi-rest/raw/main/logo.png"
+   "logo": "https://github.com/subzeroid/aiograpi-rest/raw/main/logo.png"
 }

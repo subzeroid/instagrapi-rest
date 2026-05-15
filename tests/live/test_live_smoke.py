@@ -13,7 +13,7 @@ def fetch_accounts(url, count=10):
     sep = "&" if "?" in url else "?"
     req = urllib.request.Request(
         url + sep + f"count={count}",
-        headers={"User-Agent": "Mozilla/5.0 instagrapi-rest-aiograpi-smoke"},
+        headers={"User-Agent": "Mozilla/5.0 aiograpi-rest-aiograpi-smoke"},
     )
     with urllib.request.urlopen(req, context=ssl._create_unverified_context()) as response:
         return json.loads(response.read())

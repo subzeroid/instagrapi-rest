@@ -3,8 +3,8 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "instagrapi-rest"
-version = "3.1.1"
+name = "aiograpi-rest"
+version = "4.0.0"
 description = "RESTful API service for aiograpi"
 readme = "README.md"
 requires-python = ">=3.13"

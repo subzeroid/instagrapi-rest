@@ -100,8 +100,8 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "instagrapi-rest"
-version = "3.1.1"
+name = "aiograpi-rest"
+version = "4.0.0"
 description = "RESTful API service for aiograpi"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -969,7 +969,7 @@ def fetch_accounts(url, count=10):
     sep = "&" if "?" in url else "?"
     req = urllib.request.Request(
         url + sep + f"count={count}",
-        headers={"User-Agent": "Mozilla/5.0 instagrapi-rest-aiograpi-smoke"},
+        headers={"User-Agent": "Mozilla/5.0 aiograpi-rest-aiograpi-smoke"},
     )
     with urllib.request.urlopen(req, context=ssl._create_unverified_context()) as response:
         return json.loads(response.read())
@@ -1080,7 +1080,7 @@ Run:
 docker compose build api
 ```
 
-Expected: image builds using Python 3.13 and pyproject install. Verified: built `instagrapi-rest-api` image using `python:3.13-slim` with `pip install ".[test]"`.
+Expected: image builds using Python 3.13 and pyproject install. Verified: built `aiograpi-rest-api` image using `python:3.13-slim` with `pip install ".[test]"`.
 
 - [x] **Step 2: Run test suite through compose**
 
