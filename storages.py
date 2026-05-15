@@ -1,30 +1,34 @@
-from urllib import parse
-from instagrapi import Client
-from tinydb import TinyDB, Query
 import json
+from urllib import parse
+
+from aiograpi import Client
+from tinydb import Query, TinyDB
+
 
 class ClientStorage:
-    db = TinyDB('./db.json')
+    def __init__(self, db_path="./db.json", client_factory=Client):
+        self.db = TinyDB(db_path)
+        self.client_factory = client_factory
 
     def client(self):
         """Get new client (helper)
         """
-        cl = Client()
+        cl = self.client_factory()
         cl.request_timeout = 0.1
         return cl
 
-    def get(self, sessionid: str) -> Client:
+    async def get(self, sessionid: str) -> Client:
         """Get client settings
         """
         key = parse.unquote(sessionid.strip(" \""))
-        try:
-            settings = json.loads(self.db.search(Query().sessionid == key)[0]['settings'])
-            cl = Client()
-            cl.set_settings(settings)
-            cl.get_timeline_feed()
-            return cl
-        except IndexError:
+        rows = self.db.search(Query().sessionid == key)
+        if not rows:
             raise Exception('Session not found (e.g. after reload process), please relogin')
+        settings = json.loads(rows[0]['settings'])
+        cl = self.client_factory()
+        cl.set_settings(settings)
+        await cl.get_timeline_feed()
+        return cl
 
     def set(self, cl: Client) -> bool:
         """Set client settings

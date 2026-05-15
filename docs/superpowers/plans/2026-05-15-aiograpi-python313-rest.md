@@ -289,7 +289,7 @@ Expected: PASS. `test_openapi_contains_user_about` can stay red until Task 5.
 - Modify: `dependencies.py`
 - Test: `tests/test_storage.py`
 
-- [ ] **Step 1: Write failing storage tests**
+- [x] **Step 1: Write failing storage tests**
 
 ```python
 # tests/test_storage.py
@@ -344,7 +344,7 @@ async def test_get_missing_session_raises_helpful_error(tmp_path):
         await storage.get("missing")
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run:
 
@@ -354,7 +354,7 @@ python3.13 -m pytest tests/test_storage.py -v
 
 Expected: FAIL because `ClientStorage` has no `db_path`, no `client_factory`, and `get()` is sync.
 
-- [ ] **Step 3: Implement async storage**
+- [x] **Step 3: Implement async storage**
 
 In `storages.py`:
 
@@ -391,7 +391,7 @@ class ClientStorage:
 
 Keep `dependencies.get_clients()` as a generator that yields `ClientStorage()`.
 
-- [ ] **Step 4: Run and verify GREEN**
+- [x] **Step 4: Run and verify GREEN**
 
 Run:
 
