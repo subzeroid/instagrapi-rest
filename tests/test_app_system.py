@@ -27,6 +27,100 @@ async def test_deps_reports_runtime_dependencies():
 
 
 @pytest.mark.asyncio
+async def test_health_reports_liveness():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+@pytest.mark.asyncio
+async def test_ready_checks_storage_and_dependencies():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/ready")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    assert data["checks"]["storage"]["status"] == "ok"
+    assert data["checks"]["dependencies"]["status"] == "ok"
+    assert data["checks"]["dependencies"]["missing"] == []
+
+
+@pytest.mark.asyncio
+async def test_ready_returns_503_when_dependency_is_missing(monkeypatch):
+    def fake_version(name):
+        if name == "aiograpi":
+            raise PackageNotFoundError(name)
+        return "test-version"
+
+    monkeypatch.setattr(main, "package_version", fake_version)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/ready")
+    assert response.status_code == 503
+    data = response.json()
+    assert data["status"] == "error"
+    assert data["checks"]["dependencies"]["status"] == "error"
+    assert data["checks"]["dependencies"]["missing"] == ["aiograpi"]
+
+
+@pytest.mark.asyncio
+async def test_ready_returns_503_when_storage_fails(monkeypatch):
+    class BrokenStorage:
+        def __init__(self):
+            raise RuntimeError("storage unavailable")
+
+    monkeypatch.setattr(main, "ClientStorage", BrokenStorage)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/ready")
+    assert response.status_code == 503
+    data = response.json()
+    assert data["status"] == "error"
+    assert data["checks"]["storage"]["status"] == "error"
+    assert data["checks"]["storage"]["detail"] == "storage unavailable"
+
+
+@pytest.mark.asyncio
+async def test_metrics_exports_prometheus_text():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/metrics")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/plain")
+    body = response.text
+    assert "# HELP aiograpi_rest_info Service build information." in body
+    assert 'aiograpi_rest_info{version="1.0.4"' in body
+    assert "aiograpi_rest_uptime_seconds " in body
+    assert 'aiograpi_rest_dependency_info{name="aiograpi"' in body
+
+
+@pytest.mark.asyncio
+async def test_build_reports_runtime_metadata(monkeypatch):
+    monkeypatch.setenv("GIT_SHA", "abc123")
+    monkeypatch.setenv("BUILD_TIME", "2026-05-16T00:00:00Z")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/build")
+    assert response.status_code == 200
+    assert response.json() == {
+        "name": "aiograpi-rest",
+        "version": "1.0.4",
+        "python_version": main.platform.python_version(),
+        "git_sha": "abc123",
+        "build_time": "2026-05-16T00:00:00Z",
+    }
+
+
+def test_git_sha_returns_none_when_env_and_git_are_unavailable(monkeypatch):
+    monkeypatch.delenv("GIT_SHA", raising=False)
+    monkeypatch.delenv("COMMIT_SHA", raising=False)
+    monkeypatch.delenv("SOURCE_VERSION", raising=False)
+
+    def broken_run(*args, **kwargs):
+        raise OSError("git unavailable")
+
+    monkeypatch.setattr(main.subprocess, "run", broken_run)
+    assert main._git_sha() is None
+
+
+@pytest.mark.asyncio
 async def test_version_stays_as_hidden_deps_alias():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         deps_response = await ac.get("/deps")
@@ -52,7 +146,7 @@ async def test_openapi_reports_app_version_200():
     assert response.status_code == 200
     data = response.json()
     assert data["info"]["title"] == "aiograpi-rest"
-    assert data["info"]["version"] == "1.0.3"
+    assert data["info"]["version"] == "1.0.4"
     assert "[GitHub subzeroid/aiograpi-rest]" in data["info"]["description"]
     assert "GitHub repository" not in data["info"]["description"]
     assert "https://github.com/subzeroid/aiograpi-rest" in data["info"]["description"]
@@ -74,11 +168,13 @@ async def test_openapi_uses_rest_http_methods():
         "/auth/relogin": {"patch"},
         "/auth/settings": {"get", "patch"},
         "/auth/timeline/feed": {"get"},
+        "/build": {"get"},
         "/clip/download": {"get"},
         "/clip/download/by/url": {"get"},
         "/clip/upload": {"post"},
         "/clip/upload/by/url": {"post"},
         "/deps": {"get"},
+        "/health": {"get"},
         "/igtv/download": {"get"},
         "/igtv/download/by/url": {"get"},
         "/igtv/upload": {"post"},
@@ -86,6 +182,7 @@ async def test_openapi_uses_rest_http_methods():
         "/insights/account": {"get"},
         "/insights/media": {"get"},
         "/insights/media/feed/all": {"get"},
+        "/metrics": {"get"},
         "/media/archive": {"patch"},
         "/media/delete": {"delete"},
         "/media/edit": {"patch"},
@@ -107,6 +204,7 @@ async def test_openapi_uses_rest_http_methods():
         "/photo/download/by/url": {"get"},
         "/photo/upload": {"post"},
         "/photo/upload/by/url": {"post"},
+        "/ready": {"get"},
         "/story/delete": {"delete"},
         "/story/download": {"get"},
         "/story/download/by/url": {"get"},
@@ -232,9 +330,13 @@ async def test_openapi_uses_human_friendly_operation_summaries():
     assert paths["/story/upload/by/url"]["post"]["summary"] == "Upload a story from a URL"
     assert paths["/clip/upload/by/url"]["post"]["summary"] == "Upload a Reel from a URL"
     assert paths["/album/download/by/urls"]["get"]["summary"] == "Download carousel album media from URLs"
+    assert paths["/build"]["get"]["summary"] == "Get build metadata"
     assert paths["/deps"]["get"]["summary"] == "Get dependency versions"
+    assert paths["/health"]["get"]["summary"] == "Check liveness"
     assert paths["/igtv/download"]["get"]["summary"] == "Download legacy IGTV video"
     assert paths["/insights/media/feed/all"]["get"]["summary"] == "Get account media insights feed"
+    assert paths["/metrics"]["get"]["summary"] == "Get Prometheus metrics"
+    assert paths["/ready"]["get"]["summary"] == "Check readiness"
 
     summaries = [
         operation["summary"]

@@ -1,4 +1,8 @@
+import os
+import platform
 import re
+import subprocess
+import time
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version
 from typing import Any
@@ -6,10 +10,13 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.routing import APIRoute
-from starlette.responses import JSONResponse, RedirectResponse
+from starlette.responses import JSONResponse, RedirectResponse, Response
 
 from routers import album, auth, clip, igtv, insights, media, photo, story, user, video
+from storages import ClientStorage
 
+APP_VERSION = "1.0.4"
+APP_STARTED_AT = time.monotonic()
 _TOKEN_OVERRIDES = {
     "id": "Id",
     "igtv": "Igtv",
@@ -119,7 +126,11 @@ OPERATION_SUMMARIES = {
     "getInsightsMediaFeedAll": "Get account media insights feed",
     "getInsightsAccount": "Get account insights",
     "getInsightsMedia": "Get media insights",
+    "getBuild": "Get build metadata",
     "getDeps": "Get dependency versions",
+    "getHealth": "Check liveness",
+    "getMetrics": "Get Prometheus metrics",
+    "getReady": "Check readiness",
 }
 
 
@@ -228,6 +239,121 @@ def _dependency_versions() -> dict[str, str | None]:
     return versions
 
 
+def _storage_readiness() -> dict[str, str]:
+    clients = None
+    try:
+        clients = ClientStorage()
+        return {"status": "ok"}
+    except Exception as exc:
+        return {"status": "error", "detail": str(exc)}
+    finally:
+        if clients is not None:
+            clients.close()
+
+
+def _dependency_readiness() -> dict[str, Any]:
+    versions = _dependency_versions()
+    missing = [name for name, version in versions.items() if version is None]
+    return {
+        "status": "ok" if not missing else "error",
+        "missing": missing,
+    }
+
+
+def _git_sha() -> str | None:
+    env_sha = os.getenv("GIT_SHA") or os.getenv("COMMIT_SHA") or os.getenv("SOURCE_VERSION")
+    if env_sha:
+        return env_sha
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=1,
+        )
+    except Exception:
+        return None
+    return result.stdout.strip() or None
+
+
+def _build_metadata() -> dict[str, str | None]:
+    return {
+        "name": "aiograpi-rest",
+        "version": APP_VERSION,
+        "python_version": platform.python_version(),
+        "git_sha": _git_sha(),
+        "build_time": os.getenv("BUILD_TIME"),
+    }
+
+
+def _metric_label_value(value: str | None) -> str:
+    return str(value or "unknown").replace("\\", "\\\\").replace("\n", "\\n").replace('"', '\\"')
+
+
+def _metrics_text() -> str:
+    build = _build_metadata()
+    deps = _dependency_versions()
+    uptime_seconds = max(0.0, time.monotonic() - APP_STARTED_AT)
+    info_labels = ",".join(
+        f'{key}="{_metric_label_value(value)}"'
+        for key, value in (
+            ("version", build["version"]),
+            ("python_version", build["python_version"]),
+            ("git_sha", build["git_sha"]),
+            ("build_time", build["build_time"]),
+        )
+    )
+    lines = [
+        "# HELP aiograpi_rest_info Service build information.",
+        "# TYPE aiograpi_rest_info gauge",
+        f"aiograpi_rest_info{{{info_labels}}} 1",
+        "# HELP aiograpi_rest_uptime_seconds Seconds since service start.",
+        "# TYPE aiograpi_rest_uptime_seconds gauge",
+        f"aiograpi_rest_uptime_seconds {uptime_seconds:.3f}",
+        "# HELP aiograpi_rest_dependency_info Installed dependency versions.",
+        "# TYPE aiograpi_rest_dependency_info gauge",
+    ]
+    for name, version in deps.items():
+        installed = "1" if version else "0"
+        labels = f'name="{_metric_label_value(name)}",version="{_metric_label_value(version)}"'
+        lines.append(f"aiograpi_rest_dependency_info{{{labels}}} {installed}")
+    return "\n".join(lines) + "\n"
+
+
+@app.get("/health", tags=["System"], summary="Check liveness")
+async def health():
+    """Check liveness
+    """
+    return {"status": "ok"}
+
+
+@app.get("/ready", tags=["System"], summary="Check readiness")
+async def ready():
+    """Check readiness
+    """
+    checks = {
+        "storage": _storage_readiness(),
+        "dependencies": _dependency_readiness(),
+    }
+    status = "ok" if all(check["status"] == "ok" for check in checks.values()) else "error"
+    return JSONResponse({"status": status, "checks": checks}, status_code=200 if status == "ok" else 503)
+
+
+@app.get("/metrics", tags=["System"], summary="Get Prometheus metrics")
+async def metrics():
+    """Get Prometheus metrics
+    """
+    return Response(_metrics_text(), media_type="text/plain; version=0.0.4")
+
+
+@app.get("/build", tags=["System"], summary="Get build metadata")
+async def build():
+    """Get build metadata
+    """
+    return _build_metadata()
+
+
 @app.get("/deps", tags=["System"], summary="Get dependency versions")
 async def deps():
     """Get dependency versions
@@ -259,7 +385,7 @@ def custom_openapi():
     #         body_field.type_.__name__ = 'name'
     openapi_schema = get_openapi(
         title="aiograpi-rest",
-        version="1.0.3",
+        version=APP_VERSION,
         description=OPENAPI_DESCRIPTION,
         routes=app.routes,
         tags=OPENAPI_TAGS,
