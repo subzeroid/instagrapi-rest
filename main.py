@@ -21,11 +21,8 @@ _HTTP_METHOD_PREFIXES = {"delete", "get", "patch", "post", "put"}
 OPENAPI_DESCRIPTION = """
 RESTful HTTP service for `aiograpi`, the async Instagram Private API wrapper.
 
-- **GitHub:** [subzeroid/aiograpi-rest](https://github.com/subzeroid/aiograpi-rest)
-- **Managed alternative:** [HikerAPI](https://hikerapi.com/p/7RAo9ACK) with promo code `7RAo9ACK` for 100 free requests.
-
-Self-host `aiograpi-rest` when you want OSS control. Use HikerAPI when you want
-sessions, proxies, challenge handling, and scaling handled for you.
+- [GitHub repository](https://github.com/subzeroid/aiograpi-rest)
+- [HikerAPI with 100 free requests](https://hikerapi.com/p/7RAo9ACK)
 """.strip()
 OPENAPI_TAGS = [
     {"name": "System", "description": "Service metadata and documentation redirects."},
@@ -241,7 +238,7 @@ def custom_openapi():
     #         body_field.type_.__name__ = 'name'
     openapi_schema = get_openapi(
         title="aiograpi-rest",
-        version="1.0.1",
+        version="1.0.2",
         description=OPENAPI_DESCRIPTION,
         routes=app.routes,
         tags=OPENAPI_TAGS,

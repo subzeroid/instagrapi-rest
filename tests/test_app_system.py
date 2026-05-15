@@ -42,11 +42,12 @@ async def test_openapi_reports_app_version_200():
     assert response.status_code == 200
     data = response.json()
     assert data["info"]["title"] == "aiograpi-rest"
-    assert data["info"]["version"] == "1.0.1"
+    assert data["info"]["version"] == "1.0.2"
     assert "https://github.com/subzeroid/aiograpi-rest" in data["info"]["description"]
     assert "https://hikerapi.com/p/7RAo9ACK" in data["info"]["description"]
-    assert "promo code `7RAo9ACK`" in data["info"]["description"]
-    assert "100 free requests" in data["info"]["description"]
+    assert "HikerAPI with 100 free requests" in data["info"]["description"]
+    assert "promo code" not in data["info"]["description"]
+    assert "`7RAo9ACK`" not in data["info"]["description"]
     assert data["externalDocs"] == {
         "description": "GitHub repository",
         "url": "https://github.com/subzeroid/aiograpi-rest",
