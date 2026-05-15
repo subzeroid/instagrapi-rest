@@ -558,7 +558,7 @@ Expected: PASS.
 - Modify: `routers/user.py`
 - Test: `tests/test_user_routes.py`
 
-- [ ] **Step 1: Write failing tests for user routes and about**
+- [x] **Step 1: Write failing tests for user routes and about**
 
 ```python
 # tests/test_user_routes.py
@@ -620,7 +620,7 @@ async def test_user_follow_awaits_client_method():
     assert response.json() is True
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run:
 
@@ -630,7 +630,7 @@ python3.13 -m pytest tests/test_user_routes.py tests/test_app_system.py::test_op
 
 Expected: FAIL because `/user/about` does not exist and user router does not await async methods.
 
-- [ ] **Step 3: Implement user async migration and about**
+- [x] **Step 3: Implement user async migration and about**
 
 In `routers/user.py`:
 
@@ -650,7 +650,7 @@ async def user_about(
     return await cl.user_about_v1(user_id)
 ```
 
-- [ ] **Step 4: Run and verify GREEN**
+- [x] **Step 4: Run and verify GREEN**
 
 Run:
 
