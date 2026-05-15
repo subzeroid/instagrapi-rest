@@ -44,7 +44,7 @@ If the spec and this plan conflict, follow the spec.
 - Modify: `.github/workflows/tests.yml`
 - Delete: `requirements.txt`
 
-- [ ] **Step 1: Write packaging and compose tests first**
+- [x] **Step 1: Write packaging and compose tests first**
 
 Create tests that fail before the metadata changes:
 
@@ -80,7 +80,7 @@ def test_compose_runs_api_service_on_8000():
     assert "8000:8000" in api["ports"]
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run:
 
@@ -90,7 +90,7 @@ python3.13 -m pytest tests/test_project_metadata.py -v
 
 Expected: FAIL because `pyproject.toml` is missing and `requirements.txt` still exists.
 
-- [ ] **Step 3: Implement project metadata**
+- [x] **Step 3: Implement project metadata**
 
 Create `pyproject.toml` with:
 
@@ -180,7 +180,7 @@ Keep `docker-compose.yml` service named `api`, build `.`, expose `8000:8000`, an
 
 Update CI to Python 3.13 and install `.[test]`.
 
-- [ ] **Step 4: Run tests and verify GREEN**
+- [x] **Step 4: Run tests and verify GREEN**
 
 Run:
 
