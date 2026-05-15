@@ -101,7 +101,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "instagrapi-rest"
-version = "3.0.0"
+version = "3.1.0"
 description = "RESTful API service for aiograpi"
 readme = "README.md"
 requires-python = ">=3.13"

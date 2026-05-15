@@ -40,7 +40,7 @@ async def test_openapi_reports_app_version_200():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get("/openapi.json")
     assert response.status_code == 200
-    assert response.json()["info"]["version"] == "3.0.0"
+    assert response.json()["info"]["version"] == "3.1.0"
 
 
 @pytest.mark.asyncio
@@ -127,6 +127,34 @@ async def test_openapi_uses_rest_http_methods():
     assert set(paths) == set(expected_methods)
     for path, methods in expected_methods.items():
         assert set(paths[path]) == methods
+
+
+@pytest.mark.asyncio
+async def test_openapi_uses_client_friendly_schema_names():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/openapi.json")
+
+    assert response.status_code == 200
+    schema = response.json()
+    schema_names = set(schema["components"]["schemas"])
+    assert not [name for name in schema_names if name.startswith("Body_")]
+    assert not [name for name in schema_names if "_" in name]
+    assert {
+        "AuthLoginRequest",
+        "AuthLoginBySessionIdRequest",
+        "AuthSettingsRequest",
+        "StoryUploadRequest",
+        "StoryUploadByUrlRequest",
+        "ClipUploadByUrlRequest",
+    } <= schema_names
+
+    operation_ids = [
+        operation["operationId"]
+        for methods in schema["paths"].values()
+        for operation in methods.values()
+    ]
+    assert not [operation_id for operation_id in operation_ids if "_" in operation_id]
+    assert "postStoryUploadByUrl" in operation_ids
 
 
 @pytest.mark.asyncio
