@@ -23,8 +23,8 @@ func init() {
 	client.SetContentLength(true)
 }
 
-func getVersion() string {
-	resp, err := client.R().Get("/version")
+func getDeps() string {
+	resp, err := client.R().Get("/deps")
 	if err != nil {
 		log.Println(err)
 	}
@@ -299,7 +299,7 @@ func storyUpload(sessionid, filephoto string) string {
 }
 
 func main() {
-	log.Println("Version: ", getVersion())
+	log.Println("Dependencies: ", getDeps())
 	log.Println("pkFromCode: B1LbfVPlwIA -> ", pkFromCode("B1LbfVPlwIA"))
 	settings := loadSettings("./settings.json")
 	sessionid := ""

@@ -9,12 +9,12 @@ import Foundation
 
 let BaseUrl = "http://localhost:8000"
 
-func getVersion() {
-    let url = URL(string: "\(BaseUrl)/version")!
+func getDeps() {
+    let url = URL(string: "\(BaseUrl)/deps")!
     let sem = DispatchSemaphore(value: 0)
     let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
         guard let data = data else { return }
-        print("\nVersion:", String(data: data, encoding: .utf8)!)
+        print("\nDependencies:", String(data: data, encoding: .utf8)!)
         sem.signal()
     }
     task.resume()
@@ -37,6 +37,6 @@ func getVersion() {
 //    sem.wait()
 //}
 
-getVersion()
+getDeps()
 //pkFromCode(code: "B1LbfVPlwIA")
 // dump(Process.arguments)

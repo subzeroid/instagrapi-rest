@@ -18,14 +18,24 @@ _TOKEN_OVERRIDES = {
     "url": "Url",
 }
 _HTTP_METHOD_PREFIXES = {"delete", "get", "patch", "post", "put"}
+DEPENDENCY_PACKAGES = (
+    "aiograpi",
+    "fastapi",
+    "pydantic",
+    "starlette",
+    "uvicorn",
+    "tinydb",
+    "requests",
+    "aiofiles",
+    "python-multipart",
+)
 OPENAPI_DESCRIPTION = """
 RESTful HTTP service for `aiograpi`, the async Instagram Private API wrapper.
 
-- [GitHub repository](https://github.com/subzeroid/aiograpi-rest)
+- [GitHub subzeroid/aiograpi-rest](https://github.com/subzeroid/aiograpi-rest)
 - [HikerAPI with 100 free requests](https://hikerapi.com/p/7RAo9ACK)
 """.strip()
 OPENAPI_TAGS = [
-    {"name": "System", "description": "Service metadata and documentation redirects."},
     {"name": "Auth", "description": "Login, session settings, and relogin operations."},
     {"name": "User", "description": "Profile lookup and user relationship operations."},
     {"name": "Media", "description": "Generic media lookup, edits, and interactions."},
@@ -36,6 +46,7 @@ OPENAPI_TAGS = [
     {"name": "Story", "description": "Story lookup, upload, download, and interactions."},
     {"name": "IGTV (Legacy)", "description": "Legacy IGTV operations still exposed by aiograpi."},
     {"name": "Insights", "description": "Account and media insights."},
+    {"name": "System", "description": "Runtime service metadata."},
 ]
 OPERATION_SUMMARIES = {
     "postAuthLogin": "Log in with username and password",
@@ -108,8 +119,7 @@ OPERATION_SUMMARIES = {
     "getInsightsMediaFeedAll": "Get account media insights feed",
     "getInsightsAccount": "Get account insights",
     "getInsightsMedia": "Get media insights",
-    "getRoot": "Open Swagger UI",
-    "getVersion": "Get dependency versions",
+    "getDeps": "Get dependency versions",
 }
 
 
@@ -201,24 +211,35 @@ app.include_router(story.router)
 app.include_router(insights.router)
 
 
-@app.get("/", tags=["System"], summary="Redirect to /docs")
+@app.get("/", include_in_schema=False)
 async def root():
     """Redirect to /docs
     """
     return RedirectResponse(url="/docs")
 
 
-@app.get("/version", tags=["System"], summary="Get dependency versions")
-async def version():
-    """Get dependency versions
-    """
+def _dependency_versions() -> dict[str, str | None]:
     versions = {}
-    for name in ('aiograpi',):
+    for name in DEPENDENCY_PACKAGES:
         try:
             versions[name] = package_version(name)
         except PackageNotFoundError:
             versions[name] = None
     return versions
+
+
+@app.get("/deps", tags=["System"], summary="Get dependency versions")
+async def deps():
+    """Get dependency versions
+    """
+    return _dependency_versions()
+
+
+@app.get("/version", include_in_schema=False)
+async def version():
+    """Compatibility alias for /deps
+    """
+    return _dependency_versions()
 
 
 @app.exception_handler(Exception)
@@ -238,14 +259,10 @@ def custom_openapi():
     #         body_field.type_.__name__ = 'name'
     openapi_schema = get_openapi(
         title="aiograpi-rest",
-        version="1.0.2",
+        version="1.0.3",
         description=OPENAPI_DESCRIPTION,
         routes=app.routes,
         tags=OPENAPI_TAGS,
-        external_docs={
-            "description": "GitHub repository",
-            "url": "https://github.com/subzeroid/aiograpi-rest",
-        },
     )
     _rename_generated_body_schemas(openapi_schema)
     _polish_operation_summaries(openapi_schema)

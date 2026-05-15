@@ -16,13 +16,23 @@ async def test_root_redirects_to_docs():
 
 
 @pytest.mark.asyncio
-async def test_version_reports_aiograpi():
+async def test_deps_reports_runtime_dependencies():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.get("/version")
+        response = await ac.get("/deps")
     assert response.status_code == 200
     data = response.json()
-    assert "aiograpi" in data
+    assert {"aiograpi", "fastapi", "pydantic", "uvicorn"} <= set(data)
     assert data["aiograpi"]
+    assert len(data) > 1
+
+
+@pytest.mark.asyncio
+async def test_version_stays_as_hidden_deps_alias():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        deps_response = await ac.get("/deps")
+        version_response = await ac.get("/version")
+    assert version_response.status_code == 200
+    assert version_response.json() == deps_response.json()
 
 
 @pytest.mark.asyncio
@@ -42,23 +52,20 @@ async def test_openapi_reports_app_version_200():
     assert response.status_code == 200
     data = response.json()
     assert data["info"]["title"] == "aiograpi-rest"
-    assert data["info"]["version"] == "1.0.2"
+    assert data["info"]["version"] == "1.0.3"
+    assert "[GitHub subzeroid/aiograpi-rest]" in data["info"]["description"]
+    assert "GitHub repository" not in data["info"]["description"]
     assert "https://github.com/subzeroid/aiograpi-rest" in data["info"]["description"]
     assert "https://hikerapi.com/p/7RAo9ACK" in data["info"]["description"]
     assert "HikerAPI with 100 free requests" in data["info"]["description"]
     assert "promo code" not in data["info"]["description"]
     assert "`7RAo9ACK`" not in data["info"]["description"]
-    assert data["externalDocs"] == {
-        "description": "GitHub repository",
-        "url": "https://github.com/subzeroid/aiograpi-rest",
-    }
+    assert "externalDocs" not in data
 
 
 @pytest.mark.asyncio
 async def test_openapi_uses_rest_http_methods():
     expected_methods = {
-        "/": {"get"},
-        "/version": {"get"},
         "/album/download": {"get"},
         "/album/download/by/urls": {"get"},
         "/album/upload": {"post"},
@@ -71,6 +78,7 @@ async def test_openapi_uses_rest_http_methods():
         "/clip/download/by/url": {"get"},
         "/clip/upload": {"post"},
         "/clip/upload/by/url": {"post"},
+        "/deps": {"get"},
         "/igtv/download": {"get"},
         "/igtv/download/by/url": {"get"},
         "/igtv/upload": {"post"},
@@ -195,7 +203,6 @@ async def test_openapi_uses_human_friendly_tag_names():
         "Video",
     }
     assert [tag["name"] for tag in schema["tags"]] == [
-        "System",
         "Auth",
         "User",
         "Media",
@@ -206,6 +213,7 @@ async def test_openapi_uses_human_friendly_tag_names():
         "Story",
         "IGTV (Legacy)",
         "Insights",
+        "System",
     ]
 
 
@@ -224,6 +232,7 @@ async def test_openapi_uses_human_friendly_operation_summaries():
     assert paths["/story/upload/by/url"]["post"]["summary"] == "Upload a story from a URL"
     assert paths["/clip/upload/by/url"]["post"]["summary"] == "Upload a Reel from a URL"
     assert paths["/album/download/by/urls"]["get"]["summary"] == "Download carousel album media from URLs"
+    assert paths["/deps"]["get"]["summary"] == "Get dependency versions"
     assert paths["/igtv/download"]["get"]["summary"] == "Download legacy IGTV video"
     assert paths["/insights/media/feed/all"]["get"]["summary"] == "Get account media insights feed"
 
@@ -239,15 +248,15 @@ async def test_openapi_uses_human_friendly_operation_summaries():
 
 
 @pytest.mark.asyncio
-async def test_version_returns_none_when_package_missing(monkeypatch):
+async def test_deps_returns_none_when_package_missing(monkeypatch):
     def fake_version(name):
         raise PackageNotFoundError(name)
 
     monkeypatch.setattr(main, "package_version", fake_version)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.get("/version")
+        response = await ac.get("/deps")
     assert response.status_code == 200
-    assert response.json() == {"aiograpi": None}
+    assert response.json() == {name: None for name in main.DEPENDENCY_PACKAGES}
 
 
 @pytest.mark.asyncio
