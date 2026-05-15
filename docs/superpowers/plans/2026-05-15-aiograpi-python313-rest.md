@@ -1115,7 +1115,7 @@ Expected: JSON contains `aiograpi`. Verified: `{"aiograpi":"0.9.7"}` returned. S
 **Files:**
 - No planned source edits unless review finds issues.
 
-- [ ] **Step 1: Run all local verification**
+- [x] **Step 1: Run all local verification**
 
 Run:
 
@@ -1126,15 +1126,15 @@ python3.13 -m compileall .
 docker compose run --rm api pytest
 ```
 
-Expected: PASS.
+Expected: PASS. Verified: 103 passed offline (`-m "not live"`), 99% coverage (only routers/auth.py lines 52, 65 — 2FA `input()` fallback — uncovered, which is expected for an interactive prompt branch), `compileall` clean, and `docker compose run --rm api pytest -m "not live"` → 103 passed inside the Python 3.13 container. The live test (`tests/live/test_live_smoke.py`) is skipped when `TEST_ACCOUNTS_URL` is unset; with the env set it failed on external proxy/account conditions (302 AuthRequiredProxyError / ConnectProxyError), same outcome documented in Task 9 Step 3 — not a code defect.
 
-- [ ] **Step 2: Run Claude review**
+- [x] **Step 2: Run Claude review**
 
 Use the gstack Claude review flow requested by the user. Review the full diff against `main`.
 
-Expected: Claude reports no blocking correctness issues, or gives concrete findings to fix.
+Expected: Claude reports no blocking correctness issues, or gives concrete findings to fix. Outcome: No blocking issues found, high confidence. The reviewer directly verified async correctness (all `aiograpi` IO awaited), `/user/about` shape (POST `sessionid`+`user_id`, `response_model=About`), `ClientStorage.get()` async behavior, `helpers.py` temp-file cleanup, Dockerfile/Compose (Python 3.13, pyproject install, port 8000), pyproject pins, test fakes catching unawaited handlers, and security (no path traversal, no credential leakage; `requests.get(url).content` in by-URL routes is sync-blocking but explicitly out of scope per spec).
 
-- [ ] **Step 3: Address Claude findings**
+- [x] **Step 3: Address Claude findings**
 
 For each valid finding:
 
@@ -1144,12 +1144,19 @@ For each valid finding:
 - Verify the test passes.
 - Re-run the relevant suite.
 
-- [ ] **Step 4: Final status**
+No findings to address — the reviewer reported zero blocking issues.
+
+- [x] **Step 4: Final status**
 
 Report:
 
-- Dependency source: PyPI `aiograpi==0.9.7`.
-- Runtime: Python 3.13.
-- Docker Compose command that starts the service.
-- Test commands and outcomes.
-- Claude review outcome.
+- Dependency source: PyPI `aiograpi==0.9.7` (pinned in `pyproject.toml`).
+- Runtime: Python 3.13 (`requires-python = ">=3.13"`, Dockerfile `FROM python:3.13-slim`, CI on 3.13).
+- Docker Compose command that starts the service: `docker compose up api` (binds `8000:8000`, service builds from `.`).
+- Test commands and outcomes:
+  - `.venv/bin/python -m pytest -m "not live"` → 103 passed.
+  - `.venv/bin/python -m pytest -m "not live" --cov=. --cov-report=term-missing` → 103 passed, 99% coverage (611 stmts, 2 missed — interactive 2FA `input()` fallback in `routers/auth.py`).
+  - `.venv/bin/python -m compileall -q .` → clean.
+  - `docker compose run --rm api pytest -m "not live"` → 103 passed inside the Python 3.13 container.
+  - `tests/live/test_live_smoke.py` → skipped without `TEST_ACCOUNTS_URL`; with the env set, fails on external proxy/account conditions (documented in Task 9 Step 3).
+- Claude review outcome: No blocking issues; high confidence. Migration cleared for merge.
