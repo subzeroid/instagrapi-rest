@@ -409,7 +409,7 @@ Expected: PASS.
 - Modify: `routers/auth.py`
 - Test: `tests/test_auth_routes.py`
 
-- [ ] **Step 1: Write failing auth route tests**
+- [x] **Step 1: Write failing auth route tests**
 
 Use FastAPI dependency overrides to inject fake storage.
 
@@ -519,7 +519,7 @@ async def test_settings_set_awaits_expose_and_persists(fake_storage):
     assert ("expose",) in fake_storage.created.calls
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run:
 
@@ -529,7 +529,7 @@ python3.13 -m pytest tests/test_auth_routes.py -v
 
 Expected: FAIL because auth router does not await async client methods.
 
-- [ ] **Step 3: Implement auth async migration**
+- [x] **Step 3: Implement auth async migration**
 
 In `routers/auth.py`:
 
@@ -540,7 +540,7 @@ In `routers/auth.py`:
 - Replace `cl.expose()` with `await cl.expose()`.
 - Replace `cl.get_timeline_feed()` with `await cl.get_timeline_feed()`.
 
-- [ ] **Step 4: Run and verify GREEN**
+- [x] **Step 4: Run and verify GREEN**
 
 Run:
 
