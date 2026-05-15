@@ -38,7 +38,7 @@ If those line items sound like work you don't want, the same team behind `instag
 
 ## 30-second quick start
 
-Current API version: `1.0.4`. Version 1 uses REST-style methods and
+Current API version: `1.1.2`. Version 1 uses REST-style methods and
 slash-separated paths: `GET` for reads/downloads, `POST` for login and
 creates/uploads, `PATCH` for state changes, and `DELETE` for removals.
 
@@ -46,7 +46,9 @@ creates/uploads, `PATCH` for state changes, and `DELETE` for removals.
 docker run -d -p 8000:8000 subzeroid/aiograpi-rest
 ```
 
-Open http://localhost:8000/docs for the live OpenAPI / Swagger UI.
+Open http://localhost:8000/docs for the live OpenAPI / Swagger UI. Paste the
+session id into the **Authorize** dialog once; protected routes use the
+`X-Session-ID` header.
 
 Get a session id (replace `<USERNAME>`/`<PASSWORD>`):
 
@@ -59,8 +61,12 @@ curl -X POST http://localhost:8000/auth/login \
 Fetch a public profile:
 
 ```bash
-curl "http://localhost:8000/user/info/by/username?sessionid=<SESSIONID>&username=instagram"
+curl "http://localhost:8000/user/info/by/username?username=instagram" \
+  -H "X-Session-ID: <SESSIONID>"
 ```
+
+Legacy `sessionid` query/form parameters are still accepted for existing
+clients, but new integrations should use `X-Session-ID`.
 
 ## Calling it from your language
 
@@ -69,7 +75,9 @@ The service is plain HTTP + JSON, so any HTTP client in any language works. Belo
 **Node.js / TypeScript:**
 
 ```js
-const r = await fetch(`http://localhost:8000/user/info/by/username?sessionid=${SID}&username=instagram`);
+const r = await fetch("http://localhost:8000/user/info/by/username?username=instagram", {
+  headers: { "X-Session-ID": SID },
+});
 const user = await r.json();
 console.log(user.full_name, user.follower_count);
 ```
@@ -77,7 +85,9 @@ console.log(user.full_name, user.follower_count);
 **Go** (full example: [`golang/client.go`](golang/client.go)):
 
 ```go
-resp, _ := http.Get("http://localhost:8000/user/info/by/username?sessionid=" + sid + "&username=instagram")
+req, _ := http.NewRequest("GET", "http://localhost:8000/user/info/by/username?username=instagram", nil)
+req.Header.Set("X-Session-ID", sid)
+resp, _ := http.DefaultClient.Do(req)
 defer resp.Body.Close()
 var user map[string]any
 json.NewDecoder(resp.Body).Decode(&user)
@@ -86,8 +96,11 @@ json.NewDecoder(resp.Body).Decode(&user)
 **PHP:**
 
 ```php
+$ctx = stream_context_create(["http" => ["header" => "X-Session-ID: $sid\r\n"]]);
 $user = json_decode(file_get_contents(
-  "http://localhost:8000/user/info/by/username?sessionid=$sid&username=instagram"
+  "http://localhost:8000/user/info/by/username?username=instagram",
+  false,
+  $ctx
 ), true);
 ```
 
@@ -95,7 +108,9 @@ $user = json_decode(file_get_contents(
 
 ```java
 HttpResponse<String> r = HttpClient.newHttpClient().send(
-  HttpRequest.newBuilder(URI.create("http://localhost:8000/user/info/by/username?sessionid=" + sid + "&username=instagram")).build(),
+  HttpRequest.newBuilder(URI.create("http://localhost:8000/user/info/by/username?username=instagram"))
+    .header("X-Session-ID", sid)
+    .build(),
   HttpResponse.BodyHandlers.ofString());
 ```
 
@@ -103,7 +118,9 @@ HttpResponse<String> r = HttpClient.newHttpClient().send(
 
 ```ruby
 require "net/http"; require "json"
-user = JSON.parse(Net::HTTP.get(URI("http://localhost:8000/user/info/by/username?sessionid=#{sid}&username=instagram")))
+uri = URI("http://localhost:8000/user/info/by/username?username=instagram")
+req = Net::HTTP::Get.new(uri); req["X-Session-ID"] = sid
+user = JSON.parse(Net::HTTP.start(uri.hostname, uri.port) { |http| http.request(req) }.body)
 ```
 
 **Swift** (full example: [`swift/client.swift`](swift/client.swift)).
@@ -170,7 +187,14 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 Live API documentation at http://localhost:8000/docs (Swagger UI):
 
-![swagger](https://user-images.githubusercontent.com/546889/126989357-8214aa5c-fe42-4be4-b118-bd3585cd3292.png)
+![Swagger UI](docs/assets/swagger.png)
+
+Project documentation is built with MkDocs and published to GitHub Pages:
+https://subzeroid.github.io/aiograpi-rest/
+
+The generated [aiograpi method coverage report](docs/aiograpi-coverage.md)
+answers whether REST routes cover every `aiograpi.Client` method. They do not:
+`aiograpi-rest` exposes a focused subset and documents the uncovered methods.
 
 ### Get a session id
 
@@ -188,8 +212,8 @@ curl -X 'POST' \
 curl -X 'POST' \
   'http://localhost:8000/story/upload' \
   -H 'accept: application/json' \
+  -H 'X-Session-ID: <SESSIONID>' \
   -H 'Content-Type: multipart/form-data' \
-  -F 'sessionid=<SESSIONID>' \
   -F 'file=@photo.jpeg;type=image/jpeg'
 ```
 
@@ -197,10 +221,11 @@ curl -X 'POST' \
 
 ```
 curl -X 'POST' \
-  'https://localhost:8000/story/upload/by/url' \
+  'http://localhost:8000/story/upload/by/url' \
   -H 'accept: application/json' \
+  -H 'X-Session-ID: <SESSIONID>' \
   -H 'Content-Type: application/x-www-form-urlencoded' \
-  -d 'sessionid=<SESSIONID>&url=https%3A%2F%2Fapi.telegram.org%2Ffile%2Ftest.jpg'
+  -d 'url=https%3A%2F%2Fapi.telegram.org%2Ffile%2Ftest.jpg'
 ```
 
 ### Upload video
@@ -209,8 +234,8 @@ curl -X 'POST' \
 curl -X 'POST' \
   'http://localhost:8000/story/upload' \
   -H 'accept: application/json' \
+  -H 'X-Session-ID: <SESSIONID>' \
   -H 'Content-Type: multipart/form-data' \
-  -F 'sessionid=<SESSIONID>' \
   -F 'file=@video.mp4;type=video/mp4'
 ```
 
@@ -218,10 +243,11 @@ curl -X 'POST' \
 
 ```
 curl -X 'POST' \
-  'https://localhost:8000/story/upload/by/url' \
+  'http://localhost:8000/story/upload/by/url' \
   -H 'accept: application/json' \
+  -H 'X-Session-ID: <SESSIONID>' \
   -H 'Content-Type: application/x-www-form-urlencoded' \
-  -d 'sessionid=<SESSIONID>&url=https%3A%2F%2Fapi.telegram.org%2Ffile%2Ftest.MP4'
+  -d 'url=https%3A%2F%2Fapi.telegram.org%2Ffile%2Ftest.MP4'
 ```
 
 ## Generating client code
@@ -264,7 +290,7 @@ The offline test suite lives under `tests/` and runs with `pytest`.
 Run all tests through Docker Compose:
 
 ```
-docker compose run --rm api pytest
+docker compose run --rm api pytest --cov=. --cov-report=term-missing --cov-fail-under=100
 ```
 
 A single test file:
@@ -276,13 +302,20 @@ docker compose run --rm api pytest tests/test_app_system.py
 Locally (Python 3.13):
 
 ```
-python3.13 -m pytest
+python3.13 -m pytest --cov=. --cov-report=term-missing --cov-fail-under=100
 ```
 
 Optional live smoke tests against real Instagram accounts are gated by the `TEST_ACCOUNTS_URL` environment variable and are skipped by default:
 
 ```
-TEST_ACCOUNTS_URL="https://example.com/accounts" python3.13 -m pytest tests/live -v
+TEST_ACCOUNTS_URL="https://example.com/accounts" python3.13 -m pytest tests/live -m live -o addopts='' -v
+```
+
+Generate and validate docs:
+
+```
+python3.13 scripts/generate_aiograpi_coverage.py
+mkdocs build --strict
 ```
 
 ## Development

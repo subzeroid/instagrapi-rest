@@ -6,7 +6,7 @@ from aiograpi.types import About, User, UserShort
 from fastapi import APIRouter, Depends, Form, Query
 from pydantic import ValidationError
 
-from dependencies import ClientStorage, get_clients
+from dependencies import ClientStorage, get_clients, get_sessionid
 
 router = APIRouter(
     prefix="/user",
@@ -53,7 +53,7 @@ def _extract_about_from_last_json(data: Dict) -> About:
 
 
 @router.get("/followers", response_model=Dict[int, UserShort])
-async def user_followers(sessionid: str = Query(...),
+async def user_followers(sessionid: str = Depends(get_sessionid),
                          user_id: str = Query(...),
                          use_cache: Optional[bool] = Query(True),
                          amount: Optional[int] = Query(0),
@@ -65,7 +65,7 @@ async def user_followers(sessionid: str = Query(...),
 
 
 @router.get("/following", response_model=Dict[int, UserShort])
-async def user_following(sessionid: str = Query(...),
+async def user_following(sessionid: str = Depends(get_sessionid),
                          user_id: str = Query(...),
                          use_cache: Optional[bool] = Query(True),
                          amount: Optional[int] = Query(0),
@@ -77,7 +77,7 @@ async def user_following(sessionid: str = Query(...),
 
 
 @router.get("/info", response_model=User)
-async def user_info(sessionid: str = Query(...),
+async def user_info(sessionid: str = Depends(get_sessionid),
                     user_id: str = Query(...),
                     use_cache: Optional[bool] = Query(True),
                     clients: ClientStorage = Depends(get_clients)) -> User:
@@ -88,7 +88,7 @@ async def user_info(sessionid: str = Query(...),
 
 
 @router.get("/info/by/username", response_model=User)
-async def user_info_by_username(sessionid: str = Query(...),
+async def user_info_by_username(sessionid: str = Depends(get_sessionid),
                                 username: str = Query(...),
                                 use_cache: Optional[bool] = Query(True),
                                 clients: ClientStorage = Depends(get_clients)) -> User:
@@ -99,7 +99,7 @@ async def user_info_by_username(sessionid: str = Query(...),
 
 
 @router.get("/about", response_model=About)
-async def user_about(sessionid: str = Query(...),
+async def user_about(sessionid: str = Depends(get_sessionid),
                      user_id: str = Query(...),
                      clients: ClientStorage = Depends(get_clients)) -> About:
     """Get user about details (verification, country, join date)
@@ -116,7 +116,7 @@ async def user_about(sessionid: str = Query(...),
 
 
 @router.post("/follow", response_model=bool)
-async def user_follow(sessionid: str = Form(...),
+async def user_follow(sessionid: str = Depends(get_sessionid),
                       user_id: int = Form(...),
                       clients: ClientStorage = Depends(get_clients)) -> bool:
     """Follow a user
@@ -126,7 +126,7 @@ async def user_follow(sessionid: str = Form(...),
 
 
 @router.delete("/unfollow", response_model=bool)
-async def user_unfollow(sessionid: str = Query(...),
+async def user_unfollow(sessionid: str = Depends(get_sessionid),
                         user_id: int = Query(...),
                         clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unfollow a user
@@ -136,7 +136,7 @@ async def user_unfollow(sessionid: str = Query(...),
 
 
 @router.get("/id/from/username", response_model=int)
-async def user_id_from_username(sessionid: str = Query(...),
+async def user_id_from_username(sessionid: str = Depends(get_sessionid),
                                 username: str = Query(...),
                                 clients: ClientStorage = Depends(get_clients)) -> int:
     """Get user id from username
@@ -146,7 +146,7 @@ async def user_id_from_username(sessionid: str = Query(...),
 
 
 @router.get("/username/from/id", response_model=str)
-async def username_from_user_id(sessionid: str = Query(...),
+async def username_from_user_id(sessionid: str = Depends(get_sessionid),
                                 user_id: int = Query(...),
                                 clients: ClientStorage = Depends(get_clients)) -> str:
     """Get username from user id
@@ -156,7 +156,7 @@ async def username_from_user_id(sessionid: str = Query(...),
 
 
 @router.delete("/remove/follower", response_model=bool)
-async def user_remove_follower(sessionid: str = Query(...),
+async def user_remove_follower(sessionid: str = Depends(get_sessionid),
                                user_id: int = Query(...),
                                clients: ClientStorage = Depends(get_clients)) -> bool:
     """Remove a follower
@@ -166,7 +166,7 @@ async def user_remove_follower(sessionid: str = Query(...),
 
 
 @router.patch("/mute/posts/from/follow", response_model=bool)
-async def mute_posts_from_follow(sessionid: str = Form(...),
+async def mute_posts_from_follow(sessionid: str = Depends(get_sessionid),
                                  user_id: int = Form(...),
                                  revert: Optional[bool] = Form(False),
                                  clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -177,7 +177,7 @@ async def mute_posts_from_follow(sessionid: str = Form(...),
 
 
 @router.patch("/unmute/posts/from/follow", response_model=bool)
-async def unmute_posts_from_follow(sessionid: str = Form(...),
+async def unmute_posts_from_follow(sessionid: str = Depends(get_sessionid),
                                    user_id: int = Form(...),
                                    clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unmute posts from following user
@@ -187,7 +187,7 @@ async def unmute_posts_from_follow(sessionid: str = Form(...),
 
 
 @router.patch("/mute/stories/from/follow", response_model=bool)
-async def mute_stories_from_follow(sessionid: str = Form(...),
+async def mute_stories_from_follow(sessionid: str = Depends(get_sessionid),
                                    user_id: int = Form(...),
                                    revert: Optional[bool] = Form(False),
                                    clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -198,7 +198,7 @@ async def mute_stories_from_follow(sessionid: str = Form(...),
 
 
 @router.patch("/unmute/stories/from/follow", response_model=bool)
-async def unmute_stories_from_follow(sessionid: str = Form(...),
+async def unmute_stories_from_follow(sessionid: str = Depends(get_sessionid),
                                      user_id: int = Form(...),
                                      clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unmute stories from following user

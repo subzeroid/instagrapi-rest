@@ -1,0 +1,23 @@
+site_name: aiograpi-rest Documentation
+repo_url: https://github.com/subzeroid/aiograpi-rest/
+site_url: https://subzeroid.github.io/aiograpi-rest/
+repo_name: subzeroid/aiograpi-rest
+edit_uri: edit/main/docs/
+docs_dir: docs
+exclude_docs: |
+  superpowers/**
+nav:
+  - Overview: index.md
+  - Getting Started: getting-started.md
+  - API Guide: api.md
+  - aiograpi Coverage: aiograpi-coverage.md
+theme:
+  name: material
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - pymdownx.highlight
+  - pymdownx.superfences
+plugins:
+  - search

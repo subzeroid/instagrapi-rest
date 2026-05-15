@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import AnyHttpUrl
 
-from dependencies import ClientStorage, get_clients
+from dependencies import ClientStorage, get_clients, get_sessionid
 from helpers import photo_upload_post
 
 router = APIRouter(
@@ -23,7 +23,7 @@ router = APIRouter(
 
 
 @router.get("/download")
-async def photo_download(sessionid: str = Query(...),
+async def photo_download(sessionid: str = Depends(get_sessionid),
                          media_pk: int = Query(...),
                          folder: Optional[Path] = Query(""),
                          returnFile: Optional[bool] = Query(True),
@@ -39,7 +39,7 @@ async def photo_download(sessionid: str = Query(...),
 
 
 @router.get("/download/by/url")
-async def photo_download_by_url(sessionid: str = Query(...),
+async def photo_download_by_url(sessionid: str = Depends(get_sessionid),
                          url: str = Query(...),
                          filename: Optional[str] = Query(""),
                          folder: Optional[Path] = Query(""),
@@ -56,7 +56,7 @@ async def photo_download_by_url(sessionid: str = Query(...),
 
 
 @router.post("/upload", response_model=Media)
-async def photo_upload(sessionid: str = Form(...),
+async def photo_upload(sessionid: str = Depends(get_sessionid),
                        file: UploadFile = File(...),
                        caption: str = Form(...),
                        upload_id: Optional[str] = Form(""),
@@ -81,7 +81,7 @@ async def photo_upload(sessionid: str = Form(...),
         location=location)
 
 @router.post("/upload/by/url", response_model=Media)
-async def photo_upload(sessionid: str = Form(...),
+async def photo_upload(sessionid: str = Depends(get_sessionid),
                        url: AnyHttpUrl = Form(...),
                        caption: str = Form(...),
                        upload_id: Optional[str] = Form(""),

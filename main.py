@@ -15,7 +15,7 @@ from starlette.responses import JSONResponse, RedirectResponse, Response
 from routers import album, auth, clip, igtv, insights, media, photo, story, user, video
 from storages import ClientStorage
 
-APP_VERSION = "1.0.4"
+APP_VERSION = "1.1.2"
 APP_STARTED_AT = time.monotonic()
 _TOKEN_OVERRIDES = {
     "id": "Id",

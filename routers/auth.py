@@ -2,9 +2,9 @@ import json
 from typing import Dict, Optional, Union
 from unittest.mock import patch
 
-from fastapi import APIRouter, Depends, Form, Query
+from fastapi import APIRouter, Depends, Form
 
-from dependencies import ClientStorage, get_clients
+from dependencies import ClientStorage, get_clients, get_optional_sessionid, get_sessionid
 
 router = APIRouter(
     prefix="/auth",
@@ -66,7 +66,7 @@ async def auth_login_by_sessionid(sessionid: str = Form(...),
 
 
 @router.patch("/relogin")
-async def auth_relogin(sessionid: str = Form(...),
+async def auth_relogin(sessionid: str = Depends(get_sessionid),
                        clients: ClientStorage = Depends(get_clients)) -> bool:
     """Relogin by username and password (with clean cookies)
     """
@@ -75,7 +75,7 @@ async def auth_relogin(sessionid: str = Form(...),
 
 
 @router.get("/settings")
-async def settings_get(sessionid: str = Query(...),
+async def settings_get(sessionid: str = Depends(get_sessionid),
                        clients: ClientStorage = Depends(get_clients)) -> Dict:
     """Get client's settings
     """
@@ -85,7 +85,7 @@ async def settings_get(sessionid: str = Query(...),
 
 @router.patch("/settings")
 async def settings_set(settings: str = Form(...),
-                       sessionid: Optional[str] = Form(""),
+                       sessionid: str = Depends(get_optional_sessionid),
                        clients: ClientStorage = Depends(get_clients)) -> str:
     """Set client's settings
     """
@@ -100,7 +100,7 @@ async def settings_set(settings: str = Form(...),
 
 
 @router.get("/timeline/feed")
-async def timeline_feed(sessionid: str = Query(...),
+async def timeline_feed(sessionid: str = Depends(get_sessionid),
                         clients: ClientStorage = Depends(get_clients)) -> Dict:
     """Get your timeline feed
     """

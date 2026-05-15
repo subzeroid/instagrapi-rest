@@ -5,7 +5,7 @@ from typing import List, Optional
 from aiograpi.types import Location, Media, Usertag
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 
-from dependencies import ClientStorage, get_clients
+from dependencies import ClientStorage, get_clients, get_sessionid
 from helpers import album_upload_post
 
 router = APIRouter(
@@ -16,7 +16,7 @@ router = APIRouter(
 
 
 @router.get("/download", response_model=List[Path])
-async def album_download(sessionid: str = Query(...),
+async def album_download(sessionid: str = Depends(get_sessionid),
                          media_pk: int = Query(...),
                          folder: Optional[Path] = Query(""),
                          clients: ClientStorage = Depends(get_clients)) -> List[Path]:
@@ -28,7 +28,7 @@ async def album_download(sessionid: str = Query(...),
 
 
 @router.get("/download/by/urls", response_model=List[Path])
-async def album_download_by_urls(sessionid: str = Query(...),
+async def album_download_by_urls(sessionid: str = Depends(get_sessionid),
                          urls: List[str] = Query(...),
                          folder: Optional[Path] = Query(""),
                          clients: ClientStorage = Depends(get_clients)) -> List[Path]:
@@ -40,7 +40,7 @@ async def album_download_by_urls(sessionid: str = Query(...),
 
 
 @router.post("/upload", response_model=Media)
-async def album_upload(sessionid: str = Form(...),
+async def album_upload(sessionid: str = Depends(get_sessionid),
                        files: List[UploadFile] = File(...),
                        caption: str = Form(...),
                        usertags: Optional[List[str]] = Form([]),

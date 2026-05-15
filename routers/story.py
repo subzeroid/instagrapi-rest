@@ -15,7 +15,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import AnyHttpUrl
 
-from dependencies import ClientStorage, get_clients
+from dependencies import ClientStorage, get_clients, get_sessionid
 from helpers import photo_upload_story_as_photo, photo_upload_story_as_video, video_upload_story
 
 router = APIRouter(
@@ -39,7 +39,7 @@ async def _upload_story_content(cl, content, *, is_video, as_video, **kwargs):
 
 
 @router.post("/upload", response_model=Story)
-async def story_upload(sessionid: str = Form(...),
+async def story_upload(sessionid: str = Depends(get_sessionid),
                        file: UploadFile = File(...),
                        as_video: Optional[bool] = Form(False),
                        caption: Optional[str] = Form(""),
@@ -66,7 +66,7 @@ async def story_upload(sessionid: str = Form(...),
 
 
 @router.post("/upload/by/url", response_model=Story)
-async def story_upload_by_url(sessionid: str = Form(...),
+async def story_upload_by_url(sessionid: str = Depends(get_sessionid),
                               url: AnyHttpUrl = Form(...),
                               as_video: Optional[bool] = Form(False),
                               caption: Optional[str] = Form(""),
@@ -93,7 +93,7 @@ async def story_upload_by_url(sessionid: str = Form(...),
 
 
 @router.get("/user/stories", response_model=List[Story])
-async def story_user_stories(sessionid: str = Query(...),
+async def story_user_stories(sessionid: str = Depends(get_sessionid),
                             user_id: str = Query(...),
                             amount: Optional[int] = Query(None),
                             clients: ClientStorage = Depends(get_clients)) -> List[Story]:
@@ -104,7 +104,7 @@ async def story_user_stories(sessionid: str = Query(...),
 
 
 @router.get("/info", response_model=Story)
-async def story_info(sessionid: str = Query(...),
+async def story_info(sessionid: str = Depends(get_sessionid),
                      story_pk: int = Query(...),
                      use_cache: Optional[bool] = Query(True),
                      clients: ClientStorage = Depends(get_clients)) -> Story:
@@ -115,7 +115,7 @@ async def story_info(sessionid: str = Query(...),
 
 
 @router.delete("/delete", response_model=bool)
-async def story_delete(sessionid: str = Query(...),
+async def story_delete(sessionid: str = Depends(get_sessionid),
                        story_pk: int = Query(...),
                        clients: ClientStorage = Depends(get_clients)) -> bool:
     """Delete story
@@ -125,7 +125,7 @@ async def story_delete(sessionid: str = Query(...),
 
 
 @router.patch("/seen", response_model=bool)
-async def story_seen(sessionid: str = Form(...),
+async def story_seen(sessionid: str = Depends(get_sessionid),
                      story_pks: List[int] = Form(...),
                      skipped_story_pks: Optional[List[int]] = Form([]),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -135,7 +135,7 @@ async def story_seen(sessionid: str = Form(...),
     return await cl.story_seen(story_pks, skipped_story_pks)
 
 @router.post("/like", response_model=bool)
-async def story_like(sessionid: str = Form(...),
+async def story_like(sessionid: str = Depends(get_sessionid),
                      story_id: str = Form(...),
                      revert: Optional[bool] = Form(False),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -145,7 +145,7 @@ async def story_like(sessionid: str = Form(...),
     return await cl.story_like(story_id, revert)
 
 @router.delete("/unlike", response_model=bool)
-async def story_unlike(sessionid: str = Query(...),
+async def story_unlike(sessionid: str = Depends(get_sessionid),
                      story_id: str = Query(...),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unlike a Story
@@ -162,7 +162,7 @@ async def story_pk_from_url(url: str) -> int:
 
 
 @router.get("/download")
-async def story_download(sessionid: str = Query(...),
+async def story_download(sessionid: str = Depends(get_sessionid),
                          story_pk: int = Query(...),
                          filename: Optional[str] = Query(""),
                          folder: Optional[Path] = Query(""),
@@ -179,7 +179,7 @@ async def story_download(sessionid: str = Query(...),
 
 
 @router.get("/download/by/url")
-async def story_download_by_url(sessionid: str = Query(...),
+async def story_download_by_url(sessionid: str = Depends(get_sessionid),
                                 url: str = Query(...),
                                 filename: Optional[str] = Query(""),
                                 folder: Optional[Path] = Query(""),

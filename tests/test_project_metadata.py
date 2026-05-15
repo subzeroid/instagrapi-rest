@@ -14,7 +14,7 @@ def test_pyproject_replaces_requirements_txt():
     assert "aiograpi==0.9.7" in deps
     assert pyproject["project"]["requires-python"] == ">=3.13"
     assert pyproject["project"]["name"] == "aiograpi-rest"
-    assert pyproject["project"]["version"] == "1.0.4"
+    assert pyproject["project"]["version"] == "1.1.2"
     assert pyproject["project"]["urls"]["Repository"] == "https://github.com/subzeroid/aiograpi-rest"
 
 
@@ -47,3 +47,18 @@ def test_readme_documents_rename_reason():
     assert "`aiograpi-rest` starts its own semver line at `1.0.0`" in readme
     assert "the service is now powered by `aiograpi`" in readme
     assert "docker run -d -p 8000:8000 subzeroid/aiograpi-rest" in readme
+
+
+def test_github_docs_are_configured():
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    assert "mkdocs-material>=9.6,<10" in pyproject["project"]["optional-dependencies"]["docs"]
+
+    mkdocs = yaml.safe_load((ROOT / "mkdocs.yml").read_text())
+    assert mkdocs["site_name"] == "aiograpi-rest Documentation"
+    assert mkdocs["repo_name"] == "subzeroid/aiograpi-rest"
+    assert "aiograpi-coverage.md" in str(mkdocs["nav"])
+
+    docs_workflow = (ROOT / ".github" / "workflows" / "docs.yml").read_text()
+    assert "python scripts/generate_aiograpi_coverage.py --check" in docs_workflow
+    assert "mkdocs build --strict" in docs_workflow
+    assert "mkdocs gh-deploy --force" in docs_workflow

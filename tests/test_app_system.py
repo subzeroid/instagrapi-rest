@@ -87,7 +87,7 @@ async def test_metrics_exports_prometheus_text():
     assert response.headers["content-type"].startswith("text/plain")
     body = response.text
     assert "# HELP aiograpi_rest_info Service build information." in body
-    assert 'aiograpi_rest_info{version="1.0.4"' in body
+    assert 'aiograpi_rest_info{version="1.1.2"' in body
     assert "aiograpi_rest_uptime_seconds " in body
     assert 'aiograpi_rest_dependency_info{name="aiograpi"' in body
 
@@ -101,7 +101,7 @@ async def test_build_reports_runtime_metadata(monkeypatch):
     assert response.status_code == 200
     assert response.json() == {
         "name": "aiograpi-rest",
-        "version": "1.0.4",
+        "version": "1.1.2",
         "python_version": main.platform.python_version(),
         "git_sha": "abc123",
         "build_time": "2026-05-16T00:00:00Z",
@@ -118,6 +118,18 @@ def test_git_sha_returns_none_when_env_and_git_are_unavailable(monkeypatch):
 
     monkeypatch.setattr(main.subprocess, "run", broken_run)
     assert main._git_sha() is None
+
+
+def test_git_sha_returns_git_short_sha(monkeypatch):
+    monkeypatch.delenv("GIT_SHA", raising=False)
+    monkeypatch.delenv("COMMIT_SHA", raising=False)
+    monkeypatch.delenv("SOURCE_VERSION", raising=False)
+
+    class Completed:
+        stdout = "abc123\n"
+
+    monkeypatch.setattr(main.subprocess, "run", lambda *args, **kwargs: Completed())
+    assert main._git_sha() == "abc123"
 
 
 @pytest.mark.asyncio
@@ -146,7 +158,7 @@ async def test_openapi_reports_app_version_200():
     assert response.status_code == 200
     data = response.json()
     assert data["info"]["title"] == "aiograpi-rest"
-    assert data["info"]["version"] == "1.0.4"
+    assert data["info"]["version"] == "1.1.2"
     assert "[GitHub subzeroid/aiograpi-rest]" in data["info"]["description"]
     assert "GitHub repository" not in data["info"]["description"]
     assert "https://github.com/subzeroid/aiograpi-rest" in data["info"]["description"]
@@ -155,6 +167,46 @@ async def test_openapi_reports_app_version_200():
     assert "promo code" not in data["info"]["description"]
     assert "`7RAo9ACK`" not in data["info"]["description"]
     assert "externalDocs" not in data
+
+
+@pytest.mark.asyncio
+async def test_openapi_uses_sessionid_authorize_button_for_protected_routes():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/openapi.json")
+
+    assert response.status_code == 200
+    schema = response.json()
+    assert schema["components"]["securitySchemes"]["SessionId"] == {
+        "type": "apiKey",
+        "description": "Paste a saved aiograpi-rest sessionid. Get one from `POST /auth/login` or `POST /auth/login/by/sessionid`.",
+        "in": "header",
+        "name": "X-Session-ID",
+    }
+
+    public_paths = {
+        "/auth/login",
+        "/auth/login/by/sessionid",
+        "/health",
+        "/ready",
+        "/metrics",
+        "/build",
+        "/deps",
+        "/media/id",
+        "/media/pk",
+        "/media/pk/from/code",
+        "/media/pk/from/url",
+        "/story/pk/from/url",
+    }
+    for path, methods in schema["paths"].items():
+        for operation in methods.values():
+            parameters = operation.get("parameters", [])
+            assert not [
+                parameter for parameter in parameters if parameter.get("name") == "sessionid"
+            ], path
+            if path in public_paths:
+                assert "security" not in operation
+            else:
+                assert operation["security"] == [{"SessionId": []}], path
 
 
 @pytest.mark.asyncio
@@ -384,6 +436,82 @@ async def test_exception_handler_wraps_errors_in_envelope(monkeypatch):
     body = response.json()
     assert body["detail"] == "kapow"
     assert body["exc_type"] == "RuntimeError"
+
+
+@pytest.mark.asyncio
+async def test_authorized_routes_accept_sessionid_header(monkeypatch):
+    from dependencies import get_clients
+
+    class HeaderStorage:
+        def __init__(self):
+            self.seen_sessionid = None
+
+        async def get(self, sessionid):
+            self.seen_sessionid = sessionid
+
+            class Client:
+                async def get_timeline_feed(self):
+                    return {"feed": []}
+
+            return Client()
+
+        def close(self):
+            pass
+
+    storage = HeaderStorage()
+    app.dependency_overrides[get_clients] = lambda: storage
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            response = await ac.get("/auth/timeline/feed", headers={"X-Session-ID": "sid-from-header"})
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {"feed": []}
+    assert storage.seen_sessionid == "sid-from-header"
+
+
+@pytest.mark.asyncio
+async def test_authorized_routes_accept_sessionid_cookie(monkeypatch):
+    from dependencies import get_clients
+
+    class CookieStorage:
+        def __init__(self):
+            self.seen_sessionid = None
+
+        async def get(self, sessionid):
+            self.seen_sessionid = sessionid
+
+            class Client:
+                async def get_timeline_feed(self):
+                    return {"feed": []}
+
+            return Client()
+
+        def close(self):
+            pass
+
+    storage = CookieStorage()
+    app.dependency_overrides[get_clients] = lambda: storage
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            ac.cookies.set("sessionid", "sid-from-cookie")
+            response = await ac.get("/auth/timeline/feed")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {"feed": []}
+    assert storage.seen_sessionid == "sid-from-cookie"
+
+
+@pytest.mark.asyncio
+async def test_authorized_routes_reject_missing_sessionid():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/auth/timeline/feed")
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Session ID required"}
 
 
 def test_custom_openapi_caches_schema():

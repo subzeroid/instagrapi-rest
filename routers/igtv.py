@@ -7,7 +7,7 @@ from aiograpi.types import Location, Media, Usertag
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import FileResponse
 
-from dependencies import ClientStorage, get_clients
+from dependencies import ClientStorage, get_clients, get_sessionid
 from helpers import igtv_upload_post
 
 router = APIRouter(
@@ -18,7 +18,7 @@ router = APIRouter(
 
 
 @router.get("/download")
-async def igtv_download(sessionid: str = Query(...),
+async def igtv_download(sessionid: str = Depends(get_sessionid),
                          media_pk: int = Query(...),
                          folder: Optional[Path] = Query(""),
                          returnFile: Optional[bool] = Query(True),
@@ -34,7 +34,7 @@ async def igtv_download(sessionid: str = Query(...),
 
 
 @router.get("/download/by/url")
-async def igtv_download_by_url(sessionid: str = Query(...),
+async def igtv_download_by_url(sessionid: str = Depends(get_sessionid),
                          url: str = Query(...),
                          filename: Optional[str] = Query(""),
                          folder: Optional[Path] = Query(""),
@@ -51,7 +51,7 @@ async def igtv_download_by_url(sessionid: str = Query(...),
 
 
 @router.post("/upload", response_model=Media)
-async def igtv_upload(sessionid: str = Form(...),
+async def igtv_upload(sessionid: str = Depends(get_sessionid),
                        file: UploadFile = File(...),
                        title: str = Form(...),
                        caption: str = Form(...),
@@ -85,7 +85,7 @@ async def igtv_upload(sessionid: str = Form(...),
         location=location)
 
 @router.post("/upload/by/url", response_model=Media)
-async def igtv_upload(sessionid: str = Form(...),
+async def igtv_upload(sessionid: str = Depends(get_sessionid),
                        url: str = Form(...),
                        title: str = Form(...),
                        caption: str = Form(...),

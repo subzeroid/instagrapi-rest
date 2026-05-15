@@ -27,6 +27,9 @@ jobs:
     - name: Lint with ruff
       run: |
         ruff check .
+    - name: Check generated aiograpi coverage docs
+      run: |
+        python scripts/generate_aiograpi_coverage.py --check
     - name: Test with pytest
       run: |
-        pytest
+        pytest --cov=. --cov-report=term-missing --cov-fail-under=100

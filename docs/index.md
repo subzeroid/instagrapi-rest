@@ -1,0 +1,29 @@
+# aiograpi-rest
+
+`aiograpi-rest` is a RESTful HTTP service for
+[`aiograpi`](https://github.com/subzeroid/aiograpi), the async Python wrapper for
+Instagram's private mobile API.
+
+Use it when your application is not written in Python, but you still want to run
+the maintained `aiograpi` client behind a simple OpenAPI-compatible HTTP
+boundary.
+
+## What It Provides
+
+- Login, relogin, session import, and settings export/import.
+- User profile, follower, following, follow, mute, and about endpoints.
+- Media, photo, video, Reel, carousel album, story, IGTV, and insights routes.
+- OpenAPI documentation at `/docs` and raw schema at `/openapi.json`.
+- Service health endpoints: `/health`, `/ready`, `/metrics`, `/build`, and `/deps`.
+
+## What It Does Not Hide
+
+Self-hosting means you still operate the Instagram accounts, proxies, session
+storage, retries, and challenge handling. If you want a managed API instead,
+see [HikerAPI](https://hikerapi.com/p/7RAo9ACK).
+
+## Method Coverage
+
+The service intentionally exposes a focused subset of `aiograpi.Client`. The
+generated [aiograpi coverage report](aiograpi-coverage.md) lists every public
+client method and whether it is reachable through a REST route.

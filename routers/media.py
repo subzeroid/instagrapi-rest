@@ -4,7 +4,7 @@ from aiograpi import Client
 from aiograpi.types import Location, Media, UserShort, Usertag
 from fastapi import APIRouter, Depends, Form, Query
 
-from dependencies import ClientStorage, get_clients
+from dependencies import ClientStorage, get_clients, get_sessionid
 
 router = APIRouter(
     prefix="/media",
@@ -42,7 +42,7 @@ async def media_pk_from_url(url: str) -> str:
 
 
 @router.get("/info", response_model=Media)
-async def media_info(sessionid: str = Query(...),
+async def media_info(sessionid: str = Depends(get_sessionid),
                      pk: int = Query(...),
                      use_cache: Optional[bool] = Query(True),
                      clients: ClientStorage = Depends(get_clients)) -> Media:
@@ -53,7 +53,7 @@ async def media_info(sessionid: str = Query(...),
 
 
 @router.get("/user/medias", response_model=List[Media])
-async def user_medias(sessionid: str = Query(...),
+async def user_medias(sessionid: str = Depends(get_sessionid),
                       user_id: int = Query(...),
                       amount: Optional[int] = Query(50),
                       clients: ClientStorage = Depends(get_clients)) -> List[Media]:
@@ -64,7 +64,7 @@ async def user_medias(sessionid: str = Query(...),
 
 
 @router.get("/usertag/medias", response_model=List[Media])
-async def usertag_medias(sessionid: str = Query(...),
+async def usertag_medias(sessionid: str = Depends(get_sessionid),
                          user_id: int = Query(...),
                          amount: Optional[int] = Query(50),
                          clients: ClientStorage = Depends(get_clients)) -> List[Media]:
@@ -75,7 +75,7 @@ async def usertag_medias(sessionid: str = Query(...),
 
 
 @router.delete("/delete", response_model=bool)
-async def media_delete(sessionid: str = Query(...),
+async def media_delete(sessionid: str = Depends(get_sessionid),
                        media_id: str = Query(...),
                        clients: ClientStorage = Depends(get_clients)) -> bool:
     """Delete media by Media ID
@@ -85,7 +85,7 @@ async def media_delete(sessionid: str = Query(...),
 
 
 @router.patch("/edit", response_model=Dict)
-async def media_edit(sessionid: str = Form(...),
+async def media_edit(sessionid: str = Depends(get_sessionid),
                      media_id: str = Form(...),
                      caption: str = Form(...),
                      title: Optional[str] = Form(""),
@@ -99,7 +99,7 @@ async def media_edit(sessionid: str = Form(...),
 
 
 @router.get("/user", response_model=UserShort)
-async def media_user(sessionid: str = Query(...),
+async def media_user(sessionid: str = Depends(get_sessionid),
                      media_pk: int = Query(...),
                      clients: ClientStorage = Depends(get_clients)) -> UserShort:
     """Get author of the media
@@ -109,7 +109,7 @@ async def media_user(sessionid: str = Query(...),
 
 
 @router.get("/oembed", response_model=Dict)
-async def media_oembed(sessionid: str = Query(...),
+async def media_oembed(sessionid: str = Depends(get_sessionid),
                      url: str = Query(...),
                      clients: ClientStorage = Depends(get_clients)) -> Dict:
     """Return info about media and user from post URL
@@ -119,7 +119,7 @@ async def media_oembed(sessionid: str = Query(...),
 
 
 @router.post("/like", response_model=bool)
-async def media_like(sessionid: str = Form(...),
+async def media_like(sessionid: str = Depends(get_sessionid),
                      media_id: str = Form(...),
                      revert: Optional[bool] = Form(False),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -130,7 +130,7 @@ async def media_like(sessionid: str = Form(...),
 
 
 @router.delete("/unlike", response_model=bool)
-async def media_unlike(sessionid: str = Query(...),
+async def media_unlike(sessionid: str = Depends(get_sessionid),
                        media_id: str = Query(...),
                        clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unlike a media
@@ -140,7 +140,7 @@ async def media_unlike(sessionid: str = Query(...),
 
 
 @router.patch("/seen", response_model=bool)
-async def media_seen(sessionid: str = Form(...),
+async def media_seen(sessionid: str = Depends(get_sessionid),
                      media_ids: List[str] = Form(...),
                      skipped_media_ids: Optional[List[str]] = Form([]),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -151,7 +151,7 @@ async def media_seen(sessionid: str = Form(...),
 
 
 @router.get("/likers", response_model=List[UserShort])
-async def media_likers(sessionid: str = Query(...),
+async def media_likers(sessionid: str = Depends(get_sessionid),
                      media_id: str = Query(...),
                      clients: ClientStorage = Depends(get_clients)) -> List[UserShort]:
     """Get user's likers
@@ -161,7 +161,7 @@ async def media_likers(sessionid: str = Query(...),
 
 
 @router.patch("/archive", response_model=bool)
-async def media_archive(sessionid: str = Form(...),
+async def media_archive(sessionid: str = Depends(get_sessionid),
                      media_id: str = Form(...),
                      revert: Optional[bool] = Form(False),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -172,7 +172,7 @@ async def media_archive(sessionid: str = Form(...),
 
 
 @router.patch("/unarchive", response_model=bool)
-async def media_unarchive(sessionid: str = Form(...),
+async def media_unarchive(sessionid: str = Depends(get_sessionid),
                      media_id: str = Form(...),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unarchive a media
