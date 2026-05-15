@@ -42,7 +42,15 @@ async def test_openapi_reports_app_version_200():
     assert response.status_code == 200
     data = response.json()
     assert data["info"]["title"] == "aiograpi-rest"
-    assert data["info"]["version"] == "1.0.0"
+    assert data["info"]["version"] == "1.0.1"
+    assert "https://github.com/subzeroid/aiograpi-rest" in data["info"]["description"]
+    assert "https://hikerapi.com/p/7RAo9ACK" in data["info"]["description"]
+    assert "promo code `7RAo9ACK`" in data["info"]["description"]
+    assert "100 free requests" in data["info"]["description"]
+    assert data["externalDocs"] == {
+        "description": "GitHub repository",
+        "url": "https://github.com/subzeroid/aiograpi-rest",
+    }
 
 
 @pytest.mark.asyncio
@@ -198,6 +206,35 @@ async def test_openapi_uses_human_friendly_tag_names():
         "IGTV (Legacy)",
         "Insights",
     ]
+
+
+@pytest.mark.asyncio
+async def test_openapi_uses_human_friendly_operation_summaries():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/openapi.json")
+
+    assert response.status_code == 200
+    paths = response.json()["paths"]
+    assert paths["/auth/login"]["post"]["summary"] == "Log in with username and password"
+    assert paths["/auth/login/by/sessionid"]["post"]["summary"] == "Create a session from an existing session ID"
+    assert paths["/auth/settings"]["get"]["summary"] == "Get saved auth settings"
+    assert paths["/auth/settings"]["patch"]["summary"] == "Save auth settings"
+    assert paths["/user/info/by/username"]["get"]["summary"] == "Get user profile by username"
+    assert paths["/story/upload/by/url"]["post"]["summary"] == "Upload a story from a URL"
+    assert paths["/clip/upload/by/url"]["post"]["summary"] == "Upload a Reel from a URL"
+    assert paths["/album/download/by/urls"]["get"]["summary"] == "Download carousel album media from URLs"
+    assert paths["/igtv/download"]["get"]["summary"] == "Download legacy IGTV video"
+    assert paths["/insights/media/feed/all"]["get"]["summary"] == "Get account media insights feed"
+
+    summaries = [
+        operation["summary"]
+        for methods in paths.values()
+        for operation in methods.values()
+    ]
+    assert not [summary for summary in summaries if "By Url" in summary]
+    assert not [summary for summary in summaries if "By Urls" in summary]
+    assert not [summary for summary in summaries if "Sessionid" in summary]
+    assert not [summary for summary in summaries if "Igtv" in summary]
 
 
 @pytest.mark.asyncio

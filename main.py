@@ -18,6 +18,15 @@ _TOKEN_OVERRIDES = {
     "url": "Url",
 }
 _HTTP_METHOD_PREFIXES = {"delete", "get", "patch", "post", "put"}
+OPENAPI_DESCRIPTION = """
+RESTful HTTP service for `aiograpi`, the async Instagram Private API wrapper.
+
+- **GitHub:** [subzeroid/aiograpi-rest](https://github.com/subzeroid/aiograpi-rest)
+- **Managed alternative:** [HikerAPI](https://hikerapi.com/p/7RAo9ACK) with promo code `7RAo9ACK` for 100 free requests.
+
+Self-host `aiograpi-rest` when you want OSS control. Use HikerAPI when you want
+sessions, proxies, challenge handling, and scaling handled for you.
+""".strip()
 OPENAPI_TAGS = [
     {"name": "System", "description": "Service metadata and documentation redirects."},
     {"name": "Auth", "description": "Login, session settings, and relogin operations."},
@@ -31,6 +40,80 @@ OPENAPI_TAGS = [
     {"name": "IGTV (Legacy)", "description": "Legacy IGTV operations still exposed by aiograpi."},
     {"name": "Insights", "description": "Account and media insights."},
 ]
+OPERATION_SUMMARIES = {
+    "postAuthLogin": "Log in with username and password",
+    "postAuthLoginBySessionId": "Create a session from an existing session ID",
+    "patchAuthRelogin": "Refresh the current login session",
+    "getAuthSettings": "Get saved auth settings",
+    "patchAuthSettings": "Save auth settings",
+    "getAuthTimelineFeed": "Get authenticated timeline feed",
+    "getMediaId": "Build a media ID from media PK",
+    "getMediaPk": "Extract media PK from media ID",
+    "getMediaPkFromCode": "Get media PK from shortcode",
+    "getMediaPkFromUrl": "Get media PK from URL",
+    "getMediaInfo": "Get media details",
+    "getMediaUserMedias": "List user media",
+    "getMediaUsertagMedias": "List media where a user is tagged",
+    "deleteMediaDelete": "Delete media",
+    "patchMediaEdit": "Edit media caption",
+    "getMediaUser": "Get media author",
+    "getMediaOembed": "Get media oEmbed data",
+    "postMediaLike": "Like media",
+    "deleteMediaUnlike": "Unlike media",
+    "patchMediaSeen": "Mark media as seen",
+    "getMediaLikers": "List media likers",
+    "patchMediaArchive": "Archive media",
+    "patchMediaUnarchive": "Unarchive media",
+    "getPhotoDownload": "Download feed photo",
+    "getPhotoDownloadByUrl": "Download feed photo from a URL",
+    "postPhotoUpload": "Upload a feed photo",
+    "postPhotoUploadByUrl": "Upload a feed photo from a URL",
+    "getVideoDownload": "Download feed video",
+    "getVideoDownloadByUrl": "Download feed video from a URL",
+    "postVideoUpload": "Upload a feed video",
+    "postVideoUploadByUrl": "Upload a feed video from a URL",
+    "getIgtvDownload": "Download legacy IGTV video",
+    "getIgtvDownloadByUrl": "Download legacy IGTV video from a URL",
+    "postIgtvUpload": "Upload legacy IGTV video",
+    "postIgtvUploadByUrl": "Upload legacy IGTV video from a URL",
+    "getClipDownload": "Download a Reel",
+    "getClipDownloadByUrl": "Download a Reel from a URL",
+    "postClipUpload": "Upload a Reel",
+    "postClipUploadByUrl": "Upload a Reel from a URL",
+    "getAlbumDownload": "Download carousel album media",
+    "getAlbumDownloadByUrls": "Download carousel album media from URLs",
+    "postAlbumUpload": "Upload a carousel album",
+    "postStoryUpload": "Upload a story",
+    "postStoryUploadByUrl": "Upload a story from a URL",
+    "getStoryUserStories": "List user stories",
+    "getStoryInfo": "Get story details",
+    "deleteStoryDelete": "Delete a story",
+    "patchStorySeen": "Mark stories as seen",
+    "postStoryLike": "Like a story",
+    "deleteStoryUnlike": "Unlike a story",
+    "getStoryPkFromUrl": "Get story PK from URL",
+    "getStoryDownload": "Download story media",
+    "getStoryDownloadByUrl": "Download story media from a URL",
+    "getUserFollowers": "List user followers",
+    "getUserFollowing": "List accounts a user follows",
+    "getUserInfo": "Get user profile by ID",
+    "getUserInfoByUsername": "Get user profile by username",
+    "getUserAbout": "Get user about details",
+    "postUserFollow": "Follow a user",
+    "deleteUserUnfollow": "Unfollow a user",
+    "getUserIdFromUsername": "Get user ID from username",
+    "getUserUsernameFromId": "Get username from user ID",
+    "deleteUserRemoveFollower": "Remove a follower",
+    "patchUserMutePostsFromFollow": "Mute posts from a followed user",
+    "patchUserUnmutePostsFromFollow": "Unmute posts from a followed user",
+    "patchUserMuteStoriesFromFollow": "Mute stories from a followed user",
+    "patchUserUnmuteStoriesFromFollow": "Unmute stories from a followed user",
+    "getInsightsMediaFeedAll": "Get account media insights feed",
+    "getInsightsAccount": "Get account insights",
+    "getInsightsMedia": "Get media insights",
+    "getRoot": "Open Swagger UI",
+    "getVersion": "Get dependency versions",
+}
 
 
 def _word_to_pascal(word: str) -> str:
@@ -97,6 +180,14 @@ def _rename_generated_body_schemas(openapi_schema: dict[str, Any]) -> None:
     _replace_schema_refs(openapi_schema, ref_replacements)
 
 
+def _polish_operation_summaries(openapi_schema: dict[str, Any]) -> None:
+    for methods in openapi_schema.get("paths", {}).values():
+        for operation in methods.values():
+            summary = OPERATION_SUMMARIES.get(operation.get("operationId"))
+            if summary:
+                operation["summary"] = summary
+
+
 app = FastAPI(
     generate_unique_id_function=generate_operation_id,
     openapi_tags=OPENAPI_TAGS,
@@ -150,12 +241,17 @@ def custom_openapi():
     #         body_field.type_.__name__ = 'name'
     openapi_schema = get_openapi(
         title="aiograpi-rest",
-        version="1.0.0",
-        description="RESTful API Service for aiograpi",
+        version="1.0.1",
+        description=OPENAPI_DESCRIPTION,
         routes=app.routes,
         tags=OPENAPI_TAGS,
+        external_docs={
+            "description": "GitHub repository",
+            "url": "https://github.com/subzeroid/aiograpi-rest",
+        },
     )
     _rename_generated_body_schemas(openapi_schema)
+    _polish_operation_summaries(openapi_schema)
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
