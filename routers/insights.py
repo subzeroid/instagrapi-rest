@@ -1,11 +1,9 @@
+from typing import Dict, List
+
+from aiograpi.mixins.insights import DATA_ORDERING, POST_TYPE, TIME_FRAME
 from fastapi import APIRouter, Depends, Form
 
-from typing import List, Dict
-
-from aiograpi.mixins.insights import POST_TYPE, TIME_FRAME, DATA_ORDERING
-
 from dependencies import ClientStorage, get_clients
-
 
 router = APIRouter(
     prefix="/insights",

@@ -1,13 +1,12 @@
-from typing import List, Optional
-from pathlib import Path
 import json
+from pathlib import Path
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, File, UploadFile, Form
-from aiograpi.types import Media, Location, Usertag
+from aiograpi.types import Location, Media, Usertag
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 from dependencies import ClientStorage, get_clients
 from helpers import album_upload_post
-
 
 router = APIRouter(
     prefix="/album",

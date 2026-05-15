@@ -1,7 +1,9 @@
 import json
+from typing import Dict, Optional
 from unittest.mock import patch
-from typing import Optional, Dict
+
 from fastapi import APIRouter, Depends, Form
+
 from dependencies import ClientStorage, get_clients
 
 router = APIRouter(
@@ -65,12 +67,11 @@ async def auth_login_by_sessionid(sessionid: str = Form(...),
 
 @router.post("/relogin")
 async def auth_relogin(sessionid: str = Form(...),
-                       clients: ClientStorage = Depends(get_clients)) -> str:
+                       clients: ClientStorage = Depends(get_clients)) -> bool:
     """Relogin by username and password (with clean cookies)
     """
     cl = await clients.get(sessionid)
-    result = await cl.relogin()
-    return result
+    return await cl.relogin()
 
 
 @router.get("/settings/get")

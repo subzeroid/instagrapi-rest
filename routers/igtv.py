@@ -1,10 +1,11 @@
-from typing import List, Optional
-from pathlib import Path
-import requests
 import json
-from fastapi import APIRouter, Depends, File, UploadFile, Form
+from pathlib import Path
+from typing import List, Optional
+
+import requests
+from aiograpi.types import Location, Media, Usertag
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import FileResponse
-from aiograpi.types import Media, Location, Usertag
 
 from dependencies import ClientStorage, get_clients
 from helpers import igtv_upload_post

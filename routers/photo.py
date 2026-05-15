@@ -1,18 +1,25 @@
-from typing import List, Optional
-from pathlib import Path
-import requests
 import json
-from pydantic import AnyHttpUrl
-from fastapi import APIRouter, Depends, File, UploadFile, Form
-from fastapi.responses import FileResponse
-from aiograpi.types import (
-    Story, StoryHashtag, StoryLink,
-    StoryLocation, StoryMention, StorySticker,
-    Media, Location, Usertag
-)
-from helpers import photo_upload_story_as_video, photo_upload_story_as_photo, photo_upload_post
-from dependencies import ClientStorage, get_clients
+from pathlib import Path
+from typing import List, Optional
 
+import requests
+from aiograpi.types import (
+    Location,
+    Media,
+    Story,
+    StoryHashtag,
+    StoryLink,
+    StoryLocation,
+    StoryMention,
+    StorySticker,
+    Usertag,
+)
+from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi.responses import FileResponse
+from pydantic import AnyHttpUrl
+
+from dependencies import ClientStorage, get_clients
+from helpers import photo_upload_post, photo_upload_story_as_photo, photo_upload_story_as_video
 
 router = APIRouter(
     prefix="/photo",

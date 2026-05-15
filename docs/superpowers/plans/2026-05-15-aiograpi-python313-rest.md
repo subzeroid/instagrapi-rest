@@ -903,7 +903,7 @@ Expected: PASS.
 **Files:**
 - Modify/create tests under `tests/`
 
-- [ ] **Step 1: Add coverage tests for every route**
+- [x] **Step 1: Add coverage tests for every route**
 
 Create or extend tests so every handler in `routers/` is executed at least once with fake async clients. Use dependency overrides for authenticated routes and real `aiograpi.Client` only for pure helper routes that do not hit the network.
 
@@ -916,7 +916,7 @@ Minimum route coverage list:
 - `photo`, `video`, `clip`, `igtv`, `album`: upload/download endpoints with fake clients and `returnFile=false` where available
 - `insights`: all endpoints
 
-- [ ] **Step 2: Run coverage and identify gaps**
+- [x] **Step 2: Run coverage and identify gaps**
 
 Run:
 
@@ -926,11 +926,11 @@ python3.13 -m pytest --cov=. --cov-report=term-missing
 
 Expected: PASS with meaningful coverage of `main.py`, `storages.py`, `helpers.py`, and `routers/`.
 
-- [ ] **Step 3: Fill uncovered local adapter branches**
+- [x] **Step 3: Fill uncovered local adapter branches**
 
 Add targeted tests for missing local branches. Do not attempt to test Instagram internals. Do not make live network tests part of the default suite.
 
-- [ ] **Step 4: Run coverage again**
+- [x] **Step 4: Run coverage again**
 
 Run:
 

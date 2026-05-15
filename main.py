@@ -1,13 +1,11 @@
-from importlib.metadata import PackageNotFoundError, version as package_version
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as package_version
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
-from starlette.responses import RedirectResponse, JSONResponse
-from routers import (
-    auth, media, video, photo, user,
-    igtv, clip, album, story,
-    insights
-)
+from starlette.responses import JSONResponse, RedirectResponse
+
+from routers import album, auth, clip, igtv, insights, media, photo, story, user, video
 
 app = FastAPI()
 app.include_router(auth.router)

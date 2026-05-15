@@ -93,6 +93,80 @@ async def test_login_awaits_aiograpi_and_persists_session(fake_storage):
 
 
 @pytest.mark.asyncio
+async def test_login_without_verification_code_uses_two_arg_login(fake_storage):
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post(
+            "/auth/login",
+            data={
+                "username": "u",
+                "password": "p",
+                "locale": "en_US",
+                "timezone": "10800",
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.json() == "sid"
+    assert fake_storage.created.locale == "en_US"
+    assert fake_storage.created.timezone == "10800"
+    assert fake_storage.created.calls == [("login", "u", "p", "")]
+
+
+@pytest.mark.asyncio
+async def test_login_2fa_fallback_invokes_input_patch(fake_storage):
+    captured = {}
+
+    original_login = fake_storage.created.login
+
+    async def picky_login(username, password, verification_code=None):
+        if verification_code is not None:
+            raise TypeError("verification_code not supported")
+        captured["called"] = (username, password)
+        return await original_login(username, password)
+
+    fake_storage.created.login = picky_login
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post(
+            "/auth/login",
+            data={"username": "u", "password": "p", "verification_code": "999111"},
+        )
+
+    assert response.status_code == 200
+    assert captured["called"] == ("u", "p")
+
+
+@pytest.mark.asyncio
+async def test_login_by_sessionid_persists_session(fake_storage):
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post("/auth/login_by_sessionid", data={"sessionid": "sid"})
+
+    assert response.status_code == 200
+    assert response.json() == "sid"
+    assert ("login_by_sessionid", "sid") in fake_storage.created.calls
+    assert fake_storage.saved == [fake_storage.created]
+
+
+@pytest.mark.asyncio
+async def test_relogin_awaits_aiograpi(fake_storage):
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post("/auth/relogin", data={"sessionid": "sid"})
+
+    assert response.status_code == 200
+    assert response.json() is True
+    assert ("relogin",) in fake_storage.created.calls
+
+
+@pytest.mark.asyncio
+async def test_settings_get_returns_client_settings(fake_storage):
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/auth/settings/get", params={"sessionid": "sid"})
+
+    assert response.status_code == 200
+    assert response.json() == {"authorization_data": {"sessionid": "sid"}}
+
+
+@pytest.mark.asyncio
 async def test_settings_set_awaits_expose_and_persists(fake_storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post("/auth/settings/set", data={"settings": json.dumps({"x": 1})})
@@ -100,3 +174,24 @@ async def test_settings_set_awaits_expose_and_persists(fake_storage):
     assert response.status_code == 200
     assert fake_storage.created.settings == {"x": 1}
     assert ("expose",) in fake_storage.created.calls
+
+
+@pytest.mark.asyncio
+async def test_settings_set_with_existing_sessionid_reuses_client(fake_storage):
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post(
+            "/auth/settings/set",
+            data={"settings": json.dumps({"x": 2}), "sessionid": "sid"},
+        )
+
+    assert response.status_code == 200
+    assert fake_storage.created.settings == {"x": 2}
+
+
+@pytest.mark.asyncio
+async def test_timeline_feed_awaits_aiograpi(fake_storage):
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/auth/timeline_feed", params={"sessionid": "sid"})
+
+    assert response.status_code == 200
+    assert response.json() == {"feed": []}

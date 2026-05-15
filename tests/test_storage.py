@@ -47,3 +47,31 @@ async def test_get_missing_session_raises_helpful_error(tmp_path):
     storage = ClientStorage(db_path=tmp_path / "db.json", client_factory=FakeClient)
     with pytest.raises(Exception, match="Session not found"):
         await storage.get("missing")
+
+
+def test_client_factory_produces_configured_client(tmp_path):
+    storage = ClientStorage(db_path=tmp_path / "db.json", client_factory=FakeClient)
+    cl = storage.client()
+    assert isinstance(cl, FakeClient)
+    assert cl.request_timeout == 0.1
+
+
+def test_close_is_a_no_op(tmp_path):
+    storage = ClientStorage(db_path=tmp_path / "db.json", client_factory=FakeClient)
+    assert storage.close() is None
+
+
+def test_get_clients_dependency_yields_storage(monkeypatch, tmp_path):
+    import storages
+    from dependencies import get_clients
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(storages, "Client", FakeClient)
+
+    gen = get_clients()
+    storage = next(gen)
+    try:
+        assert isinstance(storage, storages.ClientStorage)
+    finally:
+        with pytest.raises(StopIteration):
+            next(gen)

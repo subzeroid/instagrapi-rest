@@ -1,13 +1,12 @@
-from typing import List, Optional
 from pathlib import Path
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Form
-from fastapi.responses import FileResponse
 from aiograpi import Client
 from aiograpi.types import Story
+from fastapi import APIRouter, Depends, Form
+from fastapi.responses import FileResponse
 
 from dependencies import ClientStorage, get_clients
-
 
 router = APIRouter(
     prefix="/story",

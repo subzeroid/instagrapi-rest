@@ -1,12 +1,10 @@
-from fastapi import APIRouter, Depends, Form
-
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 from aiograpi import Client
-from aiograpi.types import Media, Usertag, Location, UserShort
+from aiograpi.types import Location, Media, UserShort, Usertag
+from fastapi import APIRouter, Depends, Form
 
 from dependencies import ClientStorage, get_clients
-
 
 router = APIRouter(
     prefix="/media",
@@ -19,7 +17,7 @@ router = APIRouter(
 async def media_id(media_pk: int) -> str:
     """Get full media id
     """
-    return Client().media_id(media_pk)
+    return await Client().media_id(media_pk)
 
 
 @router.get("/pk")
@@ -40,7 +38,7 @@ async def media_pk_from_code(code: str) -> str:
 async def media_pk_from_url(url: str) -> str:
     """Get Media PK from URL
     """
-    return str(Client().media_pk_from_url(url))
+    return str(await Client().media_pk_from_url(url))
 
 
 @router.post("/info", response_model=Media)
