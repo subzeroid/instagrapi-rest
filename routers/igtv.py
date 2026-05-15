@@ -4,7 +4,7 @@ import requests
 import json
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from fastapi.responses import FileResponse
-from instagrapi.types import Media, Location, Usertag
+from aiograpi.types import Media, Location, Usertag
 
 from dependencies import ClientStorage, get_clients
 from helpers import igtv_upload_post
@@ -24,8 +24,8 @@ async def igtv_download(sessionid: str = Form(...),
                          clients: ClientStorage = Depends(get_clients)):
     """Download IGTV video using media pk
     """
-    cl = clients.get(sessionid)
-    result = cl.igtv_download(media_pk, folder)
+    cl = await clients.get(sessionid)
+    result = await cl.igtv_download(media_pk, folder)
     if returnFile:
         return FileResponse(result)
     else:
@@ -41,8 +41,8 @@ async def igtv_download_by_url(sessionid: str = Form(...),
                          clients: ClientStorage = Depends(get_clients)):
     """Download IGTV video using URL
     """
-    cl = clients.get(sessionid)
-    result = cl.igtv_download_by_url(url, filename, folder)
+    cl = await clients.get(sessionid)
+    result = await cl.igtv_download_by_url(url, filename, folder)
     if returnFile:
         return FileResponse(result)
     else:
@@ -61,13 +61,13 @@ async def igtv_upload(sessionid: str = Form(...),
                        ) -> Media:
     """Upload photo and configure to feed
     """
-    cl = clients.get(sessionid)
-    
+    cl = await clients.get(sessionid)
+
     usernames_tags = []
     for usertag in usertags:
         usertag_json = json.loads(usertag)
         usernames_tags.append(Usertag(user=usertag_json['user'], x=usertag_json['x'], y=usertag_json['y']))
-        
+
     content = await file.read()
     if thumbnail is not None:
         thumb = await thumbnail.read()
@@ -82,7 +82,7 @@ async def igtv_upload(sessionid: str = Form(...),
         caption=caption,
         usertags=usernames_tags,
         location=location)
-    
+
 @router.post("/upload/by_url", response_model=Media)
 async def igtv_upload(sessionid: str = Form(...),
                        url: str = Form(...),
@@ -95,13 +95,13 @@ async def igtv_upload(sessionid: str = Form(...),
                        ) -> Media:
     """Upload photo by URL and configure to feed
     """
-    cl = clients.get(sessionid)
-    
+    cl = await clients.get(sessionid)
+
     usernames_tags = []
     for usertag in usertags:
         usertag_json = json.loads(usertag)
         usernames_tags.append(Usertag(user=usertag_json['user'], x=usertag_json['x'], y=usertag_json['y']))
-    
+
     content = requests.get(url).content
     if thumbnail is not None:
         thumb = await thumbnail.read()

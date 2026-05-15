@@ -775,7 +775,7 @@ Expected: PASS.
 - Test: `tests/test_upload_download_routes.py`
 - Test: `tests/test_insights_routes.py`
 
-- [ ] **Step 1: Write failing tests for representative upload/download and insights**
+- [x] **Step 1: Write failing tests for representative upload/download and insights**
 
 ```python
 # tests/test_upload_download_routes.py
@@ -859,7 +859,7 @@ async def test_insights_account_awaits_client():
     assert response.json() == {"accounts_reached": 1}
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run:
 
@@ -869,7 +869,7 @@ python3.13 -m pytest tests/test_upload_download_routes.py tests/test_insights_ro
 
 Expected: FAIL because router methods and helper upload methods are not fully awaited.
 
-- [ ] **Step 3: Implement async migration for remaining routers**
+- [x] **Step 3: Implement async migration for remaining routers**
 
 For all remaining routers:
 
@@ -886,7 +886,7 @@ For all remaining routers:
   - `await cl.clip_upload(...)`
 - Keep `requests.get(url).content` behavior for this migration.
 
-- [ ] **Step 4: Run and verify GREEN**
+- [x] **Step 4: Run and verify GREEN**
 
 Run:
 

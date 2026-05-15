@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 
 from fastapi import APIRouter, Depends, File, UploadFile, Form
-from instagrapi.types import Media, Location, Usertag
+from aiograpi.types import Media, Location, Usertag
 
 from dependencies import ClientStorage, get_clients
 from helpers import album_upload_post
@@ -23,8 +23,8 @@ async def album_download(sessionid: str = Form(...),
                          clients: ClientStorage = Depends(get_clients)) -> List[Path]:
     """Download photo using media pk
     """
-    cl = clients.get(sessionid)
-    result = cl.album_download(media_pk, folder)
+    cl = await clients.get(sessionid)
+    result = await cl.album_download(media_pk, folder)
     return result
 
 
@@ -35,8 +35,8 @@ async def album_download_by_urls(sessionid: str = Form(...),
                          clients: ClientStorage = Depends(get_clients)) -> List[Path]:
     """Download photo using URL
     """
-    cl = clients.get(sessionid)
-    result = cl.album_download_by_urls(urls, folder)
+    cl = await clients.get(sessionid)
+    result = await cl.album_download_by_urls(urls, folder)
     return result
 
 
@@ -50,13 +50,13 @@ async def album_upload(sessionid: str = Form(...),
                        ) -> Media:
     """Upload album to feed
     """
-    cl = clients.get(sessionid)
-    
+    cl = await clients.get(sessionid)
+
     usernames_tags = []
     for usertag in usertags:
         usertag_json = json.loads(usertag)
         usernames_tags.append(Usertag(user=usertag_json['user'], x=usertag_json['x'], y=usertag_json['y']))
-        
+
     return await album_upload_post(
         cl, files, caption=caption,
         usertags=usernames_tags,

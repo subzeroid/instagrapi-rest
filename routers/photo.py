@@ -5,7 +5,7 @@ import json
 from pydantic import AnyHttpUrl
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from fastapi.responses import FileResponse
-from instagrapi.types import (
+from aiograpi.types import (
     Story, StoryHashtag, StoryLink,
     StoryLocation, StoryMention, StorySticker,
     Media, Location, Usertag
@@ -35,7 +35,7 @@ async def photo_upload_to_story(sessionid: str = Form(...),
                                 ) -> Story:
     """Upload photo to story
     """
-    cl = clients.get(sessionid)
+    cl = await clients.get(sessionid)
     content = await file.read()
     if as_video:
         return await photo_upload_story_as_video(
@@ -69,7 +69,7 @@ async def photo_upload_to_story_by_url(sessionid: str = Form(...),
                                 ) -> Story:
     """Upload photo to story by URL to file
     """
-    cl = clients.get(sessionid)
+    cl = await clients.get(sessionid)
     content = requests.get(url).content
     if as_video:
         return await photo_upload_story_as_video(
@@ -98,8 +98,8 @@ async def photo_download(sessionid: str = Form(...),
                          clients: ClientStorage = Depends(get_clients)):
     """Download photo using media pk
     """
-    cl = clients.get(sessionid)
-    result = cl.photo_download(media_pk, folder)
+    cl = await clients.get(sessionid)
+    result = await cl.photo_download(media_pk, folder)
     if returnFile:
         return FileResponse(result)
     else:
@@ -115,8 +115,8 @@ async def photo_download_by_url(sessionid: str = Form(...),
                          clients: ClientStorage = Depends(get_clients)):
     """Download photo using URL
     """
-    cl = clients.get(sessionid)
-    result = cl.photo_download_by_url(url, filename, folder)
+    cl = await clients.get(sessionid)
+    result = await cl.photo_download_by_url(url, filename, folder)
     if returnFile:
         return FileResponse(result)
     else:
@@ -134,13 +134,13 @@ async def photo_upload(sessionid: str = Form(...),
                        ) -> Media:
     """Upload photo and configure to feed
     """
-    cl = clients.get(sessionid)
-    
+    cl = await clients.get(sessionid)
+
     usernames_tags = []
     for usertag in usertags:
         usertag_json = json.loads(usertag)
         usernames_tags.append(Usertag(user=usertag_json['user'], x=usertag_json['x'], y=usertag_json['y']))
-    
+
     content = await file.read()
     return await photo_upload_post(
         cl, content, caption=caption,
@@ -159,13 +159,13 @@ async def photo_upload(sessionid: str = Form(...),
                        ) -> Media:
     """Upload photo and configure to feed
     """
-    cl = clients.get(sessionid)
-    
+    cl = await clients.get(sessionid)
+
     usernames_tags = []
     for usertag in usertags:
         usertag_json = json.loads(usertag)
         usernames_tags.append(Usertag(user=usertag_json['user'], x=usertag_json['x'], y=usertag_json['y']))
-        
+
     content = requests.get(url).content
     return await photo_upload_post(
         cl, content, caption=caption,
