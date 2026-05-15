@@ -1,4 +1,4 @@
-import pkg_resources
+from importlib.metadata import PackageNotFoundError, version as package_version
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
@@ -34,10 +34,11 @@ async def version():
     """Get dependency versions
     """
     versions = {}
-    for name in ('instagrapi', ):
-        item = pkg_resources.require(name)
-        if item:
-            versions[name] = item[0].version
+    for name in ('aiograpi',):
+        try:
+            versions[name] = package_version(name)
+        except PackageNotFoundError:
+            versions[name] = None
     return versions
 
 
@@ -59,7 +60,7 @@ def custom_openapi():
     openapi_schema = get_openapi(
         title="instagrapi-rest",
         version="1.0.0",
-        description="RESTful API Service for instagrapi",
+        description="RESTful API Service for aiograpi",
         routes=app.routes,
     )
     app.openapi_schema = openapi_schema

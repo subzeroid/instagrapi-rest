@@ -198,7 +198,7 @@ Expected: PASS.
 - Modify: `main.py`
 - Test: `tests/test_app_system.py`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 ```python
 # tests/test_app_system.py
@@ -234,7 +234,7 @@ async def test_openapi_contains_user_about():
     assert "/user/about" in response.json()["paths"]
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run:
 
@@ -244,7 +244,7 @@ python3.13 -m pytest tests/test_app_system.py -v
 
 Expected: FAIL because `main.py` still imports `pkg_resources` and `/user/about` does not exist.
 
-- [ ] **Step 3: Implement minimal app changes**
+- [x] **Step 3: Implement minimal app changes**
 
 In `main.py`:
 
@@ -270,7 +270,7 @@ async def version():
     return versions
 ```
 
-- [ ] **Step 4: Run and verify partial GREEN**
+- [x] **Step 4: Run and verify partial GREEN**
 
 Run:
 
