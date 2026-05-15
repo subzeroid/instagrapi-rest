@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, Form
 
 from typing import List, Dict, Optional
 
-from instagrapi import Client
-from instagrapi.types import Media, Usertag, Location, UserShort
+from aiograpi import Client
+from aiograpi.types import Media, Usertag, Location, UserShort
 
 from dependencies import ClientStorage, get_clients
 
@@ -50,8 +50,8 @@ async def media_info(sessionid: str = Form(...),
                      clients: ClientStorage = Depends(get_clients)) -> Media:
     """Get media info by pk
     """
-    cl = clients.get(sessionid)
-    return cl.media_info(pk, use_cache)
+    cl = await clients.get(sessionid)
+    return await cl.media_info(pk, use_cache)
 
 
 @router.post("/user_medias", response_model=List[Media])
@@ -61,8 +61,8 @@ async def user_medias(sessionid: str = Form(...),
                       clients: ClientStorage = Depends(get_clients)) -> List[Media]:
     """Get a user's media
     """
-    cl = clients.get(sessionid)
-    return cl.user_medias(user_id, amount)
+    cl = await clients.get(sessionid)
+    return await cl.user_medias(user_id, amount)
 
 
 @router.post("/usertag_medias", response_model=List[Media])
@@ -72,8 +72,8 @@ async def usertag_medias(sessionid: str = Form(...),
                          clients: ClientStorage = Depends(get_clients)) -> List[Media]:
     """Get medias where a user is tagged
     """
-    cl = clients.get(sessionid)
-    return cl.usertag_medias(user_id, amount)
+    cl = await clients.get(sessionid)
+    return await cl.usertag_medias(user_id, amount)
 
 
 @router.post("/delete", response_model=bool)
@@ -82,8 +82,8 @@ async def media_delete(sessionid: str = Form(...),
                        clients: ClientStorage = Depends(get_clients)) -> bool:
     """Delete media by Media ID
     """
-    cl = clients.get(sessionid)
-    return cl.media_delete(media_id)
+    cl = await clients.get(sessionid)
+    return await cl.media_delete(media_id)
 
 
 @router.post("/edit", response_model=Dict)
@@ -96,8 +96,8 @@ async def media_edit(sessionid: str = Form(...),
                      clients: ClientStorage = Depends(get_clients)) -> Dict:
     """Edit caption for media
     """
-    cl = clients.get(sessionid)
-    return cl.media_edit(media_id, caption, title, usertags, location)
+    cl = await clients.get(sessionid)
+    return await cl.media_edit(media_id, caption, title, usertags, location)
 
 
 @router.post("/user", response_model=UserShort)
@@ -106,8 +106,8 @@ async def media_user(sessionid: str = Form(...),
                      clients: ClientStorage = Depends(get_clients)) -> UserShort:
     """Get author of the media
     """
-    cl = clients.get(sessionid)
-    return cl.media_user(media_pk)
+    cl = await clients.get(sessionid)
+    return await cl.media_user(media_pk)
 
 
 @router.post("/oembed", response_model=Dict)
@@ -116,8 +116,8 @@ async def media_oembed(sessionid: str = Form(...),
                      clients: ClientStorage = Depends(get_clients)) -> Dict:
     """Return info about media and user from post URL
     """
-    cl = clients.get(sessionid)
-    return cl.media_oembed(url)
+    cl = await clients.get(sessionid)
+    return await cl.media_oembed(url)
 
 
 @router.post("/like", response_model=bool)
@@ -127,8 +127,8 @@ async def media_like(sessionid: str = Form(...),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
     """Like a media
     """
-    cl = clients.get(sessionid)
-    return cl.media_like(media_id, revert)
+    cl = await clients.get(sessionid)
+    return await cl.media_like(media_id, revert)
 
 
 @router.post("/unlike", response_model=bool)
@@ -137,8 +137,8 @@ async def media_unlike(sessionid: str = Form(...),
                        clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unlike a media
     """
-    cl = clients.get(sessionid)
-    return cl.media_unlike(media_id)
+    cl = await clients.get(sessionid)
+    return await cl.media_unlike(media_id)
 
 
 @router.post("/seen", response_model=bool)
@@ -148,8 +148,8 @@ async def media_seen(sessionid: str = Form(...),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
     """Mark a media as seen
     """
-    cl = clients.get(sessionid)
-    return cl.media_seen(media_ids, skipped_media_ids)
+    cl = await clients.get(sessionid)
+    return await cl.media_seen(media_ids, skipped_media_ids)
 
 
 @router.post("/likers", response_model=List[UserShort])
@@ -158,8 +158,8 @@ async def media_likers(sessionid: str = Form(...),
                      clients: ClientStorage = Depends(get_clients)) -> List[UserShort]:
     """Get user's likers
     """
-    cl = clients.get(sessionid)
-    return cl.media_likers(media_id)
+    cl = await clients.get(sessionid)
+    return await cl.media_likers(media_id)
 
 
 @router.post("/archive", response_model=bool)
@@ -169,8 +169,8 @@ async def media_archive(sessionid: str = Form(...),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
     """Archive a media
     """
-    cl = clients.get(sessionid)
-    return cl.media_archive(media_id, revert)
+    cl = await clients.get(sessionid)
+    return await cl.media_archive(media_id, revert)
 
 
 @router.post("/unarchive", response_model=bool)
@@ -179,5 +179,5 @@ async def media_unarchive(sessionid: str = Form(...),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unarchive a media
     """
-    cl = clients.get(sessionid)
-    return cl.media_unarchive(media_id)
+    cl = await clients.get(sessionid)
+    return await cl.media_unarchive(media_id)

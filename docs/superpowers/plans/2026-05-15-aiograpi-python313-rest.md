@@ -669,7 +669,7 @@ Expected: PASS.
 - Modify: `routers/story.py`
 - Test: `tests/test_media_story_routes.py`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 ```python
 # tests/test_media_story_routes.py
@@ -731,7 +731,7 @@ async def test_story_unlike_uses_story_id_not_undefined_name(storage):
     assert storage.client.story_unliked == "s1"
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run:
 
@@ -741,7 +741,7 @@ python3.13 -m pytest tests/test_media_story_routes.py -v
 
 Expected: FAIL because methods are not awaited and `/story/unlike` references `story_pks`.
 
-- [ ] **Step 3: Implement media/story async migration**
+- [x] **Step 3: Implement media/story async migration**
 
 In `routers/media.py` and `routers/story.py`:
 
@@ -750,7 +750,7 @@ In `routers/media.py` and `routers/story.py`:
 - Keep pure helper routes sync with `aiograpi.Client`.
 - Fix `/story/unlike` to call `await cl.story_unlike(story_id)`.
 
-- [ ] **Step 4: Run and verify GREEN**
+- [x] **Step 4: Run and verify GREEN**
 
 Run:
 
