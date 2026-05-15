@@ -4,9 +4,7 @@ import ssl
 import urllib.request
 
 import pytest
-
 from aiograpi import Client
-
 
 pytestmark = pytest.mark.live
 

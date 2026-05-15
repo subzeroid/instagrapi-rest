@@ -21,7 +21,7 @@ async def user_followers(sessionid: str = Form(...),
     """Get user's followers
     """
     cl = await clients.get(sessionid)
-    return await cl.user_followers(user_id, use_cache, amount)
+    return await cl.user_followers(user_id, amount)
 
 
 @router.post("/following", response_model=Dict[int, UserShort])
@@ -33,7 +33,7 @@ async def user_following(sessionid: str = Form(...),
     """Get user's followers information
     """
     cl = await clients.get(sessionid)
-    return await cl.user_following(user_id, use_cache, amount)
+    return await cl.user_following(user_id, amount)
 
 
 @router.post("/info", response_model=User)
@@ -44,7 +44,7 @@ async def user_info(sessionid: str = Form(...),
     """Get user object from user id
     """
     cl = await clients.get(sessionid)
-    return await cl.user_info(user_id, use_cache)
+    return await cl.user_info(user_id)
 
 
 @router.post("/info_by_username", response_model=User)
@@ -55,7 +55,7 @@ async def user_info_by_username(sessionid: str = Form(...),
     """Get user object from username
     """
     cl = await clients.get(sessionid)
-    return await cl.user_info_by_username(username, use_cache)
+    return await cl.user_info_by_username(username)
 
 
 @router.post("/about", response_model=About)

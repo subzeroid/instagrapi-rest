@@ -108,6 +108,16 @@ async def test_video_upload_post_writes_tempfile_and_calls_client():
 
 
 @pytest.mark.asyncio
+async def test_video_upload_post_writes_thumbnail_bytes_to_tempfile():
+    cl = FakeClient()
+    await helpers.video_upload_post(cl, b"video", caption="hi", thumbnail=b"thumb")
+    call = next(c for c in cl.calls if c[0] == "video_upload")
+    thumbnail = call[2]["thumbnail"]
+    assert isinstance(thumbnail, str)
+    assert thumbnail.endswith(".jpg")
+
+
+@pytest.mark.asyncio
 async def test_igtv_upload_post_writes_tempfile_and_calls_client():
     cl = FakeClient()
     result = await helpers.igtv_upload_post(cl, b"vid", title="t", caption="hi")
@@ -116,11 +126,31 @@ async def test_igtv_upload_post_writes_tempfile_and_calls_client():
 
 
 @pytest.mark.asyncio
+async def test_igtv_upload_post_writes_thumbnail_bytes_to_tempfile():
+    cl = FakeClient()
+    await helpers.igtv_upload_post(cl, b"vid", title="t", caption="hi", thumbnail=b"thumb")
+    call = next(c for c in cl.calls if c[0] == "igtv_upload")
+    thumbnail = call[2]["thumbnail"]
+    assert isinstance(thumbnail, str)
+    assert thumbnail.endswith(".jpg")
+
+
+@pytest.mark.asyncio
 async def test_clip_upload_post_writes_tempfile_and_calls_client():
     cl = FakeClient()
     result = await helpers.clip_upload_post(cl, b"vid", caption="hi")
     assert any(call[0] == "clip_upload" for call in cl.calls)
     assert str(result).endswith(".mp4")
+
+
+@pytest.mark.asyncio
+async def test_clip_upload_post_writes_thumbnail_bytes_to_tempfile():
+    cl = FakeClient()
+    await helpers.clip_upload_post(cl, b"vid", caption="hi", thumbnail=b"thumb")
+    call = next(c for c in cl.calls if c[0] == "clip_upload")
+    thumbnail = call[2]["thumbnail"]
+    assert isinstance(thumbnail, str)
+    assert thumbnail.endswith(".jpg")
 
 
 @pytest.mark.asyncio

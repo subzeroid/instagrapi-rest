@@ -4,6 +4,23 @@ import tempfile
 from aiograpi.story import StoryBuilder
 
 
+def _write_temp_file(directory, content, suffix):
+    fp = tempfile.NamedTemporaryFile(suffix=suffix, delete=False, dir=directory)
+    try:
+        fp.write(content)
+        return fp.name
+    finally:
+        fp.close()
+
+
+def _normalize_thumbnail(kwargs, directory):
+    kwargs = dict(kwargs)
+    thumbnail = kwargs.get('thumbnail')
+    if isinstance(thumbnail, (bytes, bytearray)):
+        kwargs['thumbnail'] = _write_temp_file(directory, thumbnail, '.jpg')
+    return kwargs
+
+
 async def photo_upload_story_as_video(cl, content, **kwargs):
     with tempfile.NamedTemporaryFile(suffix='.jpg') as fp:
         fp.write(content)
@@ -35,9 +52,9 @@ async def photo_upload_post(cl, content, **kwargs):
 
 
 async def video_upload_post(cl, content, **kwargs):
-    with tempfile.NamedTemporaryFile(suffix='.mp4') as fp:
-        fp.write(content)
-        return await cl.video_upload(fp.name, **kwargs)
+    with tempfile.TemporaryDirectory() as td:
+        path = _write_temp_file(td, content, '.mp4')
+        return await cl.video_upload(path, **_normalize_thumbnail(kwargs, td))
 
 
 async def album_upload_post(cl, files, **kwargs):
@@ -53,12 +70,12 @@ async def album_upload_post(cl, files, **kwargs):
 
 
 async def igtv_upload_post(cl, content, **kwargs):
-    with tempfile.NamedTemporaryFile(suffix='.mp4') as fp:
-        fp.write(content)
-        return await cl.igtv_upload(fp.name, **kwargs)
+    with tempfile.TemporaryDirectory() as td:
+        path = _write_temp_file(td, content, '.mp4')
+        return await cl.igtv_upload(path, **_normalize_thumbnail(kwargs, td))
 
 
 async def clip_upload_post(cl, content, **kwargs):
-    with tempfile.NamedTemporaryFile(suffix='.mp4') as fp:
-        fp.write(content)
-        return await cl.clip_upload(fp.name, **kwargs)
+    with tempfile.TemporaryDirectory() as td:
+        path = _write_temp_file(td, content, '.mp4')
+        return await cl.clip_upload(path, **_normalize_thumbnail(kwargs, td))

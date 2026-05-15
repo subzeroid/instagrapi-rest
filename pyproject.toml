@@ -36,6 +36,7 @@ include = ["routers*"]
 exclude = ["tests*", "golang*", "swift*", "docs*", "examples*"]
 
 [tool.pytest.ini_options]
+addopts = "-m 'not live'"
 asyncio_mode = "auto"
 testpaths = ["tests"]
 markers = [
