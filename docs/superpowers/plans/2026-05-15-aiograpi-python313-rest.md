@@ -1072,7 +1072,7 @@ Expected: PASS.
 **Files:**
 - Modify if needed: `Dockerfile`, `docker-compose.yml`, `pyproject.toml`
 
-- [ ] **Step 1: Build service**
+- [x] **Step 1: Build service**
 
 Run:
 
@@ -1080,9 +1080,9 @@ Run:
 docker compose build api
 ```
 
-Expected: image builds using Python 3.13 and pyproject install.
+Expected: image builds using Python 3.13 and pyproject install. Verified: built `instagrapi-rest-api` image using `python:3.13-slim` with `pip install ".[test]"`.
 
-- [ ] **Step 2: Run test suite through compose**
+- [x] **Step 2: Run test suite through compose**
 
 Run:
 
@@ -1090,9 +1090,9 @@ Run:
 docker compose run --rm api pytest
 ```
 
-Expected: PASS.
+Expected: PASS. Verified: 103 passed, 1 skipped (live test gated by `TEST_ACCOUNTS_URL`).
 
-- [ ] **Step 3: Verify app starts through compose**
+- [x] **Step 3: Verify app starts through compose**
 
 Run:
 
@@ -1106,9 +1106,7 @@ In another shell or by using a background session, verify:
 curl -sS http://localhost:8000/version
 ```
 
-Expected: JSON contains `aiograpi`.
-
-Stop the compose service cleanly.
+Expected: JSON contains `aiograpi`. Verified: `{"aiograpi":"0.9.7"}` returned. Service stopped cleanly via `docker compose down`.
 
 ---
 
