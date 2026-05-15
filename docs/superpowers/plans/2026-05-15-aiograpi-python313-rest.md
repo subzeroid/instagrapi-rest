@@ -1041,7 +1041,7 @@ Expected: PASS if live accounts are usable. If Instagram/account/proxy condition
 - Modify: `runtime.txt`
 - Modify: `Procfile` if needed
 
-- [ ] **Step 1: Update docs**
+- [x] **Step 1: Update docs**
 
 Update README to say:
 
@@ -1054,7 +1054,7 @@ Update README to say:
 
 Update `runtime.txt` to Python 3.13 syntax if keeping it. If Heroku runtime metadata is no longer useful, remove it only if no docs reference it.
 
-- [ ] **Step 2: Run doc-sensitive checks**
+- [x] **Step 2: Run doc-sensitive checks**
 
 Run:
 

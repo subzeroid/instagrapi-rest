@@ -1,6 +1,6 @@
 # instagrapi-rest
 
-**RESTful HTTP service that wraps [`instagrapi`](https://github.com/subzeroid/instagrapi) so you can call Instagram's private API from any programming language.** Run it as a Docker sidecar next to your application; hit it from Node, Go, PHP, Java, C#, Ruby, Swift, Bash — anything that speaks HTTP.
+**RESTful HTTP service that wraps [`aiograpi`](https://github.com/subzeroid/aiograpi) (the async fork of `instagrapi`) so you can call Instagram's private API from any programming language.** Run it as a Docker sidecar next to your application; hit it from Node, Go, PHP, Java, C#, Ruby, Swift, Bash — anything that speaks HTTP.
 
 This is the cross-language exit when your stack is not Python and the maintained Instagram libraries in your own language have gone stale or been archived (which, as of 2026, is most of them — see the [language-by-language survey](https://instagrapi.com/guides/instagram-api-libraries-by-language) on instagrapi.com).
 
@@ -8,11 +8,11 @@ Support chat on Telegram: https://t.me/aiograpi_support (the previous `@instagra
 
 ## Why this exists
 
-`instagrapi` is the actively-maintained Python wrapper for Instagram's private mobile API — full write surface (post, DM, story), pydantic-typed responses, first-class `challenge_required` and 2FA handling. If your application is in Python, you import it directly.
+`aiograpi` is the actively-maintained async Python wrapper for Instagram's private mobile API (the async fork of `instagrapi`) — full write surface (post, DM, story), pydantic-typed responses, first-class `challenge_required` and 2FA handling. If your application is in Python, you import it directly.
 
 If your application is in a different language, your options for Instagram have been narrowing fast. The most-starred libraries on GitHub's [`instagram-api` topic](https://github.com/topics/instagram-api) are mostly stale or explicitly archived: the canonical Node/TypeScript client (`dilame/instagram-private-api`) hasn't shipped a meaningful release since August 2024; the canonical Go client (`ahmdrz/goinsta`) was archived in 2021; the Swift options are dead. Instagram's surface keeps moving and the per-language wrapper authors largely stopped chasing it.
 
-`instagrapi-rest` solves that the simple way: run the actively-maintained Python library behind an HTTP boundary, and call it from whatever language you actually write your business logic in.
+`instagrapi-rest` solves that the simple way: run the actively-maintained async Python library (`aiograpi`) behind an HTTP boundary, and call it from whatever language you actually write your business logic in.
 
 ## What you still own
 
@@ -106,6 +106,8 @@ For typed client generation in C++, C#, F#, D, Erlang, Elixir, Nim, Haskell, Lis
 
 ## Installation
 
+Requires Python 3.13 for local installs. Dependencies are declared in `pyproject.toml` (the legacy `requirements.txt` is gone).
+
 Install ImageMagick (required for photo upload):
 
 ```
@@ -133,18 +135,19 @@ docker build -t instagrapi-rest .
 docker run -p 8000:8000 instagrapi-rest
 ```
 
-Or use docker-compose:
+Or use Docker Compose (recommended for local dev):
 
 ```
-docker-compose up -d
+docker compose up api
 ```
 
-Or run without Docker:
+Or run without Docker (requires Python 3.13):
 
 ```
-python3 -m venv .venv
+python3.13 -m venv .venv
 . .venv/bin/activate
-pip install -U wheel pip -Ur requirements.txt
+python3.13 -m pip install -U pip
+python3.13 -m pip install -e ".[test]"
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
@@ -241,22 +244,30 @@ When you start running this against a real Instagram surface — daily monitorin
 
 ## Testing
 
-Run all tests:
+The offline test suite lives under `tests/` and runs with `pytest`.
+
+Run all tests through Docker Compose:
 
 ```
-docker-compose run api pytest tests.py
+docker compose run --rm api pytest
 ```
 
-A single test:
+A single test file:
 
 ```
-docker-compose run api pytest tests.py::test_media_pk_from_code
+docker compose run --rm api pytest tests/test_app_system.py
 ```
 
-Without docker-compose:
+Locally (Python 3.13):
 
 ```
-docker run --rm -v "$(pwd):/app" instagrapi-rest pytest tests.py
+python3.13 -m pytest
+```
+
+Optional live smoke tests against real Instagram accounts are gated by the `TEST_ACCOUNTS_URL` environment variable and are skipped by default:
+
+```
+TEST_ACCOUNTS_URL="https://example.com/accounts" python3.13 -m pytest tests/live -v
 ```
 
 ## Development
@@ -264,5 +275,5 @@ docker run --rm -v "$(pwd):/app" instagrapi-rest pytest tests.py
 For debugging with the dev server bound:
 
 ```
-docker-compose run --service-ports api
+docker compose run --service-ports api
 ```
