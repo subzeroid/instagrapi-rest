@@ -2,11 +2,12 @@
 
 ## Goal
 
-Move `instagrapi-rest` from synchronous `instagrapi` to asynchronous `aiograpi` from PyPI, update the project to Python 3.13, cover the local REST adapter with tests, add `GET /user/about`, and verify the final diff with Claude.
+Move `instagrapi-rest` from synchronous `instagrapi` to asynchronous `aiograpi` from PyPI, update the project to Python 3.13, cover the local REST adapter with tests, add `GET /user/about`, align HTTP methods with REST semantics, publish API version `2.0.0`, and verify the final diff with Claude.
 
 ## Fixed Decisions
 
 - Runtime target: Python 3.13.
+- API version: `2.0.0` because the REST method cleanup is a breaking public API change.
 - Instagram client dependency: `aiograpi==0.9.7` from PyPI, not `../aiograpi`.
 - `aiograpi==0.9.7` requires Python `>=3.10` and was the latest PyPI release checked during planning on 2026-05-15.
 - `TEST_ACCOUNTS_URL` may be used only for optional live smoke tests. The default test suite must not require live Instagram accounts or network access.
@@ -45,6 +46,8 @@ Route handlers become async delegates:
 - Any Instagram IO method is awaited, for example `await cl.media_info(...)`.
 - Download endpoints await the download call, then return `FileResponse` or the path as before.
 - Upload helpers already use async wrappers and will await `aiograpi` upload methods.
+- REST method convention: reads and downloads are `GET`, creates/uploads/login are `POST`, state changes are `PATCH`, and removals are `DELETE`.
+- Settings are a single resource: `GET /auth/settings` reads settings and `PATCH /auth/settings` writes settings.
 
 The app remains a single FastAPI service with the existing router split:
 
@@ -133,7 +136,7 @@ Offline tests:
 
 - Import app successfully under Python 3.13.
 - Verify `/version` reports `aiograpi`.
-- Verify OpenAPI generation includes all routers and `GET /user/about`.
+- Verify OpenAPI generation includes all routers, `GET /user/about`, API version `2.0.0`, and the REST HTTP method map.
 - Cover `ClientStorage.client`, `ClientStorage.get`, `ClientStorage.set`, session not found, and stored settings reload.
 - Cover every route handler at least once using fake async clients and dependency overrides.
 - Cover pure media/story PK helper routes with real `aiograpi.Client` pure helpers.
@@ -176,11 +179,11 @@ Do not introduce a new API error envelope in this migration. The goal is a depen
 
 `pkg_resources` should be removed from app startup. Use `importlib.metadata.version("aiograpi")` for `/version`.
 
-`login`, `login_by_sessionid`, `relogin`, `settings/set`, and `timeline_feed` must await the corresponding `aiograpi` IO methods.
+`login`, `login_by_sessionid`, `relogin`, `GET/PATCH /auth/settings`, and `timeline_feed` must await the corresponding `aiograpi` IO methods.
 
 ## Out Of Scope
 
-- Changing public endpoint names, request methods, or form field names except adding `GET /user/about`.
+- Changing public endpoint names or form field names beyond the intentional v2 REST method cleanup and `/auth/settings` consolidation.
 - Replacing TinyDB with a production database.
 - Adding auth to the REST service itself.
 - Solving Instagram account bans, proxy rotation, challenge workers, or managed session orchestration.

@@ -185,9 +185,9 @@ def fake_storybuilder(monkeypatch):
 @pytest.mark.asyncio
 async def test_photo_download_returns_path_when_returnfile_false(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/photo/download",
-            data={"sessionid": "sid", "media_pk": "1", "returnFile": "false"},
+            params={"sessionid": "sid", "media_pk": "1", "returnFile": "false"},
         )
     assert response.status_code == 200
     assert response.json().endswith("test_upload_download_routes.py")
@@ -196,9 +196,9 @@ async def test_photo_download_returns_path_when_returnfile_false(storage):
 @pytest.mark.asyncio
 async def test_photo_download_returns_file_when_returnfile_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/photo/download",
-            data={"sessionid": "sid", "media_pk": "1"},
+            params={"sessionid": "sid", "media_pk": "1"},
         )
     assert response.status_code == 200
     assert b"import pytest" in response.content
@@ -207,9 +207,9 @@ async def test_photo_download_returns_file_when_returnfile_true(storage):
 @pytest.mark.asyncio
 async def test_photo_download_by_url_returns_path_when_returnfile_false(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/photo/download/by_url",
-            data={
+            params={
                 "sessionid": "sid",
                 "url": "https://x/y.jpg",
                 "returnFile": "false",
@@ -222,9 +222,9 @@ async def test_photo_download_by_url_returns_path_when_returnfile_false(storage)
 @pytest.mark.asyncio
 async def test_photo_download_by_url_returns_file_when_returnfile_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/photo/download/by_url",
-            data={"sessionid": "sid", "url": "https://x/y.jpg"},
+            params={"sessionid": "sid", "url": "https://x/y.jpg"},
         )
     assert response.status_code == 200
     assert b"import pytest" in response.content
@@ -318,9 +318,9 @@ async def test_photo_upload_to_story_by_url_as_video(storage, fake_requests, fak
 @pytest.mark.asyncio
 async def test_video_download_returns_path_when_returnfile_false(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/video/download",
-            data={"sessionid": "sid", "media_pk": "1", "returnFile": "false"},
+            params={"sessionid": "sid", "media_pk": "1", "returnFile": "false"},
         )
     assert response.status_code == 200
     assert response.json().endswith("test_upload_download_routes.py")
@@ -329,9 +329,9 @@ async def test_video_download_returns_path_when_returnfile_false(storage):
 @pytest.mark.asyncio
 async def test_video_download_returns_file_when_returnfile_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/video/download",
-            data={"sessionid": "sid", "media_pk": "1"},
+            params={"sessionid": "sid", "media_pk": "1"},
         )
     assert response.status_code == 200
 
@@ -339,9 +339,9 @@ async def test_video_download_returns_file_when_returnfile_true(storage):
 @pytest.mark.asyncio
 async def test_video_download_by_url_returns_path_when_returnfile_false(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/video/download/by_url",
-            data={
+            params={
                 "sessionid": "sid",
                 "url": "https://x/y.mp4",
                 "returnFile": "false",
@@ -353,9 +353,9 @@ async def test_video_download_by_url_returns_path_when_returnfile_false(storage)
 @pytest.mark.asyncio
 async def test_video_download_by_url_returns_file_when_returnfile_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/video/download/by_url",
-            data={"sessionid": "sid", "url": "https://x/y.mp4"},
+            params={"sessionid": "sid", "url": "https://x/y.mp4"},
         )
     assert response.status_code == 200
 
@@ -439,13 +439,13 @@ async def test_video_upload_to_story_by_url(storage, fake_requests, fake_storybu
 @pytest.mark.asyncio
 async def test_clip_download_routes_both_returnfile_modes(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        path_resp = await ac.post(
+        path_resp = await ac.get(
             "/clip/download",
-            data={"sessionid": "sid", "media_pk": "1", "returnFile": "false"},
+            params={"sessionid": "sid", "media_pk": "1", "returnFile": "false"},
         )
-        file_resp = await ac.post(
+        file_resp = await ac.get(
             "/clip/download",
-            data={"sessionid": "sid", "media_pk": "1"},
+            params={"sessionid": "sid", "media_pk": "1"},
         )
     assert path_resp.status_code == 200
     assert file_resp.status_code == 200
@@ -455,17 +455,17 @@ async def test_clip_download_routes_both_returnfile_modes(storage):
 @pytest.mark.asyncio
 async def test_clip_download_by_url_both_returnfile_modes(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        path_resp = await ac.post(
+        path_resp = await ac.get(
             "/clip/download/by_url",
-            data={
+            params={
                 "sessionid": "sid",
                 "url": "https://x/y.mp4",
                 "returnFile": "false",
             },
         )
-        file_resp = await ac.post(
+        file_resp = await ac.get(
             "/clip/download/by_url",
-            data={"sessionid": "sid", "url": "https://x/y.mp4"},
+            params={"sessionid": "sid", "url": "https://x/y.mp4"},
         )
     assert path_resp.status_code == 200
     assert file_resp.status_code == 200
@@ -524,13 +524,13 @@ async def test_clip_upload_by_url_with_and_without_thumbnail(storage, fake_reque
 @pytest.mark.asyncio
 async def test_igtv_download_routes_both_returnfile_modes(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        path_resp = await ac.post(
+        path_resp = await ac.get(
             "/igtv/download",
-            data={"sessionid": "sid", "media_pk": "1", "returnFile": "false"},
+            params={"sessionid": "sid", "media_pk": "1", "returnFile": "false"},
         )
-        file_resp = await ac.post(
+        file_resp = await ac.get(
             "/igtv/download",
-            data={"sessionid": "sid", "media_pk": "1"},
+            params={"sessionid": "sid", "media_pk": "1"},
         )
     assert path_resp.status_code == 200
     assert file_resp.status_code == 200
@@ -539,17 +539,17 @@ async def test_igtv_download_routes_both_returnfile_modes(storage):
 @pytest.mark.asyncio
 async def test_igtv_download_by_url_both_returnfile_modes(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        path_resp = await ac.post(
+        path_resp = await ac.get(
             "/igtv/download/by_url",
-            data={
+            params={
                 "sessionid": "sid",
                 "url": "https://x/y.mp4",
                 "returnFile": "false",
             },
         )
-        file_resp = await ac.post(
+        file_resp = await ac.get(
             "/igtv/download/by_url",
-            data={"sessionid": "sid", "url": "https://x/y.mp4"},
+            params={"sessionid": "sid", "url": "https://x/y.mp4"},
         )
     assert path_resp.status_code == 200
     assert file_resp.status_code == 200
@@ -608,9 +608,9 @@ async def test_igtv_upload_by_url_with_and_without_thumbnail(storage, fake_reque
 @pytest.mark.asyncio
 async def test_album_download_returns_list(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/album/download",
-            data={"sessionid": "sid", "media_pk": "1"},
+            params={"sessionid": "sid", "media_pk": "1"},
         )
     assert response.status_code == 200
     assert isinstance(response.json(), list)
@@ -620,9 +620,9 @@ async def test_album_download_returns_list(storage):
 @pytest.mark.asyncio
 async def test_album_download_by_urls_returns_list(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/album/download/by_urls",
-            data={"sessionid": "sid", "urls": ["https://x/1.jpg", "https://x/2.jpg"]},
+            params={"sessionid": "sid", "urls": ["https://x/1.jpg", "https://x/2.jpg"]},
         )
     assert response.status_code == 200
     assert len(response.json()) == 1

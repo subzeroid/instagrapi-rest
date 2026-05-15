@@ -101,7 +101,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "instagrapi-rest"
-version = "1.0.0"
+version = "2.0.0"
 description = "RESTful API service for aiograpi"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -512,7 +512,7 @@ async def test_login_awaits_aiograpi_and_persists_session(fake_storage):
 @pytest.mark.asyncio
 async def test_settings_set_awaits_expose_and_persists(fake_storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/auth/settings/set", data={"settings": json.dumps({"x": 1})})
+        response = await ac.patch("/auth/settings", data={"settings": json.dumps({"x": 1})})
 
     assert response.status_code == 200
     assert fake_storage.created.settings == {"x": 1}
@@ -725,7 +725,7 @@ async def test_media_like_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_story_unlike_uses_story_id_not_undefined_name(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/story/unlike", data={"sessionid": "sid", "story_id": "s1"})
+        response = await ac.delete("/story/unlike", params={"sessionid": "sid", "story_id": "s1"})
     assert response.status_code == 200
     assert response.json() is True
     assert storage.client.story_unliked == "s1"
@@ -854,7 +854,7 @@ def override_storage():
 @pytest.mark.asyncio
 async def test_insights_account_awaits_client():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/insights/account", data={"sessionid": "sid"})
+        response = await ac.get("/insights/account", params={"sessionid": "sid"})
     assert response.status_code == 200
     assert response.json() == {"accounts_reached": 1}
 ```
@@ -909,7 +909,7 @@ Create or extend tests so every handler in `routers/` is executed at least once 
 
 Minimum route coverage list:
 
-- `auth`: `/login`, `/login_by_sessionid`, `/relogin`, `/settings/get`, `/settings/set`, `/timeline_feed`
+- `auth`: `/login`, `/login_by_sessionid`, `/relogin`, `GET/PATCH /settings`, `/timeline_feed`
 - `media`: `/id`, `/pk`, `/pk_from_code`, `/pk_from_url`, `/info`, `/user_medias`, `/usertag_medias`, `/delete`, `/edit`, `/user`, `/oembed`, `/like`, `/unlike`, `/seen`, `/likers`, `/archive`, `/unarchive`
 - `user`: every existing route plus `/about`
 - `story`: every existing route

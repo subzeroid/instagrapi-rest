@@ -14,7 +14,7 @@ from aiograpi.types import (
     StorySticker,
     Usertag,
 )
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import AnyHttpUrl
 
@@ -97,11 +97,11 @@ async def photo_upload_to_story_by_url(sessionid: str = Form(...),
 
 
 
-@router.post("/download")
-async def photo_download(sessionid: str = Form(...),
-                         media_pk: int = Form(...),
-                         folder: Optional[Path] = Form(""),
-                         returnFile: Optional[bool] = Form(True),
+@router.get("/download")
+async def photo_download(sessionid: str = Query(...),
+                         media_pk: int = Query(...),
+                         folder: Optional[Path] = Query(""),
+                         returnFile: Optional[bool] = Query(True),
                          clients: ClientStorage = Depends(get_clients)):
     """Download photo using media pk
     """
@@ -113,12 +113,12 @@ async def photo_download(sessionid: str = Form(...),
         return result
 
 
-@router.post("/download/by_url")
-async def photo_download_by_url(sessionid: str = Form(...),
-                         url: str = Form(...),
-                         filename: Optional[str] = Form(""),
-                         folder: Optional[Path] = Form(""),
-                         returnFile: Optional[bool] = Form(True),
+@router.get("/download/by_url")
+async def photo_download_by_url(sessionid: str = Query(...),
+                         url: str = Query(...),
+                         filename: Optional[str] = Query(""),
+                         folder: Optional[Path] = Query(""),
+                         returnFile: Optional[bool] = Query(True),
                          clients: ClientStorage = Depends(get_clients)):
     """Download photo using URL
     """

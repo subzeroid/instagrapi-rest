@@ -46,7 +46,7 @@ def storage():
 @pytest.mark.asyncio
 async def test_insights_account_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/insights/account", data={"sessionid": "sid"})
+        response = await ac.get("/insights/account", params={"sessionid": "sid"})
     assert response.status_code == 200
     assert response.json() == {"accounts_reached": 1}
 
@@ -54,7 +54,7 @@ async def test_insights_account_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_insights_media_feed_all_uses_defaults_and_awaits(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/insights/media_feed_all", data={"sessionid": "sid"})
+        response = await ac.get("/insights/media_feed_all", params={"sessionid": "sid"})
     assert response.status_code == 200
     assert response.json()[0]["pk"] == "1"
     call = next(c for c in storage.client.calls if c[0] == "insights_media_feed_all")
@@ -64,8 +64,8 @@ async def test_insights_media_feed_all_uses_defaults_and_awaits(storage):
 @pytest.mark.asyncio
 async def test_insights_media_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/insights/media", data={"sessionid": "sid", "media_pk": "1"}
+        response = await ac.get(
+            "/insights/media", params={"sessionid": "sid", "media_pk": "1"}
         )
     assert response.status_code == 200
     assert response.json() == {"media_pk": 1, "reach": 5}

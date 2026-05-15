@@ -113,9 +113,9 @@ def storage():
 @pytest.mark.asyncio
 async def test_user_followers_returns_dict(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/user/followers",
-            data={"sessionid": "sid", "user_id": "1", "amount": "5"},
+            params={"sessionid": "sid", "user_id": "1", "amount": "5"},
         )
     assert response.status_code == 200
     assert "1" in response.json()
@@ -125,9 +125,9 @@ async def test_user_followers_returns_dict(storage):
 @pytest.mark.asyncio
 async def test_user_following_returns_dict(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/user/following",
-            data={"sessionid": "sid", "user_id": "1", "use_cache": "false"},
+            params={"sessionid": "sid", "user_id": "1", "use_cache": "false"},
         )
     assert response.status_code == 200
     assert "3" in response.json()
@@ -137,9 +137,9 @@ async def test_user_following_returns_dict(storage):
 @pytest.mark.asyncio
 async def test_user_info_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/user/info",
-            data={"sessionid": "sid", "user_id": "55"},
+            params={"sessionid": "sid", "user_id": "55"},
         )
     assert response.status_code == 200
     assert response.json()["pk"] == "55"
@@ -149,9 +149,9 @@ async def test_user_info_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_user_info_by_username_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/user/info_by_username",
-            data={"sessionid": "sid", "username": "instagram"},
+            params={"sessionid": "sid", "username": "instagram"},
         )
     assert response.status_code == 200
     assert response.json()["username"] == "instagram"
@@ -293,7 +293,7 @@ async def test_user_follow_awaits_client_method(storage):
 @pytest.mark.asyncio
 async def test_user_unfollow_awaits_client_method(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/user/unfollow", data={"sessionid": "sid", "user_id": "1"})
+        response = await ac.delete("/user/unfollow", params={"sessionid": "sid", "user_id": "1"})
     assert response.status_code == 200
     assert ("user_unfollow", 1) in storage.client_instance.calls
 
@@ -301,9 +301,9 @@ async def test_user_unfollow_awaits_client_method(storage):
 @pytest.mark.asyncio
 async def test_user_id_from_username_returns_int(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/user/id_from_username",
-            data={"sessionid": "sid", "username": "instagram"},
+            params={"sessionid": "sid", "username": "instagram"},
         )
     assert response.status_code == 200
     assert response.json() == 42
@@ -312,9 +312,9 @@ async def test_user_id_from_username_returns_int(storage):
 @pytest.mark.asyncio
 async def test_username_from_user_id_returns_string(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/user/username_from_id",
-            data={"sessionid": "sid", "user_id": "1"},
+            params={"sessionid": "sid", "user_id": "1"},
         )
     assert response.status_code == 200
     assert response.json() == "instagram"
@@ -323,9 +323,9 @@ async def test_username_from_user_id_returns_string(storage):
 @pytest.mark.asyncio
 async def test_user_remove_follower_returns_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.delete(
             "/user/remove_follower",
-            data={"sessionid": "sid", "user_id": "1"},
+            params={"sessionid": "sid", "user_id": "1"},
         )
     assert response.status_code == 200
     assert ("user_remove_follower", 1) in storage.client_instance.calls
@@ -334,11 +334,11 @@ async def test_user_remove_follower_returns_true(storage):
 @pytest.mark.asyncio
 async def test_mute_and_unmute_posts_from_follow(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        mute = await ac.post(
+        mute = await ac.patch(
             "/user/mute_posts_from_follow",
             data={"sessionid": "sid", "user_id": "1", "revert": "true"},
         )
-        unmute = await ac.post(
+        unmute = await ac.patch(
             "/user/unmute_posts_from_follow",
             data={"sessionid": "sid", "user_id": "1"},
         )
@@ -351,11 +351,11 @@ async def test_mute_and_unmute_posts_from_follow(storage):
 @pytest.mark.asyncio
 async def test_mute_and_unmute_stories_from_follow(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        mute = await ac.post(
+        mute = await ac.patch(
             "/user/mute_stories_from_follow",
             data={"sessionid": "sid", "user_id": "1"},
         )
-        unmute = await ac.post(
+        unmute = await ac.patch(
             "/user/unmute_stories_from_follow",
             data={"sessionid": "sid", "user_id": "1"},
         )

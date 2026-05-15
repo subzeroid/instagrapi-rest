@@ -12,6 +12,7 @@ def test_pyproject_replaces_requirements_txt():
     deps = pyproject["project"]["dependencies"]
     assert "aiograpi==0.9.7" in deps
     assert pyproject["project"]["requires-python"] == ">=3.13"
+    assert pyproject["project"]["version"] == "2.0.0"
 
 
 def test_dockerfile_uses_python_313_and_pyproject_install():

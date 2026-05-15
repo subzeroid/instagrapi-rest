@@ -185,7 +185,7 @@ async def test_login_by_sessionid_returns_false_without_persisting(fake_storage)
 @pytest.mark.asyncio
 async def test_relogin_awaits_aiograpi(fake_storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/auth/relogin", data={"sessionid": "sid"})
+        response = await ac.patch("/auth/relogin", data={"sessionid": "sid"})
 
     assert response.status_code == 200
     assert response.json() is True
@@ -195,7 +195,7 @@ async def test_relogin_awaits_aiograpi(fake_storage):
 @pytest.mark.asyncio
 async def test_settings_get_returns_client_settings(fake_storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.get("/auth/settings/get", params={"sessionid": "sid"})
+        response = await ac.get("/auth/settings", params={"sessionid": "sid"})
 
     assert response.status_code == 200
     assert response.json() == {"authorization_data": {"sessionid": "sid"}}
@@ -204,7 +204,7 @@ async def test_settings_get_returns_client_settings(fake_storage):
 @pytest.mark.asyncio
 async def test_settings_set_awaits_expose_and_persists(fake_storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/auth/settings/set", data={"settings": json.dumps({"x": 1})})
+        response = await ac.patch("/auth/settings", data={"settings": json.dumps({"x": 1})})
 
     assert response.status_code == 200
     assert fake_storage.created.settings == {"x": 1}
@@ -214,8 +214,8 @@ async def test_settings_set_awaits_expose_and_persists(fake_storage):
 @pytest.mark.asyncio
 async def test_settings_set_with_existing_sessionid_reuses_client(fake_storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/auth/settings/set",
+        response = await ac.patch(
+            "/auth/settings",
             data={"settings": json.dumps({"x": 2}), "sessionid": "sid"},
         )
 

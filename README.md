@@ -27,6 +27,10 @@ If those line items sound like work you don't want, the same team behind `instag
 
 ## 30-second quick start
 
+Current API version: `2.0.0`. Version 2 uses REST-style methods: `GET` for
+reads/downloads, `POST` for login and creates/uploads, `PATCH` for state
+changes, and `DELETE` for removals.
+
 ```bash
 docker run -d -p 8000:8000 subzeroid/instagrapi-rest
 ```
@@ -44,7 +48,7 @@ curl -X POST http://localhost:8000/auth/login \
 Fetch a public profile:
 
 ```bash
-curl "http://localhost:8000/user/by/username?username=instagram&sessionid=<SESSIONID>"
+curl "http://localhost:8000/user/info_by_username?sessionid=<SESSIONID>&username=instagram"
 ```
 
 ## Calling it from your language
@@ -54,7 +58,7 @@ The service is plain HTTP + JSON, so any HTTP client in any language works. Belo
 **Node.js / TypeScript:**
 
 ```js
-const r = await fetch(`http://localhost:8000/user/by/username?username=instagram&sessionid=${SID}`);
+const r = await fetch(`http://localhost:8000/user/info_by_username?sessionid=${SID}&username=instagram`);
 const user = await r.json();
 console.log(user.full_name, user.follower_count);
 ```
@@ -62,7 +66,7 @@ console.log(user.full_name, user.follower_count);
 **Go** (full example: [`golang/client.go`](golang/client.go)):
 
 ```go
-resp, _ := http.Get("http://localhost:8000/user/by/username?username=instagram&sessionid=" + sid)
+resp, _ := http.Get("http://localhost:8000/user/info_by_username?sessionid=" + sid + "&username=instagram")
 defer resp.Body.Close()
 var user map[string]any
 json.NewDecoder(resp.Body).Decode(&user)
@@ -72,7 +76,7 @@ json.NewDecoder(resp.Body).Decode(&user)
 
 ```php
 $user = json_decode(file_get_contents(
-  "http://localhost:8000/user/by/username?username=instagram&sessionid=$sid"
+  "http://localhost:8000/user/info_by_username?sessionid=$sid&username=instagram"
 ), true);
 ```
 
@@ -80,7 +84,7 @@ $user = json_decode(file_get_contents(
 
 ```java
 HttpResponse<String> r = HttpClient.newHttpClient().send(
-  HttpRequest.newBuilder(URI.create("http://localhost:8000/user/by/username?username=instagram&sessionid=" + sid)).build(),
+  HttpRequest.newBuilder(URI.create("http://localhost:8000/user/info_by_username?sessionid=" + sid + "&username=instagram")).build(),
   HttpResponse.BodyHandlers.ofString());
 ```
 
@@ -88,7 +92,7 @@ HttpResponse<String> r = HttpClient.newHttpClient().send(
 
 ```ruby
 require "net/http"; require "json"
-user = JSON.parse(Net::HTTP.get(URI("http://localhost:8000/user/by/username?username=instagram&sessionid=#{sid}")))
+user = JSON.parse(Net::HTTP.get(URI("http://localhost:8000/user/info_by_username?sessionid=#{sid}&username=instagram")))
 ```
 
 **Swift** (full example: [`swift/client.swift`](swift/client.swift)).

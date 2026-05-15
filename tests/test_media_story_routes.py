@@ -216,8 +216,8 @@ async def test_story_pk_from_url_uses_aiograpi_helper():
 @pytest.mark.asyncio
 async def test_media_info_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/media/info", data={"sessionid": "sid", "pk": "1"}
+        response = await ac.get(
+            "/media/info", params={"sessionid": "sid", "pk": "1"}
         )
     assert response.status_code == 200
     assert response.json()["pk"] == 1
@@ -226,9 +226,9 @@ async def test_media_info_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_user_medias_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/media/user_medias",
-            data={"sessionid": "sid", "user_id": "1", "amount": "10"},
+            params={"sessionid": "sid", "user_id": "1", "amount": "10"},
         )
     assert response.status_code == 200
     assert ("user_medias", 1, 10) in storage.client.calls
@@ -237,9 +237,9 @@ async def test_user_medias_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_usertag_medias_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/media/usertag_medias",
-            data={"sessionid": "sid", "user_id": "1"},
+            params={"sessionid": "sid", "user_id": "1"},
         )
     assert response.status_code == 200
     assert ("usertag_medias", 1, 50) in storage.client.calls
@@ -248,8 +248,8 @@ async def test_usertag_medias_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_media_delete_returns_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/media/delete", data={"sessionid": "sid", "media_id": "m1"}
+        response = await ac.delete(
+            "/media/delete", params={"sessionid": "sid", "media_id": "m1"}
         )
     assert response.status_code == 200
     assert response.json() is True
@@ -258,7 +258,7 @@ async def test_media_delete_returns_true(storage):
 @pytest.mark.asyncio
 async def test_media_edit_returns_dict(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.patch(
             "/media/edit",
             data={
                 "sessionid": "sid",
@@ -274,8 +274,8 @@ async def test_media_edit_returns_dict(storage):
 @pytest.mark.asyncio
 async def test_media_user_returns_author(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/media/user", data={"sessionid": "sid", "media_pk": "7"}
+        response = await ac.get(
+            "/media/user", params={"sessionid": "sid", "media_pk": "7"}
         )
     assert response.status_code == 200
     assert response.json()["pk"] == "7"
@@ -284,9 +284,9 @@ async def test_media_user_returns_author(storage):
 @pytest.mark.asyncio
 async def test_media_oembed_returns_dict(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/media/oembed",
-            data={"sessionid": "sid", "url": "https://example.com/p/abc"},
+            params={"sessionid": "sid", "url": "https://example.com/p/abc"},
         )
     assert response.status_code == 200
     assert response.json()["version"] == "1.0"
@@ -305,8 +305,8 @@ async def test_media_like_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_media_unlike_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/media/unlike", data={"sessionid": "sid", "media_id": "m1"}
+        response = await ac.delete(
+            "/media/unlike", params={"sessionid": "sid", "media_id": "m1"}
         )
     assert response.status_code == 200
     assert response.json() is True
@@ -315,7 +315,7 @@ async def test_media_unlike_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_media_seen_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.patch(
             "/media/seen",
             data={"sessionid": "sid", "media_ids": ["m1", "m2"]},
         )
@@ -326,8 +326,8 @@ async def test_media_seen_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_media_likers_returns_user_list(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/media/likers", data={"sessionid": "sid", "media_id": "m1"}
+        response = await ac.get(
+            "/media/likers", params={"sessionid": "sid", "media_id": "m1"}
         )
     assert response.status_code == 200
     assert len(response.json()) == 2
@@ -336,11 +336,11 @@ async def test_media_likers_returns_user_list(storage):
 @pytest.mark.asyncio
 async def test_media_archive_and_unarchive(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        archive = await ac.post(
+        archive = await ac.patch(
             "/media/archive",
             data={"sessionid": "sid", "media_id": "m1", "revert": "true"},
         )
-        unarchive = await ac.post(
+        unarchive = await ac.patch(
             "/media/unarchive", data={"sessionid": "sid", "media_id": "m1"}
         )
     assert archive.status_code == 200 and archive.json() is True
@@ -353,8 +353,8 @@ async def test_media_archive_and_unarchive(storage):
 @pytest.mark.asyncio
 async def test_story_user_stories_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/story/user_stories", data={"sessionid": "sid", "user_id": "1"}
+        response = await ac.get(
+            "/story/user_stories", params={"sessionid": "sid", "user_id": "1"}
         )
     assert response.status_code == 200
     assert len(response.json()) == 1
@@ -363,8 +363,8 @@ async def test_story_user_stories_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_story_info_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/story/info", data={"sessionid": "sid", "story_pk": "1"}
+        response = await ac.get(
+            "/story/info", params={"sessionid": "sid", "story_pk": "1"}
         )
     assert response.status_code == 200
     assert str(response.json()["pk"]) == "1"
@@ -373,8 +373,8 @@ async def test_story_info_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_story_delete_returns_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/story/delete", data={"sessionid": "sid", "story_pk": "1"}
+        response = await ac.delete(
+            "/story/delete", params={"sessionid": "sid", "story_pk": "1"}
         )
     assert response.status_code == 200
     assert response.json() is True
@@ -383,7 +383,7 @@ async def test_story_delete_returns_true(storage):
 @pytest.mark.asyncio
 async def test_story_seen_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.patch(
             "/story/seen",
             data={"sessionid": "sid", "story_pks": ["1", "2"]},
         )
@@ -406,8 +406,8 @@ async def test_story_like_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_story_unlike_uses_story_id_not_undefined_name(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/story/unlike", data={"sessionid": "sid", "story_id": "s1"}
+        response = await ac.delete(
+            "/story/unlike", params={"sessionid": "sid", "story_id": "s1"}
         )
     assert response.status_code == 200
     assert response.json() is True
@@ -417,9 +417,9 @@ async def test_story_unlike_uses_story_id_not_undefined_name(storage):
 @pytest.mark.asyncio
 async def test_story_download_returns_path_when_returnfile_false(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/story/download",
-            data={"sessionid": "sid", "story_pk": "1", "returnFile": "false"},
+            params={"sessionid": "sid", "story_pk": "1", "returnFile": "false"},
         )
     assert response.status_code == 200
     assert response.json().endswith("test_media_story_routes.py")
@@ -428,8 +428,8 @@ async def test_story_download_returns_path_when_returnfile_false(storage):
 @pytest.mark.asyncio
 async def test_story_download_returns_file_when_returnfile_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/story/download", data={"sessionid": "sid", "story_pk": "1"}
+        response = await ac.get(
+            "/story/download", params={"sessionid": "sid", "story_pk": "1"}
         )
     assert response.status_code == 200
     assert b"import pytest" in response.content
@@ -438,9 +438,9 @@ async def test_story_download_returns_file_when_returnfile_true(storage):
 @pytest.mark.asyncio
 async def test_story_download_by_url_returns_path_when_returnfile_false(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/story/download/by_url",
-            data={"sessionid": "sid", "url": "https://x/y", "returnFile": "false"},
+            params={"sessionid": "sid", "url": "https://x/y", "returnFile": "false"},
         )
     assert response.status_code == 200
     assert response.json().endswith("test_media_story_routes.py")
@@ -449,9 +449,9 @@ async def test_story_download_by_url_returns_path_when_returnfile_false(storage)
 @pytest.mark.asyncio
 async def test_story_download_by_url_returns_file_when_returnfile_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
+        response = await ac.get(
             "/story/download/by_url",
-            data={"sessionid": "sid", "url": "https://x/y"},
+            params={"sessionid": "sid", "url": "https://x/y"},
         )
     assert response.status_code == 200
     assert b"import pytest" in response.content

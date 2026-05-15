@@ -57,10 +57,10 @@ func pkFromUrl(url string) string {
 
 func id_from_username(sessionid, username string) string {
 	resp, err := client.R().
-		SetFormData(map[string]string{
+		SetQueryParams(map[string]string{
 			"sessionid": sessionid,
 			"username":  username,
-		}).Post("/user/id_from_username")
+		}).Get("/user/id_from_username")
 	if err != nil {
 		log.Println(err)
 	}
@@ -87,7 +87,7 @@ func relogin(sessionid string) {
 	resp, err := client.R().
 		SetFormData(map[string]string{
 			"sessionid": sessionid,
-		}).Post("/auth/relogin")
+		}).Patch("/auth/relogin")
 	if err != nil {
 		log.Println(err)
 	}
@@ -98,12 +98,12 @@ func relogin(sessionid string) {
 
 func photo_download(sessionid, media_pk, folder string) string {
 	resp, err := client.R().
-		SetFormData(map[string]string{
+		SetQueryParams(map[string]string{
 			"sessionid":  sessionid,
 			"media_pk":   media_pk,
 			"folder":     folder,
 			"returnFile": "false",
-		}).Post("/photo/download")
+		}).Get("/photo/download")
 	if err != nil {
 		log.Println(err)
 		return ""
@@ -117,12 +117,12 @@ func photo_download(sessionid, media_pk, folder string) string {
 
 func video_download(sessionid, media_pk, folder string) string {
 	resp, err := client.R().
-		SetFormData(map[string]string{
+		SetQueryParams(map[string]string{
 			"sessionid":  sessionid,
 			"media_pk":   media_pk,
 			"folder":     folder,
 			"returnFile": "false",
-		}).Post("/video/download")
+		}).Get("/video/download")
 	if err != nil {
 		log.Println(err)
 		return ""
@@ -138,7 +138,7 @@ func getSettings(sessionid string) string {
 	resp, err := client.R().
 		SetQueryParams(map[string]string{
 			"sessionid": sessionid,
-		}).Get("/auth/settings/get")
+		}).Get("/auth/settings")
 	if err != nil {
 		log.Println(err)
 	}
@@ -154,7 +154,7 @@ func setSettings(sessionid, settings string) string {
 		SetFormData(map[string]string{
 			"sessionid": sessionid,
 			"settings":  settings,
-		}).Post("/auth/settings/set")
+		}).Patch("/auth/settings")
 	if err != nil {
 		log.Println(err)
 	}
@@ -190,11 +190,11 @@ func saveSettings(file string, settings string) {
 
 func user_stories(sessionid, id string, amount int) []string {
 	resp, err := client.R().
-		SetFormData(map[string]string{
+		SetQueryParams(map[string]string{
 			"sessionid": sessionid,
 			"user_id":   id,
 			"amount":    strconv.Itoa(amount),
-		}).Post("/story/user_stories")
+		}).Get("/story/user_stories")
 	if err != nil {
 		log.Println(err)
 		return []string{}
@@ -220,12 +220,12 @@ func user_stories(sessionid, id string, amount int) []string {
 
 func igtv_download(sessionid, media_pk, folder string) string {
 	resp, err := client.R().
-		SetFormData(map[string]string{
+		SetQueryParams(map[string]string{
 			"sessionid":  sessionid,
 			"media_pk":   media_pk,
 			"folder":     folder,
 			"returnFile": "false",
-		}).Post("/igtv/download")
+		}).Get("/igtv/download")
 	if err != nil {
 		log.Println(err)
 		return ""
@@ -239,12 +239,12 @@ func igtv_download(sessionid, media_pk, folder string) string {
 
 func story_download(sessionid, story_pk, folder string) string {
 	resp, err := client.R().
-		SetFormData(map[string]string{
+		SetQueryParams(map[string]string{
 			"sessionid":  sessionid,
 			"story_pk":   story_pk,
 			"folder":     folder,
 			"returnFile": "false",
-		}).Post("/story/download")
+		}).Get("/story/download")
 	if err != nil {
 		log.Println(err)
 		return ""

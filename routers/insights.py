@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from aiograpi.mixins.insights import DATA_ORDERING, POST_TYPE, TIME_FRAME
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends, Query
 
 from dependencies import ClientStorage, get_clients
 
@@ -12,12 +12,12 @@ router = APIRouter(
 )
 
 
-@router.post("/media_feed_all", response_model=List[Dict])
-async def media_feed_all(sessionid: str = Form(...),
-                         post_type: POST_TYPE = "ALL",
-                         time_frame: TIME_FRAME = "TWO_YEARS",
-                         data_ordering: DATA_ORDERING = "REACH_COUNT",
-                         count: int = 0,
+@router.get("/media_feed_all", response_model=List[Dict])
+async def media_feed_all(sessionid: str = Query(...),
+                         post_type: POST_TYPE = Query("ALL"),
+                         time_frame: TIME_FRAME = Query("TWO_YEARS"),
+                         data_ordering: DATA_ORDERING = Query("REACH_COUNT"),
+                         count: int = Query(0),
                          clients: ClientStorage = Depends(get_clients)) -> List[Dict]:
     """Return medias with insights
     """
@@ -25,8 +25,8 @@ async def media_feed_all(sessionid: str = Form(...),
     return await cl.insights_media_feed_all(post_type, time_frame, data_ordering, count, sleep=2)
 
 
-@router.post("/account", response_model=Dict)
-async def account(sessionid: str = Form(...),
+@router.get("/account", response_model=Dict)
+async def account(sessionid: str = Query(...),
                   clients: ClientStorage = Depends(get_clients)) -> Dict:
     """Get insights for account
     """
@@ -34,9 +34,9 @@ async def account(sessionid: str = Form(...),
     return await cl.insights_account()
 
 
-@router.post("/media", response_model=Dict)
-async def media(sessionid: str = Form(...),
-                media_pk: int = Form(...),
+@router.get("/media", response_model=Dict)
+async def media(sessionid: str = Query(...),
+                media_pk: int = Query(...),
                 clients: ClientStorage = Depends(get_clients)) -> Dict:
     """Get insights data for media
     """

@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from aiograpi import Client
 from aiograpi.types import Story
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends, Form, Query
 from fastapi.responses import FileResponse
 
 from dependencies import ClientStorage, get_clients
@@ -15,10 +15,10 @@ router = APIRouter(
 )
 
 
-@router.post("/user_stories", response_model=List[Story])
-async def story_user_stories(sessionid: str = Form(...),
-                            user_id: str = Form(...),
-                            amount: Optional[int] = Form(None),
+@router.get("/user_stories", response_model=List[Story])
+async def story_user_stories(sessionid: str = Query(...),
+                            user_id: str = Query(...),
+                            amount: Optional[int] = Query(None),
                             clients: ClientStorage = Depends(get_clients)) -> List[Story]:
     """Get a user's stories
     """
@@ -26,10 +26,10 @@ async def story_user_stories(sessionid: str = Form(...),
     return await cl.user_stories(user_id, amount)
 
 
-@router.post("/info", response_model=Story)
-async def story_info(sessionid: str = Form(...),
-                     story_pk: int = Form(...),
-                     use_cache: Optional[bool] = Form(True),
+@router.get("/info", response_model=Story)
+async def story_info(sessionid: str = Query(...),
+                     story_pk: int = Query(...),
+                     use_cache: Optional[bool] = Query(True),
                      clients: ClientStorage = Depends(get_clients)) -> Story:
     """Get Story by pk or id
     """
@@ -37,9 +37,9 @@ async def story_info(sessionid: str = Form(...),
     return await cl.story_info(story_pk, use_cache)
 
 
-@router.post("/delete", response_model=bool)
-async def story_delete(sessionid: str = Form(...),
-                       story_pk: int = Form(...),
+@router.delete("/delete", response_model=bool)
+async def story_delete(sessionid: str = Query(...),
+                       story_pk: int = Query(...),
                        clients: ClientStorage = Depends(get_clients)) -> bool:
     """Delete story
     """
@@ -47,7 +47,7 @@ async def story_delete(sessionid: str = Form(...),
     return await cl.story_delete(story_pk)
 
 
-@router.post("/seen", response_model=bool)
+@router.patch("/seen", response_model=bool)
 async def story_seen(sessionid: str = Form(...),
                      story_pks: List[int] = Form(...),
                      skipped_story_pks: Optional[List[int]] = Form([]),
@@ -67,9 +67,9 @@ async def story_like(sessionid: str = Form(...),
     cl = await clients.get(sessionid)
     return await cl.story_like(story_id, revert)
 
-@router.post("/unlike", response_model=bool)
-async def story_unlike(sessionid: str = Form(...),
-                     story_id: str = Form(...),
+@router.delete("/unlike", response_model=bool)
+async def story_unlike(sessionid: str = Query(...),
+                     story_id: str = Query(...),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unlike a Story
     """
@@ -84,12 +84,12 @@ async def story_pk_from_url(url: str) -> int:
     return Client().story_pk_from_url(url)
 
 
-@router.post("/download")
-async def story_download(sessionid: str = Form(...),
-                         story_pk: int = Form(...),
-                         filename: Optional[str] = Form(""),
-                         folder: Optional[Path] = Form(""),
-                         returnFile: Optional[bool] = Form(True),
+@router.get("/download")
+async def story_download(sessionid: str = Query(...),
+                         story_pk: int = Query(...),
+                         filename: Optional[str] = Query(""),
+                         folder: Optional[Path] = Query(""),
+                         returnFile: Optional[bool] = Query(True),
                          clients: ClientStorage = Depends(get_clients)):
     """Download story media by media_type
     """
@@ -101,12 +101,12 @@ async def story_download(sessionid: str = Form(...),
         return result
 
 
-@router.post("/download/by_url")
-async def story_download_by_url(sessionid: str = Form(...),
-                                url: str = Form(...),
-                                filename: Optional[str] = Form(""),
-                                folder: Optional[Path] = Form(""),
-                                returnFile: Optional[bool] = Form(True),
+@router.get("/download/by_url")
+async def story_download_by_url(sessionid: str = Query(...),
+                                url: str = Query(...),
+                                filename: Optional[str] = Query(""),
+                                folder: Optional[Path] = Query(""),
+                                returnFile: Optional[bool] = Query(True),
                                 clients: ClientStorage = Depends(get_clients)):
     """Download story media using URL
     """

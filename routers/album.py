@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from aiograpi.types import Location, Media, Usertag
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 
 from dependencies import ClientStorage, get_clients
 from helpers import album_upload_post
@@ -15,10 +15,10 @@ router = APIRouter(
 )
 
 
-@router.post("/download", response_model=List[Path])
-async def album_download(sessionid: str = Form(...),
-                         media_pk: int = Form(...),
-                         folder: Optional[Path] = Form(""),
+@router.get("/download", response_model=List[Path])
+async def album_download(sessionid: str = Query(...),
+                         media_pk: int = Query(...),
+                         folder: Optional[Path] = Query(""),
                          clients: ClientStorage = Depends(get_clients)) -> List[Path]:
     """Download photo using media pk
     """
@@ -27,10 +27,10 @@ async def album_download(sessionid: str = Form(...),
     return result
 
 
-@router.post("/download/by_urls", response_model=List[Path])
-async def album_download_by_urls(sessionid: str = Form(...),
-                         urls: List[str] = Form(...),
-                         folder: Optional[Path] = Form(""),
+@router.get("/download/by_urls", response_model=List[Path])
+async def album_download_by_urls(sessionid: str = Query(...),
+                         urls: List[str] = Query(...),
+                         folder: Optional[Path] = Query(""),
                          clients: ClientStorage = Depends(get_clients)) -> List[Path]:
     """Download photo using URL
     """

@@ -57,7 +57,7 @@ def custom_openapi():
     #         body_field.type_.__name__ = 'name'
     openapi_schema = get_openapi(
         title="instagrapi-rest",
-        version="1.0.0",
+        version="2.0.0",
         description="RESTful API Service for aiograpi",
         routes=app.routes,
     )
