@@ -36,7 +36,7 @@ func pkFromCode(code string) string {
 		SetQueryParams(map[string]string{
 			"code": code,
 		}).
-		Get("/media/pk_from_code")
+		Get("/media/pk/from/code")
 	if err != nil {
 		log.Println(err)
 	}
@@ -48,7 +48,7 @@ func pkFromUrl(url string) string {
 		SetQueryParams(map[string]string{
 			"url": url,
 		}).
-		Get("/media/pk_from_url")
+		Get("/media/pk/from/url")
 	if err != nil {
 		log.Println(err)
 	}
@@ -60,7 +60,7 @@ func id_from_username(sessionid, username string) string {
 		SetQueryParams(map[string]string{
 			"sessionid": sessionid,
 			"username":  username,
-		}).Get("/user/id_from_username")
+		}).Get("/user/id/from/username")
 	if err != nil {
 		log.Println(err)
 	}
@@ -194,7 +194,7 @@ func user_stories(sessionid, id string, amount int) []string {
 			"sessionid": sessionid,
 			"user_id":   id,
 			"amount":    strconv.Itoa(amount),
-		}).Get("/story/user_stories")
+		}).Get("/story/user/stories")
 	if err != nil {
 		log.Println(err)
 		return []string{}
@@ -280,12 +280,12 @@ func album_upload(sessionid string, files []string, caption string) string {
 	return resp.String()
 }
 
-func photo_upload_to_story(sessionid, filephoto string) string {
+func storyUpload(sessionid, filephoto string) string {
 	resp, err := client.R().
 		SetFile("file", strings.Trim(filephoto, "\" ")).
 		SetFormData(map[string]string{
 			"sessionid": sessionid,
-		}).Post("/photo/upload_to_story")
+		}).Post("/story/upload")
 
 	if err != nil {
 		log.Println(err)
@@ -322,8 +322,8 @@ func main() {
 	photo := photo_download(sessionid, pkFromUrl("https://www.instagram.com/p/COQebHWhRUg/"), "")
 	log.Println("photo_download:", photo)
 
-	photo_story := photo_upload_to_story(sessionid, photo)
-	log.Println("photo_upload_to_story:", photo_story)
+	photoStory := storyUpload(sessionid, photo)
+	log.Println("storyUpload:", photoStory)
 
 	video := video_download(sessionid, pkFromUrl("https://www.instagram.com/p/CGgDsi7JQdS/"), "")
 	log.Println("video_download:", video)

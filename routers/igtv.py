@@ -33,7 +33,7 @@ async def igtv_download(sessionid: str = Query(...),
         return result
 
 
-@router.get("/download/by_url")
+@router.get("/download/by/url")
 async def igtv_download_by_url(sessionid: str = Query(...),
                          url: str = Query(...),
                          filename: Optional[str] = Query(""),
@@ -84,7 +84,7 @@ async def igtv_upload(sessionid: str = Form(...),
         usertags=usernames_tags,
         location=location)
 
-@router.post("/upload/by_url", response_model=Media)
+@router.post("/upload/by/url", response_model=Media)
 async def igtv_upload(sessionid: str = Form(...),
                        url: str = Form(...),
                        title: str = Form(...),

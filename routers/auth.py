@@ -52,7 +52,7 @@ async def auth_login(username: str = Form(...),
     return result
 
 
-@router.post("/login_by_sessionid")
+@router.post("/login/by/sessionid")
 async def auth_login_by_sessionid(sessionid: str = Form(...),
                                   clients: ClientStorage = Depends(get_clients)) -> Union[str, bool]:
     """Login by sessionid
@@ -99,7 +99,7 @@ async def settings_set(settings: str = Form(...),
     return cl.sessionid
 
 
-@router.get("/timeline_feed")
+@router.get("/timeline/feed")
 async def timeline_feed(sessionid: str = Query(...),
                         clients: ClientStorage = Depends(get_clients)) -> Dict:
     """Get your timeline feed

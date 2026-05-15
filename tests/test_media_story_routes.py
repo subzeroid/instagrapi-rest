@@ -160,7 +160,7 @@ def storage():
 @pytest.mark.asyncio
 async def test_media_pk_from_code_uses_aiograpi_helper():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.get("/media/pk_from_code", params={"code": "B1LbfVPlwIA"})
+        response = await ac.get("/media/pk/from/code", params={"code": "B1LbfVPlwIA"})
     assert response.status_code == 200
     assert response.json() == "2110901750722920960"
 
@@ -179,7 +179,7 @@ async def test_media_pk_uses_aiograpi_helper():
 async def test_media_pk_from_url_uses_aiograpi_helper():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
-            "/media/pk_from_url",
+            "/media/pk/from/url",
             params={"url": "https://instagram.com/p/B1LbfVPlwIA/"},
         )
     assert response.status_code == 200
@@ -203,7 +203,7 @@ async def test_media_id_route_uses_client_factory(monkeypatch):
 async def test_story_pk_from_url_uses_aiograpi_helper():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
-            "/story/pk_from_url",
+            "/story/pk/from/url",
             params={
                 "url": "https://instagram.com/stories/instagram/2110901750722920960/"
             },
@@ -227,7 +227,7 @@ async def test_media_info_awaits_client(storage):
 async def test_user_medias_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
-            "/media/user_medias",
+            "/media/user/medias",
             params={"sessionid": "sid", "user_id": "1", "amount": "10"},
         )
     assert response.status_code == 200
@@ -238,7 +238,7 @@ async def test_user_medias_awaits_client(storage):
 async def test_usertag_medias_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
-            "/media/usertag_medias",
+            "/media/usertag/medias",
             params={"sessionid": "sid", "user_id": "1"},
         )
     assert response.status_code == 200
@@ -354,7 +354,7 @@ async def test_media_archive_and_unarchive(storage):
 async def test_story_user_stories_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
-            "/story/user_stories", params={"sessionid": "sid", "user_id": "1"}
+            "/story/user/stories", params={"sessionid": "sid", "user_id": "1"}
         )
     assert response.status_code == 200
     assert len(response.json()) == 1
@@ -439,7 +439,7 @@ async def test_story_download_returns_file_when_returnfile_true(storage):
 async def test_story_download_by_url_returns_path_when_returnfile_false(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
-            "/story/download/by_url",
+            "/story/download/by/url",
             params={"sessionid": "sid", "url": "https://x/y", "returnFile": "false"},
         )
     assert response.status_code == 200
@@ -450,7 +450,7 @@ async def test_story_download_by_url_returns_path_when_returnfile_false(storage)
 async def test_story_download_by_url_returns_file_when_returnfile_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
-            "/story/download/by_url",
+            "/story/download/by/url",
             params={"sessionid": "sid", "url": "https://x/y"},
         )
     assert response.status_code == 200

@@ -27,7 +27,7 @@ async def album_download(sessionid: str = Query(...),
     return result
 
 
-@router.get("/download/by_urls", response_model=List[Path])
+@router.get("/download/by/urls", response_model=List[Path])
 async def album_download_by_urls(sessionid: str = Query(...),
                          urls: List[str] = Query(...),
                          folder: Optional[Path] = Query(""),

@@ -101,7 +101,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "instagrapi-rest"
-version = "2.0.0"
+version = "3.0.0"
 description = "RESTful API service for aiograpi"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -909,8 +909,8 @@ Create or extend tests so every handler in `routers/` is executed at least once 
 
 Minimum route coverage list:
 
-- `auth`: `/login`, `/login_by_sessionid`, `/relogin`, `GET/PATCH /settings`, `/timeline_feed`
-- `media`: `/id`, `/pk`, `/pk_from_code`, `/pk_from_url`, `/info`, `/user_medias`, `/usertag_medias`, `/delete`, `/edit`, `/user`, `/oembed`, `/like`, `/unlike`, `/seen`, `/likers`, `/archive`, `/unarchive`
+- `auth`: `/login`, `/login/by/sessionid`, `/relogin`, `GET/PATCH /settings`, `/timeline/feed`
+- `media`: `/id`, `/pk`, `/pk/from/code`, `/pk/from/url`, `/info`, `/user/medias`, `/usertag/medias`, `/delete`, `/edit`, `/user`, `/oembed`, `/like`, `/unlike`, `/seen`, `/likers`, `/archive`, `/unarchive`
 - `user`: every existing route plus `/about`
 - `story`: every existing route
 - `photo`, `video`, `clip`, `igtv`, `album`: upload/download endpoints with fake clients and `returnFile=false` where available
@@ -1090,7 +1090,7 @@ Run:
 docker compose run --rm api pytest
 ```
 
-Expected: PASS. Verified: 103 passed, 1 skipped (live test gated by `TEST_ACCOUNTS_URL`).
+Expected: PASS. Verified after the v3 REST path cleanup: 115 passed, 1 deselected.
 
 - [x] **Step 3: Verify app starts through compose**
 
@@ -1126,7 +1126,7 @@ python3.13 -m compileall .
 docker compose run --rm api pytest
 ```
 
-Expected: PASS. Verified: 103 passed offline (`-m "not live"`), 99% coverage (only routers/auth.py lines 52, 65 — 2FA `input()` fallback — uncovered, which is expected for an interactive prompt branch), `compileall` clean, and `docker compose run --rm api pytest -m "not live"` → 103 passed inside the Python 3.13 container. The live test (`tests/live/test_live_smoke.py`) is skipped when `TEST_ACCOUNTS_URL` is unset; with the env set it failed on external proxy/account conditions (302 AuthRequiredProxyError / ConnectProxyError), same outcome documented in Task 9 Step 3 — not a code defect.
+Expected: PASS. Verified after the v3 REST path cleanup: 115 passed offline, 100% coverage, `compileall` clean, `go test ./...` clean for the Go example, and `docker compose run --rm api pytest` → 115 passed inside the Python 3.13 container. The live test (`tests/live/test_live_smoke.py`) is skipped when `TEST_ACCOUNTS_URL` is unset; with the env set it previously failed on external proxy/account conditions (302 AuthRequiredProxyError / ConnectProxyError), same outcome documented in Task 9 Step 3 — not a code defect.
 
 - [x] **Step 2: Run Claude review**
 
@@ -1154,9 +1154,10 @@ Report:
 - Runtime: Python 3.13 (`requires-python = ">=3.13"`, Dockerfile `FROM python:3.13-slim`, CI on 3.13).
 - Docker Compose command that starts the service: `docker compose up api` (binds `8000:8000`, service builds from `.`).
 - Test commands and outcomes:
-  - `.venv/bin/python -m pytest -m "not live"` → 103 passed.
-  - `.venv/bin/python -m pytest -m "not live" --cov=. --cov-report=term-missing` → 103 passed, 99% coverage (611 stmts, 2 missed — interactive 2FA `input()` fallback in `routers/auth.py`).
-  - `.venv/bin/python -m compileall -q .` → clean.
-  - `docker compose run --rm api pytest -m "not live"` → 103 passed inside the Python 3.13 container.
+  - `.venv/bin/python -m pytest --cov=. --cov-report=term-missing` → 115 passed, 1 deselected, 100% coverage.
+  - `.venv/bin/python -m compileall main.py dependencies.py helpers.py storages.py routers tests` → clean.
+  - `.venv/bin/ruff check .` → clean.
+  - `go test ./...` in `golang/` → clean.
+  - `docker compose run --rm api pytest` → 115 passed, 1 deselected inside the Python 3.13 container.
   - `tests/live/test_live_smoke.py` → skipped without `TEST_ACCOUNTS_URL`; with the env set, fails on external proxy/account conditions (documented in Task 9 Step 3).
 - Claude review outcome: No blocking issues; high confidence. Migration cleared for merge.

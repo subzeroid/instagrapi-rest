@@ -158,7 +158,7 @@ async def test_login_2fa_fallback_invokes_input_patch(fake_storage):
 @pytest.mark.asyncio
 async def test_login_by_sessionid_persists_session(fake_storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/auth/login_by_sessionid", data={"sessionid": "sid"})
+        response = await ac.post("/auth/login/by/sessionid", data={"sessionid": "sid"})
 
     assert response.status_code == 200
     assert response.json() == "sid"
@@ -175,7 +175,7 @@ async def test_login_by_sessionid_returns_false_without_persisting(fake_storage)
     fake_storage.created.login_by_sessionid = failing_login_by_sessionid
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/auth/login_by_sessionid", data={"sessionid": "sid"})
+        response = await ac.post("/auth/login/by/sessionid", data={"sessionid": "sid"})
 
     assert response.status_code == 200
     assert response.json() is False
@@ -226,7 +226,7 @@ async def test_settings_set_with_existing_sessionid_reuses_client(fake_storage):
 @pytest.mark.asyncio
 async def test_timeline_feed_awaits_aiograpi(fake_storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.get("/auth/timeline_feed", params={"sessionid": "sid"})
+        response = await ac.get("/auth/timeline/feed", params={"sessionid": "sid"})
 
     assert response.status_code == 200
     assert response.json() == {"feed": []}

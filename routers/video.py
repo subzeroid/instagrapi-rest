@@ -6,76 +6,19 @@ import requests
 from aiograpi.types import (
     Location,
     Media,
-    Story,
-    StoryHashtag,
-    StoryLink,
-    StoryLocation,
-    StoryMention,
-    StorySticker,
     Usertag,
 )
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import FileResponse
-from pydantic import AnyHttpUrl
 
 from dependencies import ClientStorage, get_clients
-from helpers import video_upload_post, video_upload_story
+from helpers import video_upload_post
 
 router = APIRouter(
     prefix="/video",
     tags=["video"],
     responses={404: {"description": "Not found"}},
 )
-
-
-@router.post("/upload_to_story", response_model=Story)
-async def video_upload_to_story(sessionid: str = Form(...),
-                                file: UploadFile = File(...),
-                                caption: Optional[str] = Form(''),
-                                mentions: List[StoryMention] = [],
-                                locations: List[StoryLocation] = [],
-                                links: List[StoryLink] = [],
-                                hashtags: List[StoryHashtag] = [],
-                                stickers: List[StorySticker] = [],
-                                clients: ClientStorage = Depends(get_clients)
-                                ) -> Story:
-    """Upload video to story
-    """
-    cl = await clients.get(sessionid)
-    content = await file.read()
-    return await video_upload_story(
-        cl, content, caption=caption,
-        mentions=mentions,
-        links=links,
-        hashtags=hashtags,
-        locations=locations,
-        stickers=stickers
-    )
-
-
-@router.post("/upload_to_story/by_url", response_model=Story)
-async def video_upload_to_story_by_url(sessionid: str = Form(...),
-                                       url: AnyHttpUrl = Form(...),
-                                       caption: Optional[str] = Form(''),
-                                       mentions: List[StoryMention] = [],
-                                       locations: List[StoryLocation] = [],
-                                       links: List[StoryLink] = [],
-                                       hashtags: List[StoryHashtag] = [],
-                                       stickers: List[StorySticker] = [],
-                                       clients: ClientStorage = Depends(get_clients)
-                                       ) -> Story:
-    """Upload video to story by URL to file
-    """
-    cl = await clients.get(sessionid)
-    content = requests.get(url).content
-    return await video_upload_story(
-        cl, content, caption=caption,
-        mentions=mentions,
-        links=links,
-        hashtags=hashtags,
-        locations=locations,
-        stickers=stickers
-    )
 
 
 @router.get("/download")
@@ -94,7 +37,7 @@ async def video_download(sessionid: str = Query(...),
         return result
 
 
-@router.get("/download/by_url")
+@router.get("/download/by/url")
 async def video_download_by_url(sessionid: str = Query(...),
                          url: str = Query(...),
                          filename: Optional[str] = Query(""),
@@ -142,7 +85,7 @@ async def video_upload(sessionid: str = Form(...),
         usertags=usernames_tags,
         location=location)
 
-@router.post("/upload/by_url", response_model=Media)
+@router.post("/upload/by/url", response_model=Media)
 async def video_upload(sessionid: str = Form(...),
                        url: str = Form(...),
                        caption: str = Form(...),

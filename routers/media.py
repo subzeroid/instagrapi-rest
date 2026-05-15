@@ -27,14 +27,14 @@ async def media_pk(media_id: str) -> str:
     return str(Client().media_pk(media_id))
 
 
-@router.get("/pk_from_code")
+@router.get("/pk/from/code")
 async def media_pk_from_code(code: str) -> str:
     """Get media pk from code
     """
     return str(Client().media_pk_from_code(code))
 
 
-@router.get("/pk_from_url")
+@router.get("/pk/from/url")
 async def media_pk_from_url(url: str) -> str:
     """Get Media PK from URL
     """
@@ -52,7 +52,7 @@ async def media_info(sessionid: str = Query(...),
     return await cl.media_info(pk, use_cache)
 
 
-@router.get("/user_medias", response_model=List[Media])
+@router.get("/user/medias", response_model=List[Media])
 async def user_medias(sessionid: str = Query(...),
                       user_id: int = Query(...),
                       amount: Optional[int] = Query(50),
@@ -63,7 +63,7 @@ async def user_medias(sessionid: str = Query(...),
     return await cl.user_medias(user_id, amount)
 
 
-@router.get("/usertag_medias", response_model=List[Media])
+@router.get("/usertag/medias", response_model=List[Media])
 async def usertag_medias(sessionid: str = Query(...),
                          user_id: int = Query(...),
                          amount: Optional[int] = Query(50),

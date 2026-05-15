@@ -2,12 +2,12 @@
 
 ## Goal
 
-Move `instagrapi-rest` from synchronous `instagrapi` to asynchronous `aiograpi` from PyPI, update the project to Python 3.13, cover the local REST adapter with tests, add `GET /user/about`, align HTTP methods with REST semantics, publish API version `2.0.0`, and verify the final diff with Claude.
+Move `instagrapi-rest` from synchronous `instagrapi` to asynchronous `aiograpi` from PyPI, update the project to Python 3.13, cover the local REST adapter with tests, add `GET /user/about`, align HTTP methods with REST semantics, publish API version `3.0.0`, and verify the final diff with Claude.
 
 ## Fixed Decisions
 
 - Runtime target: Python 3.13.
-- API version: `2.0.0` because the REST method cleanup is a breaking public API change.
+- API version: `3.0.0` because the REST method and path cleanup is a breaking public API change.
 - Instagram client dependency: `aiograpi==0.9.7` from PyPI, not `../aiograpi`.
 - `aiograpi==0.9.7` requires Python `>=3.10` and was the latest PyPI release checked during planning on 2026-05-15.
 - `TEST_ACCOUNTS_URL` may be used only for optional live smoke tests. The default test suite must not require live Instagram accounts or network access.
@@ -48,6 +48,8 @@ Route handlers become async delegates:
 - Upload helpers already use async wrappers and will await `aiograpi` upload methods.
 - REST method convention: reads and downloads are `GET`, creates/uploads/login are `POST`, state changes are `PATCH`, and removals are `DELETE`.
 - Settings are a single resource: `GET /auth/settings` reads settings and `PATCH /auth/settings` writes settings.
+- Public URL paths use slash-separated words instead of underscores, for example `GET /user/info/by/username`.
+- Story uploads use a single resource: `POST /story/upload` and `POST /story/upload/by/url`.
 
 The app remains a single FastAPI service with the existing router split:
 
@@ -136,7 +138,7 @@ Offline tests:
 
 - Import app successfully under Python 3.13.
 - Verify `/version` reports `aiograpi`.
-- Verify OpenAPI generation includes all routers, `GET /user/about`, API version `2.0.0`, and the REST HTTP method map.
+- Verify OpenAPI generation includes all routers, `GET /user/about`, API version `3.0.0`, slash-separated paths, and the REST HTTP method map.
 - Cover `ClientStorage.client`, `ClientStorage.get`, `ClientStorage.set`, session not found, and stored settings reload.
 - Cover every route handler at least once using fake async clients and dependency overrides.
 - Cover pure media/story PK helper routes with real `aiograpi.Client` pure helpers.

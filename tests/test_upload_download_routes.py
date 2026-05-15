@@ -9,6 +9,7 @@ import helpers
 import routers.clip as clip_router
 import routers.igtv as igtv_router
 import routers.photo as photo_router
+import routers.story as story_router
 import routers.video as video_router
 from dependencies import get_clients
 from main import app
@@ -158,6 +159,7 @@ def fake_requests(monkeypatch):
     monkeypatch.setattr(video_router, "requests", types.SimpleNamespace(get=fake_get))
     monkeypatch.setattr(clip_router, "requests", types.SimpleNamespace(get=fake_get))
     monkeypatch.setattr(igtv_router, "requests", types.SimpleNamespace(get=fake_get))
+    monkeypatch.setattr(story_router, "requests", types.SimpleNamespace(get=fake_get))
 
 
 @pytest.fixture
@@ -208,7 +210,7 @@ async def test_photo_download_returns_file_when_returnfile_true(storage):
 async def test_photo_download_by_url_returns_path_when_returnfile_false(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
-            "/photo/download/by_url",
+            "/photo/download/by/url",
             params={
                 "sessionid": "sid",
                 "url": "https://x/y.jpg",
@@ -223,7 +225,7 @@ async def test_photo_download_by_url_returns_path_when_returnfile_false(storage)
 async def test_photo_download_by_url_returns_file_when_returnfile_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
-            "/photo/download/by_url",
+            "/photo/download/by/url",
             params={"sessionid": "sid", "url": "https://x/y.jpg"},
         )
     assert response.status_code == 200
@@ -248,7 +250,7 @@ async def test_photo_upload_by_url_uses_helper(storage, fake_requests):
     usertag = json.dumps({"user": {"pk": 1, "username": "u", "full_name": "f"}, "x": 0.5, "y": 0.5})
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post(
-            "/photo/upload/by_url",
+            "/photo/upload/by/url",
             data={
                 "sessionid": "sid",
                 "url": "https://example.com/photo.jpg",
@@ -264,7 +266,7 @@ async def test_photo_upload_by_url_uses_helper(storage, fake_requests):
 async def test_photo_upload_to_story_as_photo(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post(
-            "/photo/upload_to_story",
+            "/story/upload",
             data={"sessionid": "sid", "caption": "hi", "as_video": "false"},
             files={"file": ("a.jpg", b"img-bytes", "image/jpeg")},
         )
@@ -276,7 +278,7 @@ async def test_photo_upload_to_story_as_photo(storage):
 async def test_photo_upload_to_story_as_video(storage, fake_storybuilder):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post(
-            "/photo/upload_to_story",
+            "/story/upload",
             data={"sessionid": "sid", "caption": "hi", "as_video": "true"},
             files={"file": ("a.jpg", b"img-bytes", "image/jpeg")},
         )
@@ -288,7 +290,7 @@ async def test_photo_upload_to_story_as_video(storage, fake_storybuilder):
 async def test_photo_upload_to_story_by_url_as_photo(storage, fake_requests):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post(
-            "/photo/upload_to_story/by_url",
+            "/story/upload/by/url",
             data={
                 "sessionid": "sid",
                 "url": "https://example.com/photo.jpg",
@@ -303,7 +305,7 @@ async def test_photo_upload_to_story_by_url_as_photo(storage, fake_requests):
 async def test_photo_upload_to_story_by_url_as_video(storage, fake_requests, fake_storybuilder):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post(
-            "/photo/upload_to_story/by_url",
+            "/story/upload/by/url",
             data={
                 "sessionid": "sid",
                 "url": "https://example.com/photo.jpg",
@@ -340,7 +342,7 @@ async def test_video_download_returns_file_when_returnfile_true(storage):
 async def test_video_download_by_url_returns_path_when_returnfile_false(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
-            "/video/download/by_url",
+            "/video/download/by/url",
             params={
                 "sessionid": "sid",
                 "url": "https://x/y.mp4",
@@ -354,7 +356,7 @@ async def test_video_download_by_url_returns_path_when_returnfile_false(storage)
 async def test_video_download_by_url_returns_file_when_returnfile_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
-            "/video/download/by_url",
+            "/video/download/by/url",
             params={"sessionid": "sid", "url": "https://x/y.mp4"},
         )
     assert response.status_code == 200
@@ -388,7 +390,7 @@ async def test_video_upload_by_url_with_and_without_thumbnail(storage, fake_requ
     usertag = json.dumps({"user": {"pk": 1, "username": "u", "full_name": "f"}, "x": 0.5, "y": 0.5})
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         no_thumb = await ac.post(
-            "/video/upload/by_url",
+            "/video/upload/by/url",
             data={
                 "sessionid": "sid",
                 "url": "https://example.com/v.mp4",
@@ -397,7 +399,7 @@ async def test_video_upload_by_url_with_and_without_thumbnail(storage, fake_requ
             },
         )
         with_thumb = await ac.post(
-            "/video/upload/by_url",
+            "/video/upload/by/url",
             data={
                 "sessionid": "sid",
                 "url": "https://example.com/v.mp4",
@@ -410,10 +412,10 @@ async def test_video_upload_by_url_with_and_without_thumbnail(storage, fake_requ
 
 
 @pytest.mark.asyncio
-async def test_video_upload_to_story(storage, fake_storybuilder):
+async def test_story_upload_video(storage, fake_storybuilder):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post(
-            "/video/upload_to_story",
+            "/story/upload",
             data={"sessionid": "sid", "caption": "hi"},
             files={"file": ("a.mp4", b"vid-bytes", "video/mp4")},
         )
@@ -422,10 +424,10 @@ async def test_video_upload_to_story(storage, fake_storybuilder):
 
 
 @pytest.mark.asyncio
-async def test_video_upload_to_story_by_url(storage, fake_requests, fake_storybuilder):
+async def test_story_upload_video_by_url(storage, fake_requests, fake_storybuilder):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post(
-            "/video/upload_to_story/by_url",
+            "/story/upload/by/url",
             data={
                 "sessionid": "sid",
                 "url": "https://example.com/v.mp4",
@@ -456,7 +458,7 @@ async def test_clip_download_routes_both_returnfile_modes(storage):
 async def test_clip_download_by_url_both_returnfile_modes(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         path_resp = await ac.get(
-            "/clip/download/by_url",
+            "/clip/download/by/url",
             params={
                 "sessionid": "sid",
                 "url": "https://x/y.mp4",
@@ -464,7 +466,7 @@ async def test_clip_download_by_url_both_returnfile_modes(storage):
             },
         )
         file_resp = await ac.get(
-            "/clip/download/by_url",
+            "/clip/download/by/url",
             params={"sessionid": "sid", "url": "https://x/y.mp4"},
         )
     assert path_resp.status_code == 200
@@ -499,7 +501,7 @@ async def test_clip_upload_by_url_with_and_without_thumbnail(storage, fake_reque
     usertag = json.dumps({"user": {"pk": 1, "username": "u", "full_name": "f"}, "x": 0.5, "y": 0.5})
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         no_thumb = await ac.post(
-            "/clip/upload/by_url",
+            "/clip/upload/by/url",
             data={
                 "sessionid": "sid",
                 "url": "https://example.com/c.mp4",
@@ -508,7 +510,7 @@ async def test_clip_upload_by_url_with_and_without_thumbnail(storage, fake_reque
             },
         )
         with_thumb = await ac.post(
-            "/clip/upload/by_url",
+            "/clip/upload/by/url",
             data={
                 "sessionid": "sid",
                 "url": "https://example.com/c.mp4",
@@ -540,7 +542,7 @@ async def test_igtv_download_routes_both_returnfile_modes(storage):
 async def test_igtv_download_by_url_both_returnfile_modes(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         path_resp = await ac.get(
-            "/igtv/download/by_url",
+            "/igtv/download/by/url",
             params={
                 "sessionid": "sid",
                 "url": "https://x/y.mp4",
@@ -548,7 +550,7 @@ async def test_igtv_download_by_url_both_returnfile_modes(storage):
             },
         )
         file_resp = await ac.get(
-            "/igtv/download/by_url",
+            "/igtv/download/by/url",
             params={"sessionid": "sid", "url": "https://x/y.mp4"},
         )
     assert path_resp.status_code == 200
@@ -581,7 +583,7 @@ async def test_igtv_upload_by_url_with_and_without_thumbnail(storage, fake_reque
     usertag = json.dumps({"user": {"pk": 1, "username": "u", "full_name": "f"}, "x": 0.5, "y": 0.5})
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         no_thumb = await ac.post(
-            "/igtv/upload/by_url",
+            "/igtv/upload/by/url",
             data={
                 "sessionid": "sid",
                 "url": "https://example.com/i.mp4",
@@ -591,7 +593,7 @@ async def test_igtv_upload_by_url_with_and_without_thumbnail(storage, fake_reque
             },
         )
         with_thumb = await ac.post(
-            "/igtv/upload/by_url",
+            "/igtv/upload/by/url",
             data={
                 "sessionid": "sid",
                 "url": "https://example.com/i.mp4",
@@ -621,7 +623,7 @@ async def test_album_download_returns_list(storage):
 async def test_album_download_by_urls_returns_list(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
-            "/album/download/by_urls",
+            "/album/download/by/urls",
             params={"sessionid": "sid", "urls": ["https://x/1.jpg", "https://x/2.jpg"]},
         )
     assert response.status_code == 200

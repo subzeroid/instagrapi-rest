@@ -87,7 +87,7 @@ async def user_info(sessionid: str = Query(...),
     return await cl.user_info(user_id)
 
 
-@router.get("/info_by_username", response_model=User)
+@router.get("/info/by/username", response_model=User)
 async def user_info_by_username(sessionid: str = Query(...),
                                 username: str = Query(...),
                                 use_cache: Optional[bool] = Query(True),
@@ -135,7 +135,7 @@ async def user_unfollow(sessionid: str = Query(...),
     return await cl.user_unfollow(user_id)
 
 
-@router.get("/id_from_username", response_model=int)
+@router.get("/id/from/username", response_model=int)
 async def user_id_from_username(sessionid: str = Query(...),
                                 username: str = Query(...),
                                 clients: ClientStorage = Depends(get_clients)) -> int:
@@ -145,7 +145,7 @@ async def user_id_from_username(sessionid: str = Query(...),
     return await cl.user_id_from_username(username)
 
 
-@router.get("/username_from_id", response_model=str)
+@router.get("/username/from/id", response_model=str)
 async def username_from_user_id(sessionid: str = Query(...),
                                 user_id: int = Query(...),
                                 clients: ClientStorage = Depends(get_clients)) -> str:
@@ -155,7 +155,7 @@ async def username_from_user_id(sessionid: str = Query(...),
     return await cl.username_from_user_id(user_id)
 
 
-@router.delete("/remove_follower", response_model=bool)
+@router.delete("/remove/follower", response_model=bool)
 async def user_remove_follower(sessionid: str = Query(...),
                                user_id: int = Query(...),
                                clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -165,7 +165,7 @@ async def user_remove_follower(sessionid: str = Query(...),
     return await cl.user_remove_follower(user_id)
 
 
-@router.patch("/mute_posts_from_follow", response_model=bool)
+@router.patch("/mute/posts/from/follow", response_model=bool)
 async def mute_posts_from_follow(sessionid: str = Form(...),
                                  user_id: int = Form(...),
                                  revert: Optional[bool] = Form(False),
@@ -176,7 +176,7 @@ async def mute_posts_from_follow(sessionid: str = Form(...),
     return await cl.mute_posts_from_follow(user_id, revert)
 
 
-@router.patch("/unmute_posts_from_follow", response_model=bool)
+@router.patch("/unmute/posts/from/follow", response_model=bool)
 async def unmute_posts_from_follow(sessionid: str = Form(...),
                                    user_id: int = Form(...),
                                    clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -186,7 +186,7 @@ async def unmute_posts_from_follow(sessionid: str = Form(...),
     return await cl.unmute_posts_from_follow(user_id)
 
 
-@router.patch("/mute_stories_from_follow", response_model=bool)
+@router.patch("/mute/stories/from/follow", response_model=bool)
 async def mute_stories_from_follow(sessionid: str = Form(...),
                                    user_id: int = Form(...),
                                    revert: Optional[bool] = Form(False),
@@ -197,7 +197,7 @@ async def mute_stories_from_follow(sessionid: str = Form(...),
     return await cl.mute_stories_from_follow(user_id, revert)
 
 
-@router.patch("/unmute_stories_from_follow", response_model=bool)
+@router.patch("/unmute/stories/from/follow", response_model=bool)
 async def unmute_stories_from_follow(sessionid: str = Form(...),
                                      user_id: int = Form(...),
                                      clients: ClientStorage = Depends(get_clients)) -> bool:
