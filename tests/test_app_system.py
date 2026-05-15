@@ -30,7 +30,9 @@ async def test_openapi_contains_user_about():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get("/openapi.json")
     assert response.status_code == 200
-    assert "/user/about" in response.json()["paths"]
+    methods = response.json()["paths"]["/user/about"]
+    assert "get" in methods
+    assert "post" not in methods
 
 
 @pytest.mark.asyncio

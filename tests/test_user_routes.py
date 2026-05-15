@@ -161,13 +161,123 @@ async def test_user_info_by_username_awaits_client(storage):
 @pytest.mark.asyncio
 async def test_user_about_returns_about_payload(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post(
-            "/user/about", data={"sessionid": "sid", "user_id": "25025320"}
+        response = await ac.get(
+            "/user/about", params={"sessionid": "sid", "user_id": "25025320"}
         )
 
     assert response.status_code == 200
     assert response.json()["username"] == "instagram"
     assert response.json()["is_verified"] is True
+    assert ("user_about_v1", "25025320") in storage.client_instance.calls
+
+
+@pytest.mark.asyncio
+async def test_user_about_normalizes_bool_country(storage):
+    async def user_about_with_bool_country(user_id):
+        storage.client_instance.calls.append(("user_about_v1", user_id))
+        return {
+            "username": "instagram",
+            "is_verified": True,
+            "country": True,
+            "date": 2010,
+            "former_usernames": "0",
+        }
+
+    storage.client_instance.user_about_v1 = user_about_with_bool_country
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get(
+            "/user/about", params={"sessionid": "sid", "user_id": "25025320"}
+        )
+
+    assert response.status_code == 200
+    assert response.json()["country"] == ""
+    assert response.json()["date"] == "2010"
+    assert response.json()["username"] == "instagram"
+
+
+@pytest.mark.asyncio
+async def test_user_about_accepts_about_model(storage):
+    from aiograpi.types import About
+
+    async def user_about_model(user_id):
+        storage.client_instance.calls.append(("user_about_v1", user_id))
+        return About(username="instagram", country="United States")
+
+    storage.client_instance.user_about_v1 = user_about_model
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get(
+            "/user/about", params={"sessionid": "sid", "user_id": "25025320"}
+        )
+
+    assert response.status_code == 200
+    assert response.json()["country"] == "United States"
+    assert response.json()["username"] == "instagram"
+
+
+@pytest.mark.asyncio
+async def test_user_about_falls_back_when_aiograpi_rejects_bool_country(storage):
+    from aiograpi.types import About
+
+    async def user_about_with_invalid_country(user_id):
+        storage.client_instance.calls.append(("user_about_v1", user_id))
+        storage.client_instance.last_json = {
+            "layout": {"bloks_payload": {"data": [{"data": {"initial": True}}]}}
+        }
+        return About(country=True)
+
+    storage.client_instance.user_about_v1 = user_about_with_invalid_country
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get(
+            "/user/about", params={"sessionid": "sid", "user_id": "25025320"}
+        )
+
+    assert response.status_code == 200
+    assert response.json()["country"] == ""
+    assert ("user_about_v1", "25025320") in storage.client_instance.calls
+
+
+def test_extract_about_from_last_json_covers_bloks_fields():
+    from routers.user import _extract_about_from_last_json
+
+    about = _extract_about_from_last_json(
+        {
+            "layout": {"bloks_payload": {"data": [{"data": {"initial": True}}]}},
+            'username")': {"style": "bold"},
+            'date_marker")': "Date joined",
+            'date_value")': "February 2012",
+            'former_marker")': "Former usernames",
+            'skip")': "ignored",
+            'former_value")': "0",
+        }
+    )
+
+    assert about.country == ""
+    assert about.date == "February 2012"
+    assert about.former_usernames.startswith("0")
+    assert about.username
+
+
+@pytest.mark.asyncio
+async def test_user_about_reraises_validation_without_last_json(storage):
+    from aiograpi.types import About
+
+    async def user_about_without_last_json(user_id):
+        storage.client_instance.calls.append(("user_about_v1", user_id))
+        return About(country=True)
+
+    storage.client_instance.user_about_v1 = user_about_without_last_json
+    transport = ASGITransport(app=app, raise_app_exceptions=False)
+
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.get(
+            "/user/about", params={"sessionid": "sid", "user_id": "25025320"}
+        )
+
+    assert response.status_code == 500
+    assert response.json()["exc_type"] == "ValidationError"
 
 
 @pytest.mark.asyncio

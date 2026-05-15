@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 from unittest.mock import patch
 
 from fastapi import APIRouter, Depends, Form
@@ -20,7 +20,7 @@ async def auth_login(username: str = Form(...),
                      proxy: Optional[str] = Form(""),
                      locale: Optional[str] = Form(""),
                      timezone: Optional[str] = Form(""),
-                     clients: ClientStorage = Depends(get_clients)) -> str:
+                     clients: ClientStorage = Depends(get_clients)) -> Union[str, bool]:
     """Login by username and password with 2FA
     """
     cl = clients.client()
@@ -54,7 +54,7 @@ async def auth_login(username: str = Form(...),
 
 @router.post("/login_by_sessionid")
 async def auth_login_by_sessionid(sessionid: str = Form(...),
-                                  clients: ClientStorage = Depends(get_clients)) -> str:
+                                  clients: ClientStorage = Depends(get_clients)) -> Union[str, bool]:
     """Login by sessionid
     """
     cl = clients.client()

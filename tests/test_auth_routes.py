@@ -113,6 +113,25 @@ async def test_login_without_verification_code_uses_two_arg_login(fake_storage):
 
 
 @pytest.mark.asyncio
+async def test_login_returns_false_without_persisting_on_failure(fake_storage):
+    async def failing_login(username, password, verification_code=""):
+        fake_storage.created.calls.append(("login", username, password, verification_code))
+        return False
+
+    fake_storage.created.login = failing_login
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post(
+            "/auth/login",
+            data={"username": "u", "password": "p"},
+        )
+
+    assert response.status_code == 200
+    assert response.json() is False
+    assert fake_storage.saved == []
+
+
+@pytest.mark.asyncio
 async def test_login_2fa_fallback_invokes_input_patch(fake_storage):
     captured = {}
 
@@ -145,6 +164,22 @@ async def test_login_by_sessionid_persists_session(fake_storage):
     assert response.json() == "sid"
     assert ("login_by_sessionid", "sid") in fake_storage.created.calls
     assert fake_storage.saved == [fake_storage.created]
+
+
+@pytest.mark.asyncio
+async def test_login_by_sessionid_returns_false_without_persisting(fake_storage):
+    async def failing_login_by_sessionid(sessionid):
+        fake_storage.created.calls.append(("login_by_sessionid", sessionid))
+        return False
+
+    fake_storage.created.login_by_sessionid = failing_login_by_sessionid
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post("/auth/login_by_sessionid", data={"sessionid": "sid"})
+
+    assert response.status_code == 200
+    assert response.json() is False
+    assert fake_storage.saved == []
 
 
 @pytest.mark.asyncio

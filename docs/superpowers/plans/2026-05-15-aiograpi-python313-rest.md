@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Port the REST service from sync `instagrapi` to async `aiograpi==0.9.7` from PyPI, target Python 3.13, replace `requirements.txt` with `pyproject.toml`, add `POST /user/about`, and cover the local adapter with offline tests plus optional live smoke tests.
+**Goal:** Port the REST service from sync `instagrapi` to async `aiograpi==0.9.7` from PyPI, target Python 3.13, replace `requirements.txt` with `pyproject.toml`, add `GET /user/about`, and cover the local adapter with offline tests plus optional live smoke tests.
 
 **Architecture:** Keep the existing FastAPI router shape and request formats. Move the client boundary to async by making `ClientStorage.get()` async and awaiting all `aiograpi` IO methods in route handlers. Keep TinyDB session persistence, Docker Compose service name `api`, and the current global exception envelope.
 
@@ -604,7 +604,7 @@ def override_storage():
 @pytest.mark.asyncio
 async def test_user_about_returns_about_payload():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/user/about", data={"sessionid": "sid", "user_id": "25025320"})
+        response = await ac.get("/user/about", params={"sessionid": "sid", "user_id": "25025320"})
 
     assert response.status_code == 200
     assert response.json()["username"] == "instagram"
@@ -640,10 +640,10 @@ In `routers/user.py`:
 - Add:
 
 ```python
-@router.post("/about", response_model=About)
+@router.get("/about", response_model=About)
 async def user_about(
-    sessionid: str = Form(...),
-    user_id: str = Form(...),
+    sessionid: str = Query(...),
+    user_id: str = Query(...),
     clients: ClientStorage = Depends(get_clients),
 ) -> About:
     cl = await clients.get(sessionid)
@@ -1132,7 +1132,7 @@ Expected: PASS. Verified: 103 passed offline (`-m "not live"`), 99% coverage (on
 
 Use the gstack Claude review flow requested by the user. Review the full diff against `main`.
 
-Expected: Claude reports no blocking correctness issues, or gives concrete findings to fix. Outcome: No blocking issues found, high confidence. The reviewer directly verified async correctness (all `aiograpi` IO awaited), `/user/about` shape (POST `sessionid`+`user_id`, `response_model=About`), `ClientStorage.get()` async behavior, `helpers.py` temp-file cleanup, Dockerfile/Compose (Python 3.13, pyproject install, port 8000), pyproject pins, test fakes catching unawaited handlers, and security (no path traversal, no credential leakage; `requests.get(url).content` in by-URL routes is sync-blocking but explicitly out of scope per spec).
+Expected: Claude reports no blocking correctness issues, or gives concrete findings to fix. Outcome: No blocking issues found, high confidence. The reviewer directly verified async correctness (all `aiograpi` IO awaited), `/user/about` shape (GET `sessionid`+`user_id`, `response_model=About`), `ClientStorage.get()` async behavior, `helpers.py` temp-file cleanup, Dockerfile/Compose (Python 3.13, pyproject install, port 8000), pyproject pins, test fakes catching unawaited handlers, and security (no path traversal, no credential leakage; `requests.get(url).content` in by-URL routes is sync-blocking but explicitly out of scope per spec).
 
 - [x] **Step 3: Address Claude findings**
 

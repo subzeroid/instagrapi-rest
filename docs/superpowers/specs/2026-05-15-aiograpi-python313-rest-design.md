@@ -2,7 +2,7 @@
 
 ## Goal
 
-Move `instagrapi-rest` from synchronous `instagrapi` to asynchronous `aiograpi` from PyPI, update the project to Python 3.13, cover the local REST adapter with tests, add `POST /user/about`, and verify the final diff with Claude.
+Move `instagrapi-rest` from synchronous `instagrapi` to asynchronous `aiograpi` from PyPI, update the project to Python 3.13, cover the local REST adapter with tests, add `GET /user/about`, and verify the final diff with Claude.
 
 ## Fixed Decisions
 
@@ -108,10 +108,7 @@ CI changes:
 Add:
 
 ```http
-POST /user/about
-Content-Type: application/x-www-form-urlencoded
-
-sessionid=<SESSIONID>&user_id=<USER_ID>
+GET /user/about?sessionid=<SESSIONID>&user_id=<USER_ID>
 ```
 
 Behavior:
@@ -136,7 +133,7 @@ Offline tests:
 
 - Import app successfully under Python 3.13.
 - Verify `/version` reports `aiograpi`.
-- Verify OpenAPI generation includes all routers and `POST /user/about`.
+- Verify OpenAPI generation includes all routers and `GET /user/about`.
 - Cover `ClientStorage.client`, `ClientStorage.get`, `ClientStorage.set`, session not found, and stored settings reload.
 - Cover every route handler at least once using fake async clients and dependency overrides.
 - Cover pure media/story PK helper routes with real `aiograpi.Client` pure helpers.
@@ -183,7 +180,7 @@ Do not introduce a new API error envelope in this migration. The goal is a depen
 
 ## Out Of Scope
 
-- Changing public endpoint names, request methods, or form field names except adding `/user/about`.
+- Changing public endpoint names, request methods, or form field names except adding `GET /user/about`.
 - Replacing TinyDB with a production database.
 - Adding auth to the REST service itself.
 - Solving Instagram account bans, proxy rotation, challenge workers, or managed session orchestration.

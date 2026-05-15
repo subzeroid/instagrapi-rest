@@ -1,7 +1,10 @@
-from typing import Dict, Optional
+import json
+from typing import Any, Dict, Optional
 
+from aiograpi.extractors import json_value
 from aiograpi.types import About, User, UserShort
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends, Form, Query
+from pydantic import ValidationError
 
 from dependencies import ClientStorage, get_clients
 
@@ -10,6 +13,43 @@ router = APIRouter(
     tags=["user"],
     responses={404: {"description": "Not found"}},
 )
+
+
+def _normalize_about(value: Any) -> About:
+    if isinstance(value, dict):
+        payload = dict(value)
+    else:
+        payload = value.model_dump()
+
+    for field in ("username", "country", "date", "former_usernames"):
+        field_value = payload.get(field)
+        if isinstance(field_value, bool):
+            payload[field] = ""
+        elif field_value is not None and not isinstance(field_value, str):
+            payload[field] = str(field_value)
+
+    return About(**payload)
+
+
+def _extract_about_from_last_json(data: Dict) -> About:
+    payload = {}
+    content = json_value(data, "layout", "bloks_payload", "data", 0, "data")
+    if isinstance(content, dict):
+        payload["country"] = content.get("initial")
+
+    serialized = json.dumps(data, ensure_ascii=False, separators=(",", ":"), default=str)
+    payload["is_verified"] = '"Verified"' in serialized
+    date_found = False
+    parts = serialized.split('")":')
+    for index, value in enumerate(parts):
+        if '"bold"}' in value:
+            payload["username"] = value.strip().split(",")[0][1:-1]
+        if date_found:
+            payload["date"] = value.strip().split(",")[0][1:-1]
+        if "Former usernames" in value:
+            payload["former_usernames"] = parts[index + 2].strip().split(",")[0][1:-1]
+        date_found = '"Date joined"' in value
+    return _normalize_about(payload)
 
 
 @router.post("/followers", response_model=Dict[int, UserShort])
@@ -58,14 +98,21 @@ async def user_info_by_username(sessionid: str = Form(...),
     return await cl.user_info_by_username(username)
 
 
-@router.post("/about", response_model=About)
-async def user_about(sessionid: str = Form(...),
-                     user_id: str = Form(...),
+@router.get("/about", response_model=About)
+async def user_about(sessionid: str = Query(...),
+                     user_id: str = Query(...),
                      clients: ClientStorage = Depends(get_clients)) -> About:
     """Get user about details (verification, country, join date)
     """
     cl = await clients.get(sessionid)
-    return await cl.user_about_v1(user_id)
+    try:
+        about = await cl.user_about_v1(user_id)
+    except ValidationError:
+        last_json = getattr(cl, "last_json", None)
+        if not last_json:
+            raise
+        return _extract_about_from_last_json(last_json)
+    return _normalize_about(about)
 
 
 @router.post("/follow", response_model=bool)
