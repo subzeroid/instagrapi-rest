@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aiograpi-rest"
-version = "4.0.0"
+version = "1.0.0"
 description = "RESTful API service for aiograpi"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -17,6 +17,11 @@ dependencies = [
   "requests>=2.32,<3",
   "aiofiles>=24.1,<25",
 ]
+
+[project.urls]
+Homepage = "https://github.com/subzeroid/aiograpi-rest"
+Repository = "https://github.com/subzeroid/aiograpi-rest"
+Issues = "https://github.com/subzeroid/aiograpi-rest/issues"
 
 [project.optional-dependencies]
 test = [

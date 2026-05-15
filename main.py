@@ -150,7 +150,7 @@ def custom_openapi():
     #         body_field.type_.__name__ = 'name'
     openapi_schema = get_openapi(
         title="aiograpi-rest",
-        version="4.0.0",
+        version="1.0.0",
         description="RESTful API Service for aiograpi",
         routes=app.routes,
         tags=OPENAPI_TAGS,

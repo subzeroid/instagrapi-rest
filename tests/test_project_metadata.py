@@ -14,7 +14,8 @@ def test_pyproject_replaces_requirements_txt():
     assert "aiograpi==0.9.7" in deps
     assert pyproject["project"]["requires-python"] == ">=3.13"
     assert pyproject["project"]["name"] == "aiograpi-rest"
-    assert pyproject["project"]["version"] == "4.0.0"
+    assert pyproject["project"]["version"] == "1.0.0"
+    assert pyproject["project"]["urls"]["Repository"] == "https://github.com/subzeroid/aiograpi-rest"
 
 
 def test_dockerfile_uses_python_313_and_pyproject_install():
@@ -42,6 +43,7 @@ def test_app_manifest_uses_aiograpi_rest_identity():
 def test_readme_documents_rename_reason():
     readme = (ROOT / "README.md").read_text()
     assert readme.startswith("# aiograpi-rest")
-    assert "Renamed from `instagrapi-rest` to `aiograpi-rest`" in readme
+    assert "Renamed from `instagrapi-rest` to `aiograpi-rest` in v1.0.0" in readme
+    assert "`aiograpi-rest` starts its own semver line at `1.0.0`" in readme
     assert "the service is now powered by `aiograpi`" in readme
     assert "docker run -d -p 8000:8000 subzeroid/aiograpi-rest" in readme

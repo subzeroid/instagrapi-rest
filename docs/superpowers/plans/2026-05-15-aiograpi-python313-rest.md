@@ -101,7 +101,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aiograpi-rest"
-version = "4.0.0"
+version = "1.0.0"
 description = "RESTful API service for aiograpi"
 readme = "README.md"
 requires-python = ">=3.13"

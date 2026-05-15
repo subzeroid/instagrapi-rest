@@ -8,10 +8,14 @@ Support chat on Telegram: https://t.me/aiograpi_support (the previous `@instagra
 
 ## Why the project was renamed
 
-Renamed from `instagrapi-rest` to `aiograpi-rest` in v4.0.0. The old name made
+Renamed from `instagrapi-rest` to `aiograpi-rest` in v1.0.0. The old name made
 sense while the service wrapped synchronous `instagrapi`, but the service is now powered by `aiograpi`, the maintained async fork. The new name is more precise
 for package managers, Docker images, OpenAPI clients, and repository discovery:
 this project is the REST/HTTP boundary for `aiograpi`.
+
+`aiograpi-rest` starts its own semver line at `1.0.0`. It is the renamed
+successor of `instagrapi-rest 3.1.1`, not a continuation of the old package name
+as `4.0.0`.
 
 ## Why this exists
 
@@ -34,7 +38,7 @@ If those line items sound like work you don't want, the same team behind `instag
 
 ## 30-second quick start
 
-Current API version: `4.0.0`. Version 4 uses REST-style methods and
+Current API version: `1.0.0`. Version 1 uses REST-style methods and
 slash-separated paths: `GET` for reads/downloads, `POST` for login and
 creates/uploads, `PATCH` for state changes, and `DELETE` for removals.
 

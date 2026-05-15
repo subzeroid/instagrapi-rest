@@ -42,7 +42,7 @@ async def test_openapi_reports_app_version_200():
     assert response.status_code == 200
     data = response.json()
     assert data["info"]["title"] == "aiograpi-rest"
-    assert data["info"]["version"] == "4.0.0"
+    assert data["info"]["version"] == "1.0.0"
 
 
 @pytest.mark.asyncio
