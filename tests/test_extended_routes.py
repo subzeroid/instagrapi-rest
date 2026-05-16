@@ -460,12 +460,14 @@ async def test_direct_routes(storage):
             "/direct/message",
             data={"sessionid": "sid", "text": "hi", "user_ids": ["1"], "thread_ids": ["100"]},
         )
+        single = await ac.post("/direct/thread", data={"sessionid": "sid", "user_ids": ["1"]})
 
     assert inbox.status_code == 200 and thread.status_code == 200
     assert created.status_code == 200 and created.json() == "100"
     assert message.status_code == 200 and message.json()["text"] == "hello"
     assert deleted.status_code == 200 and seen.status_code == 200
     assert empty.status_code == 422 and both.status_code == 422
+    assert single.status_code == 422
     assert ("direct_thread_create", [1, 2], "Team") in storage.client.calls
     assert ("direct_message_seen", 100, 1) in storage.client.calls
 

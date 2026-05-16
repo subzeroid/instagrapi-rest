@@ -49,6 +49,11 @@ async def direct_thread_create(
 ) -> str:
     """Create a direct thread
     """
+    if len(user_ids) < 2:
+        raise HTTPException(
+            status_code=422,
+            detail="Group threads require at least two recipient user_ids",
+        )
     cl = await clients.get(sessionid)
     return await cl.direct_thread_create(user_ids, title)
 
