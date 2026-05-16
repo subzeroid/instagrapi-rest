@@ -1,8 +1,8 @@
 import json
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 from unittest.mock import patch
 
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends, Form, HTTPException
 
 from dependencies import ClientStorage, get_clients, get_optional_sessionid, get_sessionid
 
@@ -106,3 +106,36 @@ async def timeline_feed(sessionid: str = Depends(get_sessionid),
     """
     cl = await clients.get(sessionid)
     return await cl.get_timeline_feed()
+
+
+@router.post("/totp/enable", response_model=List[str])
+async def totp_enable(verification_code: str = Form(...),
+                      sessionid: str = Depends(get_sessionid),
+                      clients: ClientStorage = Depends(get_clients)) -> List[str]:
+    """Enable TOTP two-factor authentication
+    """
+    cl = await clients.get(sessionid)
+    return await cl.totp_enable(verification_code)
+
+
+@router.delete("/totp", response_model=bool)
+async def totp_disable(sessionid: str = Depends(get_sessionid),
+                       clients: ClientStorage = Depends(get_clients)) -> bool:
+    """Disable TOTP two-factor authentication
+    """
+    cl = await clients.get(sessionid)
+    return await cl.totp_disable()
+
+
+@router.post("/challenge/resolve", response_model=bool)
+async def challenge_resolve(last_json: str = Form(...),
+                            sessionid: str = Depends(get_sessionid),
+                            clients: ClientStorage = Depends(get_clients)) -> bool:
+    """Resolve an Instagram login challenge
+    """
+    try:
+        payload = json.loads(last_json)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=422, detail="last_json must be valid JSON")
+    cl = await clients.get(sessionid)
+    return await cl.challenge_resolve(payload)
