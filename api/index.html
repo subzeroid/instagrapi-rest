@@ -508,11 +508,12 @@
 <h2 id="authentication">Authentication</h2>
 <p>Protected routes accept the saved session ID through the <code>X-Session-ID</code> header.
 Swagger UI exposes this through the green <strong>Authorize</strong> button.</p>
-<p>Public session-creation routes:</p>
+<p>Session-creation routes:</p>
 <ul>
 <li><code>POST /auth/login</code></li>
 <li><code>POST /auth/login/by/sessionid</code></li>
-<li><code>PATCH /auth/settings</code></li>
+<li><code>PATCH /auth/settings</code> accepts an optional saved session and returns a new
+  session ID after settings are loaded.</li>
 </ul>
 <p>Session-aware routes still accept legacy <code>sessionid</code> values from query
 parameters, form data, or a <code>sessionid</code> cookie for backwards compatibility.</p>
@@ -523,6 +524,8 @@ parameters, form data, or a <code>sessionid</code> cookie for backwards compatib
 <li><code>PATCH</code> routes update state.</li>
 <li><code>DELETE</code> routes remove or undo state.</li>
 <li>Paths use slash-separated resources such as <code>/story/upload/by/url</code>.</li>
+<li>State reversals use the same resource path with <code>DELETE</code>: for example,
+  <code>POST /media/like</code> likes media and <code>DELETE /media/like</code> unlikes it.</li>
 </ul>
 <h2 id="openapi">OpenAPI</h2>
 <ul>
