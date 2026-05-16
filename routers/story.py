@@ -5,11 +5,13 @@ import requests
 from aiograpi import Client
 from aiograpi.types import (
     Story,
+    StoryArchiveDay,
     StoryHashtag,
     StoryLink,
     StoryLocation,
     StoryMention,
     StorySticker,
+    Viewer,
 )
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import FileResponse
@@ -114,7 +116,7 @@ async def story_info(sessionid: str = Depends(get_sessionid),
     return await cl.story_info(story_pk, use_cache)
 
 
-@router.delete("/delete", response_model=bool)
+@router.delete("", response_model=bool)
 async def story_delete(sessionid: str = Depends(get_sessionid),
                        story_pk: int = Query(...),
                        clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -144,7 +146,7 @@ async def story_like(sessionid: str = Depends(get_sessionid),
     cl = await clients.get(sessionid)
     return await cl.story_like(story_id, revert)
 
-@router.delete("/unlike", response_model=bool)
+@router.delete("/like", response_model=bool)
 async def story_unlike(sessionid: str = Depends(get_sessionid),
                      story_id: str = Query(...),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -152,6 +154,28 @@ async def story_unlike(sessionid: str = Depends(get_sessionid),
     """
     cl = await clients.get(sessionid)
     return await cl.story_unlike(story_id)
+
+
+@router.get("/viewers", response_model=List[Viewer])
+async def story_viewers(sessionid: str = Depends(get_sessionid),
+                        story_pk: str = Query(...),
+                        amount: Optional[int] = Query(0),
+                        clients: ClientStorage = Depends(get_clients)) -> List[Viewer]:
+    """Get story viewers
+    """
+    cl = await clients.get(sessionid)
+    return await cl.story_viewers(story_pk, amount)
+
+
+@router.get("/archive", response_model=List[StoryArchiveDay])
+async def story_archive(sessionid: str = Depends(get_sessionid),
+                        amount: Optional[int] = Query(0),
+                        include_memories: Optional[bool] = Query(True),
+                        clients: ClientStorage = Depends(get_clients)) -> List[StoryArchiveDay]:
+    """Get story archive days
+    """
+    cl = await clients.get(sessionid)
+    return await cl.archive_story_days(amount, include_memories)
 
 
 @router.get("/pk/from/url")

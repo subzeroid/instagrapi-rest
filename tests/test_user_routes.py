@@ -293,7 +293,7 @@ async def test_user_follow_awaits_client_method(storage):
 @pytest.mark.asyncio
 async def test_user_unfollow_awaits_client_method(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.delete("/user/unfollow", params={"sessionid": "sid", "user_id": "1"})
+        response = await ac.delete("/user/follow", params={"sessionid": "sid", "user_id": "1"})
     assert response.status_code == 200
     assert ("user_unfollow", 1) in storage.client_instance.calls
 
@@ -324,7 +324,7 @@ async def test_username_from_user_id_returns_string(storage):
 async def test_user_remove_follower_returns_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.delete(
-            "/user/remove/follower",
+            "/user/follower",
             params={"sessionid": "sid", "user_id": "1"},
         )
     assert response.status_code == 200
@@ -334,13 +334,13 @@ async def test_user_remove_follower_returns_true(storage):
 @pytest.mark.asyncio
 async def test_mute_and_unmute_posts_from_follow(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        mute = await ac.patch(
-            "/user/mute/posts/from/follow",
+        mute = await ac.post(
+            "/user/mute/posts",
             data={"sessionid": "sid", "user_id": "1", "revert": "true"},
         )
-        unmute = await ac.patch(
-            "/user/unmute/posts/from/follow",
-            data={"sessionid": "sid", "user_id": "1"},
+        unmute = await ac.delete(
+            "/user/mute/posts",
+            params={"sessionid": "sid", "user_id": "1"},
         )
     assert mute.status_code == 200 and mute.json() is True
     assert unmute.status_code == 200 and unmute.json() is True
@@ -351,13 +351,13 @@ async def test_mute_and_unmute_posts_from_follow(storage):
 @pytest.mark.asyncio
 async def test_mute_and_unmute_stories_from_follow(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        mute = await ac.patch(
-            "/user/mute/stories/from/follow",
+        mute = await ac.post(
+            "/user/mute/stories",
             data={"sessionid": "sid", "user_id": "1"},
         )
-        unmute = await ac.patch(
-            "/user/unmute/stories/from/follow",
-            data={"sessionid": "sid", "user_id": "1"},
+        unmute = await ac.delete(
+            "/user/mute/stories",
+            params={"sessionid": "sid", "user_id": "1"},
         )
     assert mute.status_code == 200 and mute.json() is True
     assert unmute.status_code == 200 and unmute.json() is True

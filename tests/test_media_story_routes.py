@@ -249,7 +249,7 @@ async def test_usertag_medias_awaits_client(storage):
 async def test_media_delete_returns_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.delete(
-            "/media/delete", params={"sessionid": "sid", "media_id": "m1"}
+            "/media", params={"sessionid": "sid", "media_id": "m1"}
         )
     assert response.status_code == 200
     assert response.json() is True
@@ -259,7 +259,7 @@ async def test_media_delete_returns_true(storage):
 async def test_media_edit_returns_dict(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.patch(
-            "/media/edit",
+            "/media",
             data={
                 "sessionid": "sid",
                 "media_id": "m1",
@@ -306,7 +306,7 @@ async def test_media_like_awaits_client(storage):
 async def test_media_unlike_awaits_client(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.delete(
-            "/media/unlike", params={"sessionid": "sid", "media_id": "m1"}
+            "/media/like", params={"sessionid": "sid", "media_id": "m1"}
         )
     assert response.status_code == 200
     assert response.json() is True
@@ -336,12 +336,12 @@ async def test_media_likers_returns_user_list(storage):
 @pytest.mark.asyncio
 async def test_media_archive_and_unarchive(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        archive = await ac.patch(
+        archive = await ac.post(
             "/media/archive",
             data={"sessionid": "sid", "media_id": "m1", "revert": "true"},
         )
-        unarchive = await ac.patch(
-            "/media/unarchive", data={"sessionid": "sid", "media_id": "m1"}
+        unarchive = await ac.delete(
+            "/media/archive", params={"sessionid": "sid", "media_id": "m1"}
         )
     assert archive.status_code == 200 and archive.json() is True
     assert unarchive.status_code == 200 and unarchive.json() is True
@@ -374,7 +374,7 @@ async def test_story_info_awaits_client(storage):
 async def test_story_delete_returns_true(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.delete(
-            "/story/delete", params={"sessionid": "sid", "story_pk": "1"}
+            "/story", params={"sessionid": "sid", "story_pk": "1"}
         )
     assert response.status_code == 200
     assert response.json() is True
@@ -407,7 +407,7 @@ async def test_story_like_awaits_client(storage):
 async def test_story_unlike_uses_story_id_not_undefined_name(storage):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.delete(
-            "/story/unlike", params={"sessionid": "sid", "story_id": "s1"}
+            "/story/like", params={"sessionid": "sid", "story_id": "s1"}
         )
     assert response.status_code == 200
     assert response.json() is True

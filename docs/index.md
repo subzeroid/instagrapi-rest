@@ -11,8 +11,11 @@ boundary.
 ## What It Provides
 
 - Login, relogin, session import, and settings export/import.
-- User profile, follower, following, follow, mute, and about endpoints.
-- Media, photo, video, Reel, carousel album, story, IGTV, and insights routes.
+- Account profile, privacy, profile picture, and authenticated account info.
+- User profile, follower, following, follow, mute, block, search, friendship,
+  follow request, highlight, and about endpoints.
+- Media comments, likes, saves, pins, archive, photo, video, Reel, carousel
+  album, story, highlight, note, Direct, notification, IGTV, and insights routes.
 - OpenAPI documentation at `/docs` and raw schema at `/openapi.json`.
 - Service health endpoints: `/health`, `/ready`, `/metrics`, `/build`, and `/deps`.
 

@@ -5,11 +5,12 @@
 Protected routes accept the saved session ID through the `X-Session-ID` header.
 Swagger UI exposes this through the green **Authorize** button.
 
-Public session-creation routes:
+Session-creation routes:
 
 - `POST /auth/login`
 - `POST /auth/login/by/sessionid`
-- `PATCH /auth/settings`
+- `PATCH /auth/settings` accepts an optional saved session and returns a new
+  session ID after settings are loaded.
 
 Session-aware routes still accept legacy `sessionid` values from query
 parameters, form data, or a `sessionid` cookie for backwards compatibility.
@@ -21,6 +22,8 @@ parameters, form data, or a `sessionid` cookie for backwards compatibility.
 - `PATCH` routes update state.
 - `DELETE` routes remove or undo state.
 - Paths use slash-separated resources such as `/story/upload/by/url`.
+- State reversals use the same resource path with `DELETE`: for example,
+  `POST /media/like` likes media and `DELETE /media/like` unlikes it.
 
 ## OpenAPI
 

@@ -38,9 +38,12 @@ If those line items sound like work you don't want, the same team behind `instag
 
 ## 30-second quick start
 
-Current API version: `1.1.2`. Version 1 uses REST-style methods and
-slash-separated paths: `GET` for reads/downloads, `POST` for login and
-creates/uploads, `PATCH` for state changes, and `DELETE` for removals.
+Current API version: `2.0.0`. Version 2 keeps the API intentionally strict:
+`GET` for reads/downloads, `POST` for login and creates/uploads, `PATCH` for
+state changes, and `DELETE` for removals or state reversal. Undo-style paths
+such as `/media/unlike`, `/user/unfollow`, and `/media/unarchive` were removed
+before the public API became widely used; use `DELETE /media/like`,
+`DELETE /user/follow`, and `DELETE /media/archive`.
 
 ```bash
 docker run -d -p 8000:8000 subzeroid/aiograpi-rest
@@ -130,11 +133,13 @@ For typed client generation in C++, C#, F#, D, Erlang, Elixir, Nim, Haskell, Lis
 ## Features
 
 1. **Authorization** — login, 2FA, settings management
-2. **Media** — info, delete, edit, like, archive
-3. **Video / Photo / IGTV / Reels / Album** — upload to feed and story, download
-4. **Story** — info, delete, mark as seen, download
-5. **User** — followers / following, info, follow / unfollow, remove follower
-6. **Insights** — media, account
+2. **Account** — account info, profile, profile picture, privacy
+3. **Media** — info, comments, likes, saves, pins, archive, edit, delete
+4. **Direct** — inbox, threads, messages, seen state
+5. **Discovery** — hashtags, locations, user search, friendship, blocks, follow requests
+6. **Video / Photo / IGTV / Reels / Album** — upload to feed and story, download
+7. **Story / Highlights / Notes** — archive, viewers, highlights, notes
+8. **Notifications / Insights** — inbox, notification settings, media and account insights
 
 ## Installation
 

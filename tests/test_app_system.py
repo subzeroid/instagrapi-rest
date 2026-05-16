@@ -87,7 +87,7 @@ async def test_metrics_exports_prometheus_text():
     assert response.headers["content-type"].startswith("text/plain")
     body = response.text
     assert "# HELP aiograpi_rest_info Service build information." in body
-    assert 'aiograpi_rest_info{version="1.1.2"' in body
+    assert 'aiograpi_rest_info{version="2.0.0"' in body
     assert "aiograpi_rest_uptime_seconds " in body
     assert 'aiograpi_rest_dependency_info{name="aiograpi"' in body
 
@@ -101,7 +101,7 @@ async def test_build_reports_runtime_metadata(monkeypatch):
     assert response.status_code == 200
     assert response.json() == {
         "name": "aiograpi-rest",
-        "version": "1.1.2",
+        "version": "2.0.0",
         "python_version": main.platform.python_version(),
         "git_sha": "abc123",
         "build_time": "2026-05-16T00:00:00Z",
@@ -158,7 +158,7 @@ async def test_openapi_reports_app_version_200():
     assert response.status_code == 200
     data = response.json()
     assert data["info"]["title"] == "aiograpi-rest"
-    assert data["info"]["version"] == "1.1.2"
+    assert data["info"]["version"] == "2.0.0"
     assert "[GitHub subzeroid/aiograpi-rest]" in data["info"]["description"]
     assert "GitHub repository" not in data["info"]["description"]
     assert "https://github.com/subzeroid/aiograpi-rest" in data["info"]["description"]
@@ -212,20 +212,38 @@ async def test_openapi_uses_sessionid_authorize_button_for_protected_routes():
 @pytest.mark.asyncio
 async def test_openapi_uses_rest_http_methods():
     expected_methods = {
+        "/account/info": {"get"},
+        "/account/picture": {"patch"},
+        "/account/privacy": {"patch"},
+        "/account/profile": {"patch"},
         "/album/download": {"get"},
         "/album/download/by/urls": {"get"},
         "/album/upload": {"post"},
+        "/auth/challenge/resolve": {"post"},
         "/auth/login": {"post"},
         "/auth/login/by/sessionid": {"post"},
         "/auth/relogin": {"patch"},
         "/auth/settings": {"get", "patch"},
         "/auth/timeline/feed": {"get"},
+        "/auth/totp": {"delete"},
+        "/auth/totp/enable": {"post"},
         "/build": {"get"},
         "/clip/download": {"get"},
         "/clip/download/by/url": {"get"},
         "/clip/upload": {"post"},
         "/clip/upload/by/url": {"post"},
         "/deps": {"get"},
+        "/direct/inbox": {"get"},
+        "/direct/message": {"delete", "post"},
+        "/direct/message/seen": {"patch"},
+        "/direct/thread": {"get", "post"},
+        "/hashtag/follow": {"delete", "post"},
+        "/hashtag/info": {"get"},
+        "/hashtag/medias/recent": {"get"},
+        "/hashtag/medias/top": {"get"},
+        "/highlight": {"delete", "patch", "post"},
+        "/highlight/info": {"get"},
+        "/highlight/stories": {"delete", "post"},
         "/health": {"get"},
         "/igtv/download": {"get"},
         "/igtv/download/by/url": {"get"},
@@ -234,53 +252,68 @@ async def test_openapi_uses_rest_http_methods():
         "/insights/account": {"get"},
         "/insights/media": {"get"},
         "/insights/media/feed/all": {"get"},
+        "/location/info": {"get"},
+        "/location/medias/recent": {"get"},
+        "/location/medias/top": {"get"},
+        "/location/search": {"get"},
         "/metrics": {"get"},
-        "/media/archive": {"patch"},
-        "/media/delete": {"delete"},
-        "/media/edit": {"patch"},
+        "/media": {"delete", "patch"},
+        "/media/archive": {"delete", "post"},
+        "/media/comment": {"delete", "post"},
+        "/media/comment/like": {"delete", "post"},
+        "/media/comment/replies": {"get"},
+        "/media/comments": {"get"},
         "/media/id": {"get"},
         "/media/info": {"get"},
-        "/media/like": {"post"},
+        "/media/like": {"delete", "post"},
+        "/media/liked": {"get"},
         "/media/likers": {"get"},
         "/media/oembed": {"get"},
+        "/media/pin": {"delete", "post"},
         "/media/pk": {"get"},
         "/media/pk/from/code": {"get"},
         "/media/pk/from/url": {"get"},
+        "/media/save": {"delete", "post"},
         "/media/seen": {"patch"},
-        "/media/unarchive": {"patch"},
-        "/media/unlike": {"delete"},
         "/media/user": {"get"},
         "/media/user/medias": {"get"},
         "/media/usertag/medias": {"get"},
+        "/note": {"delete", "post"},
+        "/notes": {"get"},
+        "/notifications": {"get"},
+        "/notifications/settings": {"get", "patch"},
         "/photo/download": {"get"},
         "/photo/download/by/url": {"get"},
         "/photo/upload": {"post"},
         "/photo/upload/by/url": {"post"},
         "/ready": {"get"},
-        "/story/delete": {"delete"},
+        "/story": {"delete"},
+        "/story/archive": {"get"},
         "/story/download": {"get"},
         "/story/download/by/url": {"get"},
         "/story/info": {"get"},
-        "/story/like": {"post"},
+        "/story/like": {"delete", "post"},
         "/story/pk/from/url": {"get"},
         "/story/seen": {"patch"},
-        "/story/unlike": {"delete"},
         "/story/upload": {"post"},
         "/story/upload/by/url": {"post"},
         "/story/user/stories": {"get"},
+        "/story/viewers": {"get"},
         "/user/about": {"get"},
-        "/user/follow": {"post"},
+        "/user/block": {"delete", "post"},
+        "/user/follow/requests": {"get"},
         "/user/followers": {"get"},
         "/user/following": {"get"},
+        "/user/friendship": {"get"},
+        "/user/highlights": {"get"},
         "/user/id/from/username": {"get"},
         "/user/info": {"get"},
         "/user/info/by/username": {"get"},
-        "/user/mute/posts/from/follow": {"patch"},
-        "/user/mute/stories/from/follow": {"patch"},
-        "/user/remove/follower": {"delete"},
-        "/user/unfollow": {"delete"},
-        "/user/unmute/posts/from/follow": {"patch"},
-        "/user/unmute/stories/from/follow": {"patch"},
+        "/user/mute/posts": {"delete", "post"},
+        "/user/mute/stories": {"delete", "post"},
+        "/user/follower": {"delete"},
+        "/user/follow": {"delete", "post"},
+        "/user/search": {"get"},
         "/user/username/from/id": {"get"},
         "/video/download": {"get"},
         "/video/download/by/url": {"get"},
@@ -299,6 +332,27 @@ async def test_openapi_uses_rest_http_methods():
 
 
 @pytest.mark.asyncio
+async def test_openapi_removes_undo_style_paths():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/openapi.json")
+
+    assert response.status_code == 200
+    paths = response.json()["paths"]
+    assert not {
+        "/media/delete",
+        "/media/edit",
+        "/media/unarchive",
+        "/media/unlike",
+        "/story/delete",
+        "/story/unlike",
+        "/user/remove/follower",
+        "/user/unfollow",
+        "/user/unmute/posts/from/follow",
+        "/user/unmute/stories/from/follow",
+    } & set(paths)
+
+
+@pytest.mark.asyncio
 async def test_openapi_uses_client_friendly_schema_names():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get("/openapi.json")
@@ -312,6 +366,8 @@ async def test_openapi_uses_client_friendly_schema_names():
         "AuthLoginRequest",
         "AuthLoginBySessionIdRequest",
         "AuthSettingsRequest",
+        "AccountPictureRequest",
+        "DirectMessageRequest",
         "StoryUploadRequest",
         "StoryUploadByUrlRequest",
         "ClipUploadByUrlRequest",
@@ -345,7 +401,14 @@ async def test_openapi_uses_human_friendly_tag_names():
         "Clip (Reels)",
         "IGTV (Legacy)",
         "Insights",
+        "Account",
+        "Direct",
+        "Hashtag",
+        "Highlight",
+        "Location",
         "Media",
+        "Note",
+        "Notifications",
         "Photo",
         "Story",
         "System",
@@ -354,8 +417,15 @@ async def test_openapi_uses_human_friendly_tag_names():
     }
     assert [tag["name"] for tag in schema["tags"]] == [
         "Auth",
+        "Account",
         "User",
         "Media",
+        "Direct",
+        "Hashtag",
+        "Location",
+        "Highlight",
+        "Note",
+        "Notifications",
         "Photo",
         "Video",
         "Clip (Reels)",

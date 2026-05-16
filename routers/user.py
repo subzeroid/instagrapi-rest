@@ -1,8 +1,8 @@
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from aiograpi.extractors import json_value
-from aiograpi.types import About, User, UserShort
+from aiograpi.types import About, Highlight, Relationship, User, UserShort
 from fastapi import APIRouter, Depends, Form, Query
 from pydantic import ValidationError
 
@@ -125,7 +125,7 @@ async def user_follow(sessionid: str = Depends(get_sessionid),
     return await cl.user_follow(user_id)
 
 
-@router.delete("/unfollow", response_model=bool)
+@router.delete("/follow", response_model=bool)
 async def user_unfollow(sessionid: str = Depends(get_sessionid),
                         user_id: int = Query(...),
                         clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -155,7 +155,7 @@ async def username_from_user_id(sessionid: str = Depends(get_sessionid),
     return await cl.username_from_user_id(user_id)
 
 
-@router.delete("/remove/follower", response_model=bool)
+@router.delete("/follower", response_model=bool)
 async def user_remove_follower(sessionid: str = Depends(get_sessionid),
                                user_id: int = Query(...),
                                clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -165,7 +165,7 @@ async def user_remove_follower(sessionid: str = Depends(get_sessionid),
     return await cl.user_remove_follower(user_id)
 
 
-@router.patch("/mute/posts/from/follow", response_model=bool)
+@router.post("/mute/posts", response_model=bool)
 async def mute_posts_from_follow(sessionid: str = Depends(get_sessionid),
                                  user_id: int = Form(...),
                                  revert: Optional[bool] = Form(False),
@@ -176,9 +176,9 @@ async def mute_posts_from_follow(sessionid: str = Depends(get_sessionid),
     return await cl.mute_posts_from_follow(user_id, revert)
 
 
-@router.patch("/unmute/posts/from/follow", response_model=bool)
+@router.delete("/mute/posts", response_model=bool)
 async def unmute_posts_from_follow(sessionid: str = Depends(get_sessionid),
-                                   user_id: int = Form(...),
+                                   user_id: int = Query(...),
                                    clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unmute posts from following user
     """
@@ -186,7 +186,7 @@ async def unmute_posts_from_follow(sessionid: str = Depends(get_sessionid),
     return await cl.unmute_posts_from_follow(user_id)
 
 
-@router.patch("/mute/stories/from/follow", response_model=bool)
+@router.post("/mute/stories", response_model=bool)
 async def mute_stories_from_follow(sessionid: str = Depends(get_sessionid),
                                    user_id: int = Form(...),
                                    revert: Optional[bool] = Form(False),
@@ -197,11 +197,74 @@ async def mute_stories_from_follow(sessionid: str = Depends(get_sessionid),
     return await cl.mute_stories_from_follow(user_id, revert)
 
 
-@router.patch("/unmute/stories/from/follow", response_model=bool)
+@router.delete("/mute/stories", response_model=bool)
 async def unmute_stories_from_follow(sessionid: str = Depends(get_sessionid),
-                                     user_id: int = Form(...),
+                                     user_id: int = Query(...),
                                      clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unmute stories from following user
     """
     cl = await clients.get(sessionid)
     return await cl.unmute_stories_from_follow(user_id)
+
+
+@router.get("/search", response_model=List[UserShort])
+async def user_search(sessionid: str = Depends(get_sessionid),
+                      query: str = Query(...),
+                      clients: ClientStorage = Depends(get_clients)) -> List[UserShort]:
+    """Search users
+    """
+    cl = await clients.get(sessionid)
+    return await cl.search_users(query)
+
+
+@router.get("/friendship", response_model=Relationship)
+async def user_friendship(sessionid: str = Depends(get_sessionid),
+                          user_id: str = Query(...),
+                          clients: ClientStorage = Depends(get_clients)) -> Relationship:
+    """Get relationship with a user
+    """
+    cl = await clients.get(sessionid)
+    return await cl.user_friendship_v1(user_id)
+
+
+@router.post("/block", response_model=bool)
+async def user_block(sessionid: str = Depends(get_sessionid),
+                     user_id: str = Form(...),
+                     surface: Optional[str] = Form("profile"),
+                     clients: ClientStorage = Depends(get_clients)) -> bool:
+    """Block a user
+    """
+    cl = await clients.get(sessionid)
+    return await cl.user_block(user_id, surface)
+
+
+@router.delete("/block", response_model=bool)
+async def user_unblock(sessionid: str = Depends(get_sessionid),
+                       user_id: str = Query(...),
+                       surface: Optional[str] = Query("profile"),
+                       clients: ClientStorage = Depends(get_clients)) -> bool:
+    """Unblock a user
+    """
+    cl = await clients.get(sessionid)
+    return await cl.user_unblock(user_id, surface)
+
+
+@router.get("/follow/requests", response_model=List[UserShort])
+async def user_follow_requests(sessionid: str = Depends(get_sessionid),
+                               amount: Optional[int] = Query(0),
+                               clients: ClientStorage = Depends(get_clients)) -> List[UserShort]:
+    """Get pending follow requests
+    """
+    cl = await clients.get(sessionid)
+    return await cl.user_follow_requests(amount)
+
+
+@router.get("/highlights", response_model=List[Highlight])
+async def user_highlights(sessionid: str = Depends(get_sessionid),
+                          user_id: int = Query(...),
+                          amount: Optional[int] = Query(0),
+                          clients: ClientStorage = Depends(get_clients)) -> List[Highlight]:
+    """Get user highlights
+    """
+    cl = await clients.get(sessionid)
+    return await cl.user_highlights(user_id, amount)

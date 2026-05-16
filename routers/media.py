@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional
 
 from aiograpi import Client
-from aiograpi.types import Location, Media, UserShort, Usertag
+from aiograpi.types import Comment, Location, Media, UserShort, Usertag
 from fastapi import APIRouter, Depends, Form, Query
 
 from dependencies import ClientStorage, get_clients, get_sessionid
@@ -74,7 +74,7 @@ async def usertag_medias(sessionid: str = Depends(get_sessionid),
     return await cl.usertag_medias(user_id, amount)
 
 
-@router.delete("/delete", response_model=bool)
+@router.delete("", response_model=bool)
 async def media_delete(sessionid: str = Depends(get_sessionid),
                        media_id: str = Query(...),
                        clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -84,7 +84,7 @@ async def media_delete(sessionid: str = Depends(get_sessionid),
     return await cl.media_delete(media_id)
 
 
-@router.patch("/edit", response_model=Dict)
+@router.patch("", response_model=Dict)
 async def media_edit(sessionid: str = Depends(get_sessionid),
                      media_id: str = Form(...),
                      caption: str = Form(...),
@@ -129,7 +129,7 @@ async def media_like(sessionid: str = Depends(get_sessionid),
     return await cl.media_like(media_id, revert)
 
 
-@router.delete("/unlike", response_model=bool)
+@router.delete("/like", response_model=bool)
 async def media_unlike(sessionid: str = Depends(get_sessionid),
                        media_id: str = Query(...),
                        clients: ClientStorage = Depends(get_clients)) -> bool:
@@ -160,7 +160,7 @@ async def media_likers(sessionid: str = Depends(get_sessionid),
     return await cl.media_likers(media_id)
 
 
-@router.patch("/archive", response_model=bool)
+@router.post("/archive", response_model=bool)
 async def media_archive(sessionid: str = Depends(get_sessionid),
                      media_id: str = Form(...),
                      revert: Optional[bool] = Form(False),
@@ -171,11 +171,133 @@ async def media_archive(sessionid: str = Depends(get_sessionid),
     return await cl.media_archive(media_id, revert)
 
 
-@router.patch("/unarchive", response_model=bool)
+@router.delete("/archive", response_model=bool)
 async def media_unarchive(sessionid: str = Depends(get_sessionid),
-                     media_id: str = Form(...),
+                     media_id: str = Query(...),
                      clients: ClientStorage = Depends(get_clients)) -> bool:
     """Unarchive a media
     """
     cl = await clients.get(sessionid)
     return await cl.media_unarchive(media_id)
+
+
+@router.get("/comments", response_model=List[Comment])
+async def media_comments(sessionid: str = Depends(get_sessionid),
+                         media_id: str = Query(...),
+                         amount: Optional[int] = Query(20),
+                         clients: ClientStorage = Depends(get_clients)) -> List[Comment]:
+    """Get media comments
+    """
+    cl = await clients.get(sessionid)
+    return await cl.media_comments(media_id, amount)
+
+
+@router.post("/comment", response_model=Comment)
+async def media_comment(sessionid: str = Depends(get_sessionid),
+                        media_id: str = Form(...),
+                        text: str = Form(...),
+                        replied_to_comment_id: Optional[int] = Form(None),
+                        clients: ClientStorage = Depends(get_clients)) -> Comment:
+    """Create a media comment
+    """
+    cl = await clients.get(sessionid)
+    return await cl.media_comment(media_id, text, replied_to_comment_id)
+
+
+@router.delete("/comment", response_model=bool)
+async def media_comment_delete(sessionid: str = Depends(get_sessionid),
+                               media_id: str = Query(...),
+                               comment_pk: int = Query(...),
+                               clients: ClientStorage = Depends(get_clients)) -> bool:
+    """Delete a media comment
+    """
+    cl = await clients.get(sessionid)
+    return await cl.comment_bulk_delete(media_id, [comment_pk])
+
+
+@router.get("/comment/replies", response_model=List[Comment])
+async def media_comment_replies(sessionid: str = Depends(get_sessionid),
+                                media_id: str = Query(...),
+                                comment_id: str = Query(...),
+                                amount: Optional[int] = Query(0),
+                                clients: ClientStorage = Depends(get_clients)) -> List[Comment]:
+    """Get media comment replies
+    """
+    cl = await clients.get(sessionid)
+    return await cl.media_comment_replies(media_id, comment_id, amount)
+
+
+@router.post("/comment/like", response_model=bool)
+async def media_comment_like(sessionid: str = Depends(get_sessionid),
+                             comment_pk: int = Form(...),
+                             revert: Optional[bool] = Form(False),
+                             clients: ClientStorage = Depends(get_clients)) -> bool:
+    """Like a media comment
+    """
+    cl = await clients.get(sessionid)
+    return await cl.comment_like(comment_pk, revert)
+
+
+@router.delete("/comment/like", response_model=bool)
+async def media_comment_unlike(sessionid: str = Depends(get_sessionid),
+                               comment_pk: int = Query(...),
+                               clients: ClientStorage = Depends(get_clients)) -> bool:
+    """Unlike a media comment
+    """
+    cl = await clients.get(sessionid)
+    return await cl.comment_unlike(comment_pk)
+
+
+@router.get("/liked", response_model=List[Media])
+async def liked_medias(sessionid: str = Depends(get_sessionid),
+                       amount: Optional[int] = Query(21),
+                       last_media_pk: Optional[int] = Query(0),
+                       clients: ClientStorage = Depends(get_clients)) -> List[Media]:
+    """Get liked media
+    """
+    cl = await clients.get(sessionid)
+    return await cl.liked_medias(amount, last_media_pk)
+
+
+@router.post("/save", response_model=bool)
+async def media_save(sessionid: str = Depends(get_sessionid),
+                     media_id: str = Form(...),
+                     collection_pk: Optional[int] = Form(None),
+                     revert: Optional[bool] = Form(False),
+                     clients: ClientStorage = Depends(get_clients)) -> bool:
+    """Save media
+    """
+    cl = await clients.get(sessionid)
+    return await cl.media_save(media_id, collection_pk, revert)
+
+
+@router.delete("/save", response_model=bool)
+async def media_unsave(sessionid: str = Depends(get_sessionid),
+                       media_id: str = Query(...),
+                       collection_pk: Optional[int] = Query(None),
+                       clients: ClientStorage = Depends(get_clients)) -> bool:
+    """Unsave media
+    """
+    cl = await clients.get(sessionid)
+    return await cl.media_unsave(media_id, collection_pk)
+
+
+@router.post("/pin", response_model=bool)
+async def media_pin(sessionid: str = Depends(get_sessionid),
+                    media_pk: str = Form(...),
+                    revert: Optional[bool] = Form(False),
+                    clients: ClientStorage = Depends(get_clients)) -> bool:
+    """Pin media
+    """
+    cl = await clients.get(sessionid)
+    return await cl.media_pin(media_pk, revert)
+
+
+@router.delete("/pin", response_model=bool)
+async def media_unpin(sessionid: str = Depends(get_sessionid),
+                      media_pk: str = Query(...),
+                      clients: ClientStorage = Depends(get_clients)) -> bool:
+    """Unpin media
+    """
+    cl = await clients.get(sessionid)
+    return await cl.media_unpin(media_pk)
