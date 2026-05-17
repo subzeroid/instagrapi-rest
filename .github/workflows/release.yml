@@ -1,12 +1,10 @@
-name: Docker
+name: Release
 
 on:
   push:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
       - "v[0-9]+.[0-9]+.[0-9]+"
-  release:
-    types: [published]
 
 env:
   DOCKERHUB_IMAGE: subzeroid/aiograpi-rest
@@ -16,11 +14,56 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
+      id-token: write
       packages: write
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ".[test,docs]" "build>=1.3,<2"
+
+    - name: Lint
+      run: |
+        ruff check .
+
+    - name: Check generated docs
+      run: |
+        python scripts/generate_aiograpi_coverage.py --check
+
+    - name: Test
+      run: |
+        pytest --cov=. --cov-report=term-missing --cov-fail-under=100
+
+    - name: Build documentation
+      run: |
+        mkdocs build --strict
+
+    - name: Build Python package and OpenAPI artifact
+      run: |
+        mkdir -p dist release
+        python scripts/export_openapi.py release/openapi.json
+        python -m build
+
+    - name: Publish Python package to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
+
+    - name: Capture build time
+      id: build_time
+      run: |
+        echo "value=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -63,6 +106,19 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        build-args: |
+          APP_VERSION=${{ github.ref_name }}
+          GIT_SHA=${{ github.sha }}
+          BUILD_TIME=${{ steps.build_time.outputs.value }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
         provenance: false
+
+    - name: Publish GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        generate_release_notes: true
+        files: |
+          release/openapi.json
+          dist/*.whl
+          dist/*.tar.gz

@@ -42,6 +42,16 @@ def test_set_persists_client_settings(tmp_path):
     assert json.loads(row["settings"]) == {"authorization_data": {"sessionid": "sid"}}
 
 
+def test_storage_path_can_come_from_environment(tmp_path, monkeypatch):
+    db_path = tmp_path / "env-db.json"
+    monkeypatch.setenv("AIOGRAPI_REST_DB_PATH", str(db_path))
+
+    storage = ClientStorage(client_factory=FakeClient)
+    storage.db.insert({"sessionid": "sid", "settings": "{}"})
+
+    assert db_path.exists()
+
+
 @pytest.mark.asyncio
 async def test_get_missing_session_raises_helpful_error(tmp_path):
     storage = ClientStorage(db_path=tmp_path / "db.json", client_factory=FakeClient)

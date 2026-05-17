@@ -11,6 +11,7 @@
 /aiograpi_rest.egg-info
 /build
 /dist
+/release
 /docs
 /examples
 /golang

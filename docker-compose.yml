@@ -9,8 +9,11 @@ services:
     tty: true
     ports:
       - "8000:8000"
+    environment:
+      AIOGRAPI_REST_DB_PATH: /data/db.json
     volumes:
       - .:/app
+      - aiograpi_data:/data
 
   test:
     profiles:
@@ -21,3 +24,6 @@ services:
     volumes:
       - .:/app
     command: pytest
+
+volumes:
+  aiograpi_data:

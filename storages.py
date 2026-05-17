@@ -1,4 +1,5 @@
 import json
+import os
 from urllib import parse
 
 from aiograpi import Client
@@ -6,7 +7,8 @@ from tinydb import Query, TinyDB
 
 
 class ClientStorage:
-    def __init__(self, db_path="./db.json", client_factory=Client):
+    def __init__(self, db_path=None, client_factory=Client):
+        db_path = db_path or os.getenv("AIOGRAPI_REST_DB_PATH", "./db.json")
         self.db = TinyDB(db_path)
         self.client_factory = client_factory
 
