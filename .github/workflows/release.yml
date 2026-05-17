@@ -7,12 +7,16 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+"
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   DOCKERHUB_IMAGE: subzeroid/aiograpi-rest
   GHCR_IMAGE: ghcr.io/subzeroid/aiograpi-rest
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ github.ref_name }}
+      version: ${{ steps.version.outputs.value }}
     permissions:
       contents: write
       id-token: write
@@ -22,6 +26,11 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
+    - name: Normalize release version
+      id: version
+      run: |
+        echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
     - name: Set up Python 3.13
       uses: actions/setup-python@v5
@@ -105,7 +114,6 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
-          APP_VERSION=${{ github.ref_name }}
           GIT_SHA=${{ github.sha }}
           BUILD_TIME=${{ steps.build_time.outputs.value }}
         cache-from: type=gha
@@ -120,3 +128,94 @@ jobs:
           release/openapi.json
           dist/*.whl
           dist/*.tar.gz
+
+  verify:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      RELEASE_TAG: ${{ needs.publish.outputs.tag }}
+      VERSION: ${{ needs.publish.outputs.version }}
+
+    steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Verify PyPI release
+      run: |
+        python - <<'PY'
+        import json
+        import os
+        import time
+        import urllib.request
+
+        version = os.environ["VERSION"]
+        url = "https://pypi.org/pypi/aiograpi-rest/json"
+        for _ in range(30):
+            with urllib.request.urlopen(url, timeout=30) as response:
+                data = json.load(response)
+            if version in data["releases"]:
+                break
+            time.sleep(10)
+        else:
+            raise SystemExit(f"PyPI release {version} was not found")
+        PY
+
+    - name: Verify Docker manifests
+      run: |
+        docker buildx imagetools inspect "$DOCKERHUB_IMAGE:$VERSION"
+        docker buildx imagetools inspect "$GHCR_IMAGE:$VERSION"
+
+    - name: Verify GitHub Release artifacts
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets,tagName > release.json
+        python - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+
+        data = json.loads(Path("release.json").read_text())
+        version = os.environ["VERSION"]
+        expected = {
+            "openapi.json",
+            f"aiograpi_rest-{version}-py3-none-any.whl",
+            f"aiograpi_rest-{version}.tar.gz",
+        }
+        actual = {asset["name"] for asset in data["assets"]}
+        missing = sorted(expected - actual)
+        if missing:
+            raise SystemExit(f"Missing release assets: {missing}")
+        PY
+
+    - name: Smoke test published Docker image
+      run: |
+        container="aiograpi-rest-release-smoke"
+        docker rm -f "$container" >/dev/null 2>&1 || true
+        trap 'docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
+        docker run --pull always -d --name "$container" -p 18080:8000 "$DOCKERHUB_IMAGE:$VERSION"
+        for _ in $(seq 1 30); do
+          if curl -fsS http://127.0.0.1:18080/health > health.json; then
+            break
+          fi
+          sleep 2
+        done
+        python - <<'PY'
+        import json
+        from pathlib import Path
+
+        if json.loads(Path("health.json").read_text()) != {"status": "ok"}:
+            raise SystemExit("Unexpected /health response")
+        PY
+        curl -fsS http://127.0.0.1:18080/build > build.json
+        python - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+
+        build = json.loads(Path("build.json").read_text())
+        if build["version"] != os.environ["VERSION"]:
+            raise SystemExit(f"Unexpected /build version: {build['version']}")
+        PY

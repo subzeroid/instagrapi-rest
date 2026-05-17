@@ -3,8 +3,10 @@ import platform
 import re
 import subprocess
 import time
+import tomllib
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI
@@ -33,7 +35,27 @@ from routers import (
 )
 from storages import ClientStorage
 
-APP_VERSION = "2.0.5"
+APP_PACKAGE_NAME = "aiograpi-rest"
+
+
+def _project_version(pyproject_path: Path | None = None) -> str | None:
+    path = pyproject_path or Path(__file__).with_name("pyproject.toml")
+    if not path.exists():
+        return None
+    return tomllib.loads(path.read_text())["project"]["version"]
+
+
+def _app_version() -> str:
+    project_version = _project_version()
+    if project_version:
+        return project_version
+    try:
+        return package_version(APP_PACKAGE_NAME)
+    except PackageNotFoundError:
+        return "0+unknown"
+
+
+APP_VERSION = _app_version()
 APP_STARTED_AT = time.monotonic()
 _TOKEN_OVERRIDES = {
     "id": "Id",

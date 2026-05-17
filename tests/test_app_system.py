@@ -1,10 +1,18 @@
+import tomllib
 from importlib.metadata import PackageNotFoundError
+from pathlib import Path
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 import main
 from main import app
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def project_version() -> str:
+    return tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
 
 
 @pytest.mark.asyncio
@@ -87,7 +95,7 @@ async def test_metrics_exports_prometheus_text():
     assert response.headers["content-type"].startswith("text/plain")
     body = response.text
     assert "# HELP aiograpi_rest_info Service build information." in body
-    assert 'aiograpi_rest_info{version="2.0.5"' in body
+    assert f'aiograpi_rest_info{{version="{project_version()}"' in body
     assert "aiograpi_rest_uptime_seconds " in body
     assert 'aiograpi_rest_dependency_info{name="aiograpi"' in body
 
@@ -101,7 +109,7 @@ async def test_build_reports_runtime_metadata(monkeypatch):
     assert response.status_code == 200
     assert response.json() == {
         "name": "aiograpi-rest",
-        "version": "2.0.5",
+        "version": project_version(),
         "python_version": main.platform.python_version(),
         "git_sha": "abc123",
         "build_time": "2026-05-16T00:00:00Z",
@@ -158,7 +166,7 @@ async def test_openapi_reports_app_version_200():
     assert response.status_code == 200
     data = response.json()
     assert data["info"]["title"] == "aiograpi-rest"
-    assert data["info"]["version"] == "2.0.5"
+    assert data["info"]["version"] == project_version()
     assert "[GitHub subzeroid/aiograpi-rest]" in data["info"]["description"]
     assert "GitHub repository" not in data["info"]["description"]
     assert "https://github.com/subzeroid/aiograpi-rest" in data["info"]["description"]

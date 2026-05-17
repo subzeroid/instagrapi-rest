@@ -2,14 +2,12 @@ FROM python:3.13-slim AS app
 
 ARG GIT_SHA=""
 ARG BUILD_TIME=""
-ARG APP_VERSION="2.0.5"
 
 LABEL org.opencontainers.image.title="aiograpi-rest" \
       org.opencontainers.image.description="REST API service for aiograpi, the async Instagram Private API client." \
       org.opencontainers.image.source="https://github.com/subzeroid/aiograpi-rest" \
       org.opencontainers.image.url="https://github.com/subzeroid/aiograpi-rest" \
       org.opencontainers.image.documentation="https://subzeroid.github.io/aiograpi-rest/" \
-      org.opencontainers.image.version="${APP_VERSION}" \
       org.opencontainers.image.revision="${GIT_SHA}" \
       org.opencontainers.image.created="${BUILD_TIME}" \
       org.opencontainers.image.licenses="MIT"

@@ -1,11 +1,18 @@
 import json
+import re
 import tomllib
+from importlib.metadata import PackageNotFoundError
 from pathlib import Path
 
 import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def project_version() -> str:
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    return pyproject["project"]["version"]
 
 
 def test_pyproject_replaces_requirements_txt():
@@ -15,14 +22,55 @@ def test_pyproject_replaces_requirements_txt():
     assert "aiograpi==0.9.7" in deps
     assert pyproject["project"]["requires-python"] == ">=3.13"
     assert pyproject["project"]["name"] == "aiograpi-rest"
-    assert pyproject["project"]["version"] == "2.0.5"
+    assert re.fullmatch(r"\d+\.\d+\.\d+", pyproject["project"]["version"])
     assert pyproject["project"]["urls"]["Repository"] == "https://github.com/subzeroid/aiograpi-rest"
+
+
+def test_app_version_is_single_sourced_from_pyproject():
+    import main
+
+    version = project_version()
+    assert main.APP_VERSION == version
+    assert main._app_version() == version
+    assert 'APP_VERSION = "' not in (ROOT / "main.py").read_text()
+    assert "Current API version: `" not in (ROOT / "README.md").read_text()
+
+
+def test_project_version_can_be_read_from_explicit_pyproject(tmp_path):
+    import main
+
+    pyproject = tmp_path / "pyproject.toml"
+    pyproject.write_text('[project]\nname = "aiograpi-rest"\nversion = "9.8.7"\n')
+
+    assert main._project_version(pyproject) == "9.8.7"
+    assert main._project_version(tmp_path / "missing.toml") is None
+
+
+def test_app_version_falls_back_to_distribution_metadata(monkeypatch):
+    import main
+
+    monkeypatch.setattr(main, "_project_version", lambda: None)
+    monkeypatch.setattr(main, "package_version", lambda name: "9.9.9")
+
+    assert main._app_version() == "9.9.9"
+
+
+def test_app_version_returns_unknown_when_metadata_is_missing(monkeypatch):
+    import main
+
+    def missing_version(name):
+        raise PackageNotFoundError(name)
+
+    monkeypatch.setattr(main, "_project_version", lambda: None)
+    monkeypatch.setattr(main, "package_version", missing_version)
+
+    assert main._app_version() == "0+unknown"
 
 
 def test_dockerfile_uses_python_313_and_pyproject_install():
     dockerfile = (ROOT / "Dockerfile").read_text()
     assert "FROM python:3.13-slim" in dockerfile
-    assert 'ARG APP_VERSION="2.0.5"' in dockerfile
+    assert "APP_VERSION" not in dockerfile
     assert "requirements.txt" not in dockerfile
     assert "pip install ." in dockerfile
     assert "pip install \".[test,docs]\"" in dockerfile
@@ -55,6 +103,7 @@ def test_release_workflow_publishes_packages_images_and_artifacts():
     assert not (ROOT / ".github" / "workflows" / "docker.yml").exists()
     workflow = yaml.load((ROOT / ".github" / "workflows" / "release.yml").read_text(), Loader=yaml.BaseLoader)
     assert workflow["name"] == "Release"
+    assert workflow["env"]["FORCE_JAVASCRIPT_ACTIONS_TO_NODE24"] == "true"
     assert workflow["on"]["push"]["tags"] == ["[0-9]+.[0-9]+.[0-9]+", "v[0-9]+.[0-9]+.[0-9]+"]
     assert workflow["env"]["DOCKERHUB_IMAGE"] == "subzeroid/aiograpi-rest"
     assert workflow["env"]["GHCR_IMAGE"] == "ghcr.io/subzeroid/aiograpi-rest"
@@ -92,6 +141,7 @@ def test_release_workflow_publishes_packages_images_and_artifacts():
     assert build_step["with"]["platforms"] == "linux/amd64,linux/arm64"
     assert build_step["with"]["push"] == "true"
     assert build_step["with"]["provenance"] == "false"
+    assert "APP_VERSION" not in build_step["with"].get("build-args", "")
     assert "GIT_SHA=${{ github.sha }}" in build_step["with"]["build-args"]
     assert "BUILD_TIME=${{ steps.build_time.outputs.value }}" in build_step["with"]["build-args"]
 
@@ -104,6 +154,39 @@ def test_release_workflow_publishes_packages_images_and_artifacts():
     assert "dist/*.tar.gz" in release_step["with"]["files"]
 
 
+def test_release_workflow_verifies_published_artifacts():
+    workflow = yaml.load((ROOT / ".github" / "workflows" / "release.yml").read_text(), Loader=yaml.BaseLoader)
+    assert workflow["jobs"]["publish"]["outputs"]["tag"] == "${{ github.ref_name }}"
+    assert workflow["jobs"]["publish"]["outputs"]["version"] == "${{ steps.version.outputs.value }}"
+
+    steps = workflow["jobs"]["publish"]["steps"]
+    version_step = next(step for step in steps if step.get("name") == "Normalize release version")
+    assert version_step["id"] == "version"
+    assert "GITHUB_REF_NAME#v" in version_step["run"]
+
+    verify = workflow["jobs"]["verify"]
+    assert verify["needs"] == "publish"
+    assert verify["env"]["RELEASE_TAG"] == "${{ needs.publish.outputs.tag }}"
+    assert verify["env"]["VERSION"] == "${{ needs.publish.outputs.version }}"
+    assert verify["permissions"] == {"contents": "read"}
+
+    run_commands = "\n".join(step.get("run", "") for step in verify["steps"])
+    assert "https://pypi.org/pypi/aiograpi-rest/json" in run_commands
+    assert 'docker buildx imagetools inspect "$DOCKERHUB_IMAGE:$VERSION"' in run_commands
+    assert 'docker buildx imagetools inspect "$GHCR_IMAGE:$VERSION"' in run_commands
+    assert 'gh release view "$RELEASE_TAG"' in run_commands
+    assert 'os.environ["VERSION"]' in run_commands
+    assert "docker run --pull always" in run_commands
+    assert "http://127.0.0.1:18080/health" in run_commands
+    assert "http://127.0.0.1:18080/build" in run_commands
+
+
+def test_workflows_opt_into_node24_actions():
+    for path in sorted((ROOT / ".github" / "workflows").glob("*.yml")):
+        workflow = yaml.load(path.read_text(), Loader=yaml.BaseLoader)
+        assert workflow.get("env", {}).get("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24") == "true", path.name
+
+
 def test_export_openapi_script_writes_artifact(tmp_path):
     from scripts import export_openapi
 
@@ -111,7 +194,7 @@ def test_export_openapi_script_writes_artifact(tmp_path):
 
     data = json.loads(output.read_text())
     assert data["info"]["title"] == "aiograpi-rest"
-    assert data["info"]["version"] == "2.0.5"
+    assert data["info"]["version"] == project_version()
 
 
 def test_export_openapi_main_writes_artifact(tmp_path):
@@ -120,7 +203,7 @@ def test_export_openapi_main_writes_artifact(tmp_path):
     output = tmp_path / "openapi.json"
     export_openapi.main([str(output)])
 
-    assert json.loads(output.read_text())["info"]["version"] == "2.0.5"
+    assert json.loads(output.read_text())["info"]["version"] == project_version()
 
 
 def test_export_openapi_script_requires_output_argument():

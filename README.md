@@ -38,7 +38,8 @@ If those line items sound like work you don't want, the same team behind `instag
 
 ## 30-second quick start
 
-Current API version: `2.0.5`. Version 2 keeps the API intentionally strict:
+The API version is declared once in `pyproject.toml` and exposed through
+`/build` and `/openapi.json`. Version 2 keeps the API intentionally strict:
 `GET` for reads/downloads, `POST` for login and creates/uploads, `PATCH` for
 state changes, and `DELETE` for removals or state reversal. Undo-style paths
 such as `/media/unlike`, `/user/unfollow`, and `/media/unarchive` were removed
