@@ -8,6 +8,16 @@ import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+NODE24_ACTION_VERSIONS = {
+    "actions/checkout": "v6.0.2",
+    "actions/setup-python": "v6.2.0",
+    "docker/build-push-action": "v7.1.0",
+    "docker/login-action": "v4.1.0",
+    "docker/metadata-action": "v6.0.0",
+    "docker/setup-buildx-action": "v4.0.0",
+    "docker/setup-qemu-action": "v4.0.0",
+    "softprops/action-gh-release": "v3.0.0",
+}
 
 
 def project_version() -> str:
@@ -123,20 +133,20 @@ def test_release_workflow_publishes_packages_images_and_artifacts():
     assert "python -m build" in run_commands
 
     dockerhub_login = next(step for step in steps if step.get("name") == "Log in to Docker Hub")
-    assert dockerhub_login["uses"] == "docker/login-action@v3"
+    assert dockerhub_login["uses"] == "docker/login-action@v4.1.0"
     assert dockerhub_login["with"]["username"] == "subzeroid"
 
     ghcr_login = next(step for step in steps if step.get("name") == "Log in to GitHub Container Registry")
-    assert ghcr_login["uses"] == "docker/login-action@v3"
+    assert ghcr_login["uses"] == "docker/login-action@v4.1.0"
     assert ghcr_login["with"]["registry"] == "ghcr.io"
 
-    assert any(step.get("uses") == "docker/build-push-action@v6" for step in steps)
+    assert any(step.get("uses") == "docker/build-push-action@v7.1.0" for step in steps)
 
-    metadata_step = next(step for step in steps if step.get("uses") == "docker/metadata-action@v5")
+    metadata_step = next(step for step in steps if step.get("uses") == "docker/metadata-action@v6.0.0")
     assert "${{ env.DOCKERHUB_IMAGE }}" in metadata_step["with"]["images"]
     assert "${{ env.GHCR_IMAGE }}" in metadata_step["with"]["images"]
 
-    build_step = next(step for step in steps if step.get("uses") == "docker/build-push-action@v6")
+    build_step = next(step for step in steps if step.get("uses") == "docker/build-push-action@v7.1.0")
     assert build_step["with"]["target"] == "runtime"
     assert build_step["with"]["platforms"] == "linux/amd64,linux/arm64"
     assert build_step["with"]["push"] == "true"
@@ -148,7 +158,7 @@ def test_release_workflow_publishes_packages_images_and_artifacts():
     pypi_step = next(step for step in steps if step.get("uses") == "pypa/gh-action-pypi-publish@release/v1")
     assert "with" not in pypi_step
 
-    release_step = next(step for step in steps if step.get("uses") == "softprops/action-gh-release@v2")
+    release_step = next(step for step in steps if step.get("uses") == "softprops/action-gh-release@v3.0.0")
     assert "release/openapi.json" in release_step["with"]["files"]
     assert "dist/*.whl" in release_step["with"]["files"]
     assert "dist/*.tar.gz" in release_step["with"]["files"]
@@ -185,6 +195,18 @@ def test_workflows_opt_into_node24_actions():
     for path in sorted((ROOT / ".github" / "workflows").glob("*.yml")):
         workflow = yaml.load(path.read_text(), Loader=yaml.BaseLoader)
         assert workflow.get("env", {}).get("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24") == "true", path.name
+
+
+def test_workflows_use_node24_native_action_versions():
+    for path in sorted((ROOT / ".github" / "workflows").glob("*.yml")):
+        workflow = yaml.load(path.read_text(), Loader=yaml.BaseLoader)
+        for job in workflow["jobs"].values():
+            for step in job.get("steps", []):
+                uses = step.get("uses", "")
+                action, separator, version = uses.partition("@")
+                if action in NODE24_ACTION_VERSIONS:
+                    assert separator == "@", uses
+                    assert version == NODE24_ACTION_VERSIONS[action], uses
 
 
 def test_export_openapi_script_writes_artifact(tmp_path):

@@ -23,7 +23,7 @@ jobs:
       packages: write
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6.0.2
       with:
         fetch-depth: 0
 
@@ -33,7 +33,7 @@ jobs:
         echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
     - name: Set up Python 3.13
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6.2.0
       with:
         python-version: "3.13"
 
@@ -73,19 +73,19 @@ jobs:
         echo "value=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@v4.0.0
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4.0.0
 
     - name: Log in to Docker Hub
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4.1.0
       with:
         username: subzeroid
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Log in to GitHub Container Registry
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4.1.0
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -93,7 +93,7 @@ jobs:
 
     - name: Extract Docker metadata
       id: meta
-      uses: docker/metadata-action@v5
+      uses: docker/metadata-action@v6.0.0
       with:
         images: |
           ${{ env.DOCKERHUB_IMAGE }}
@@ -105,7 +105,7 @@ jobs:
           type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') }}
 
     - name: Build and push Docker image
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7.1.0
       with:
         context: .
         target: runtime
@@ -121,7 +121,7 @@ jobs:
         provenance: false
 
     - name: Publish GitHub Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3.0.0
       with:
         generate_release_notes: true
         files: |
@@ -140,7 +140,7 @@ jobs:
 
     steps:
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4.0.0
 
     - name: Verify PyPI release
       run: |
