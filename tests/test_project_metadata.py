@@ -14,7 +14,7 @@ def test_pyproject_replaces_requirements_txt():
     assert "aiograpi==0.9.7" in deps
     assert pyproject["project"]["requires-python"] == ">=3.13"
     assert pyproject["project"]["name"] == "aiograpi-rest"
-    assert pyproject["project"]["version"] == "2.0.0"
+    assert pyproject["project"]["version"] == "2.0.1"
     assert pyproject["project"]["urls"]["Repository"] == "https://github.com/subzeroid/aiograpi-rest"
 
 
@@ -22,15 +22,39 @@ def test_dockerfile_uses_python_313_and_pyproject_install():
     dockerfile = (ROOT / "Dockerfile").read_text()
     assert "FROM python:3.13-slim" in dockerfile
     assert "requirements.txt" not in dockerfile
-    assert "pip install" in dockerfile
+    assert "pip install ." in dockerfile
+    assert "pip install \".[test,docs]\"" in dockerfile
+    assert "apt-get install" not in dockerfile
+    assert "ffmpeg" not in dockerfile
+    assert "gcc" not in dockerfile
 
 
 def test_compose_runs_api_service_on_8000():
     compose = yaml.safe_load((ROOT / "docker-compose.yml").read_text())
     assert compose["name"] == "aiograpi-rest"
     api = compose["services"]["api"]
-    assert api["build"] == "."
+    assert api["build"] == {"context": ".", "target": "runtime"}
     assert "8000:8000" in api["ports"]
+    test = compose["services"]["test"]
+    assert test["build"] == {"context": ".", "target": "test"}
+    assert test["profiles"] == ["test"]
+
+
+def test_docker_publish_workflow_pushes_release_images():
+    workflow = yaml.load((ROOT / ".github" / "workflows" / "docker.yml").read_text(), Loader=yaml.BaseLoader)
+    assert workflow["name"] == "Docker"
+    assert workflow["on"]["push"]["tags"] == ["[0-9]+.[0-9]+.[0-9]+", "v[0-9]+.[0-9]+.[0-9]+"]
+    assert workflow["on"]["release"]["types"] == ["published"]
+
+    steps = workflow["jobs"]["publish"]["steps"]
+    assert any(step.get("uses") == "docker/login-action@v3" for step in steps)
+    assert any(step.get("uses") == "docker/build-push-action@v6" for step in steps)
+
+    build_step = next(step for step in steps if step.get("uses") == "docker/build-push-action@v6")
+    assert build_step["with"]["target"] == "runtime"
+    assert build_step["with"]["platforms"] == "linux/amd64,linux/arm64"
+    assert build_step["with"]["push"] == "true"
+    assert build_step["with"]["provenance"] == "false"
 
 
 def test_app_manifest_uses_aiograpi_rest_identity():

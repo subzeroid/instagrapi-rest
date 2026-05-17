@@ -2,10 +2,22 @@ name: aiograpi-rest
 
 services:
   api:
-    build: .
+    build:
+      context: .
+      target: runtime
     stdin_open: true
     tty: true
     ports:
       - "8000:8000"
     volumes:
       - .:/app
+
+  test:
+    profiles:
+      - test
+    build:
+      context: .
+      target: test
+    volumes:
+      - .:/app
+    command: pytest

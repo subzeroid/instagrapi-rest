@@ -38,7 +38,7 @@ If those line items sound like work you don't want, the same team behind `instag
 
 ## 30-second quick start
 
-Current API version: `2.0.0`. Version 2 keeps the API intentionally strict:
+Current API version: `2.0.1`. Version 2 keeps the API intentionally strict:
 `GET` for reads/downloads, `POST` for login and creates/uploads, `PATCH` for
 state changes, and `DELETE` for removals or state reversal. Undo-style paths
 such as `/media/unlike`, `/user/unfollow`, and `/media/unarchive` were removed
@@ -162,6 +162,10 @@ Run the prebuilt Docker image:
 ```
 docker run -p 8000:8000 subzeroid/aiograpi-rest
 ```
+
+Docker Hub images are published automatically from GitHub releases and semver
+tags. An `X.Y.Z` tag publishes `subzeroid/aiograpi-rest:X.Y.Z`, `:X.Y`, and
+`:latest`.
 
 Or clone and build locally:
 
@@ -295,13 +299,13 @@ The offline test suite lives under `tests/` and runs with `pytest`.
 Run all tests through Docker Compose:
 
 ```
-docker compose run --rm api pytest --cov=. --cov-report=term-missing --cov-fail-under=100
+docker compose run --rm test pytest --cov=. --cov-report=term-missing --cov-fail-under=100
 ```
 
 A single test file:
 
 ```
-docker compose run --rm api pytest tests/test_app_system.py
+docker compose run --rm test pytest tests/test_app_system.py
 ```
 
 Locally (Python 3.13):
