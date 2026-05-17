@@ -14,7 +14,7 @@ def test_pyproject_replaces_requirements_txt():
     assert "aiograpi==0.9.7" in deps
     assert pyproject["project"]["requires-python"] == ">=3.13"
     assert pyproject["project"]["name"] == "aiograpi-rest"
-    assert pyproject["project"]["version"] == "2.0.1"
+    assert pyproject["project"]["version"] == "2.0.2"
     assert pyproject["project"]["urls"]["Repository"] == "https://github.com/subzeroid/aiograpi-rest"
 
 
@@ -45,10 +45,24 @@ def test_docker_publish_workflow_pushes_release_images():
     assert workflow["name"] == "Docker"
     assert workflow["on"]["push"]["tags"] == ["[0-9]+.[0-9]+.[0-9]+", "v[0-9]+.[0-9]+.[0-9]+"]
     assert workflow["on"]["release"]["types"] == ["published"]
+    assert workflow["env"]["DOCKERHUB_IMAGE"] == "subzeroid/aiograpi-rest"
+    assert workflow["env"]["GHCR_IMAGE"] == "ghcr.io/subzeroid/aiograpi-rest"
+    assert workflow["jobs"]["publish"]["permissions"] == {"contents": "read", "packages": "write"}
 
     steps = workflow["jobs"]["publish"]["steps"]
-    assert any(step.get("uses") == "docker/login-action@v3" for step in steps)
+    dockerhub_login = next(step for step in steps if step.get("name") == "Log in to Docker Hub")
+    assert dockerhub_login["uses"] == "docker/login-action@v3"
+    assert dockerhub_login["with"]["username"] == "subzeroid"
+
+    ghcr_login = next(step for step in steps if step.get("name") == "Log in to GitHub Container Registry")
+    assert ghcr_login["uses"] == "docker/login-action@v3"
+    assert ghcr_login["with"]["registry"] == "ghcr.io"
+
     assert any(step.get("uses") == "docker/build-push-action@v6" for step in steps)
+
+    metadata_step = next(step for step in steps if step.get("uses") == "docker/metadata-action@v5")
+    assert "${{ env.DOCKERHUB_IMAGE }}" in metadata_step["with"]["images"]
+    assert "${{ env.GHCR_IMAGE }}" in metadata_step["with"]["images"]
 
     build_step = next(step for step in steps if step.get("uses") == "docker/build-push-action@v6")
     assert build_step["with"]["target"] == "runtime"
@@ -71,6 +85,7 @@ def test_readme_documents_rename_reason():
     assert "`aiograpi-rest` starts its own semver line at `1.0.0`" in readme
     assert "the service is now powered by `aiograpi`" in readme
     assert "docker run -d -p 8000:8000 subzeroid/aiograpi-rest" in readme
+    assert "docker run -p 8000:8000 ghcr.io/subzeroid/aiograpi-rest" in readme
 
 
 def test_github_docs_are_configured():

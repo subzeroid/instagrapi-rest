@@ -38,7 +38,7 @@ If those line items sound like work you don't want, the same team behind `instag
 
 ## 30-second quick start
 
-Current API version: `2.0.1`. Version 2 keeps the API intentionally strict:
+Current API version: `2.0.2`. Version 2 keeps the API intentionally strict:
 `GET` for reads/downloads, `POST` for login and creates/uploads, `PATCH` for
 state changes, and `DELETE` for removals or state reversal. Undo-style paths
 such as `/media/unlike`, `/user/unfollow`, and `/media/unarchive` were removed
@@ -163,9 +163,16 @@ Run the prebuilt Docker image:
 docker run -p 8000:8000 subzeroid/aiograpi-rest
 ```
 
-Docker Hub images are published automatically from GitHub releases and semver
-tags. An `X.Y.Z` tag publishes `subzeroid/aiograpi-rest:X.Y.Z`, `:X.Y`, and
-`:latest`.
+Images are published automatically from GitHub releases and semver tags to
+Docker Hub and GitHub Packages. An `X.Y.Z` tag publishes
+`subzeroid/aiograpi-rest:X.Y.Z`, `:X.Y`, `:latest`, and the matching
+`ghcr.io/subzeroid/aiograpi-rest` tags.
+
+GitHub Packages image:
+
+```
+docker run -p 8000:8000 ghcr.io/subzeroid/aiograpi-rest
+```
 
 Or clone and build locally:
 

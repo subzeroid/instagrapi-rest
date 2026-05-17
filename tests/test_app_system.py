@@ -87,7 +87,7 @@ async def test_metrics_exports_prometheus_text():
     assert response.headers["content-type"].startswith("text/plain")
     body = response.text
     assert "# HELP aiograpi_rest_info Service build information." in body
-    assert 'aiograpi_rest_info{version="2.0.1"' in body
+    assert 'aiograpi_rest_info{version="2.0.2"' in body
     assert "aiograpi_rest_uptime_seconds " in body
     assert 'aiograpi_rest_dependency_info{name="aiograpi"' in body
 
@@ -101,7 +101,7 @@ async def test_build_reports_runtime_metadata(monkeypatch):
     assert response.status_code == 200
     assert response.json() == {
         "name": "aiograpi-rest",
-        "version": "2.0.1",
+        "version": "2.0.2",
         "python_version": main.platform.python_version(),
         "git_sha": "abc123",
         "build_time": "2026-05-16T00:00:00Z",
@@ -158,7 +158,7 @@ async def test_openapi_reports_app_version_200():
     assert response.status_code == 200
     data = response.json()
     assert data["info"]["title"] == "aiograpi-rest"
-    assert data["info"]["version"] == "2.0.1"
+    assert data["info"]["version"] == "2.0.2"
     assert "[GitHub subzeroid/aiograpi-rest]" in data["info"]["description"]
     assert "GitHub repository" not in data["info"]["description"]
     assert "https://github.com/subzeroid/aiograpi-rest" in data["info"]["description"]

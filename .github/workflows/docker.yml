@@ -9,13 +9,15 @@ on:
     types: [published]
 
 env:
-  IMAGE_NAME: subzeroid/aiograpi-rest
+  DOCKERHUB_IMAGE: subzeroid/aiograpi-rest
+  GHCR_IMAGE: ghcr.io/subzeroid/aiograpi-rest
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: write
 
     steps:
     - uses: actions/checkout@v4
@@ -32,11 +34,20 @@ jobs:
         username: subzeroid
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Extract Docker metadata
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.IMAGE_NAME }}
+        images: |
+          ${{ env.DOCKERHUB_IMAGE }}
+          ${{ env.GHCR_IMAGE }}
         flavor: latest=false
         tags: |
           type=semver,pattern={{version}}
