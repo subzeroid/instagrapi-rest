@@ -15,13 +15,14 @@ def test_pyproject_replaces_requirements_txt():
     assert "aiograpi==0.9.7" in deps
     assert pyproject["project"]["requires-python"] == ">=3.13"
     assert pyproject["project"]["name"] == "aiograpi-rest"
-    assert pyproject["project"]["version"] == "2.0.4"
+    assert pyproject["project"]["version"] == "2.0.5"
     assert pyproject["project"]["urls"]["Repository"] == "https://github.com/subzeroid/aiograpi-rest"
 
 
 def test_dockerfile_uses_python_313_and_pyproject_install():
     dockerfile = (ROOT / "Dockerfile").read_text()
     assert "FROM python:3.13-slim" in dockerfile
+    assert 'ARG APP_VERSION="2.0.5"' in dockerfile
     assert "requirements.txt" not in dockerfile
     assert "pip install ." in dockerfile
     assert "pip install \".[test,docs]\"" in dockerfile
@@ -110,7 +111,7 @@ def test_export_openapi_script_writes_artifact(tmp_path):
 
     data = json.loads(output.read_text())
     assert data["info"]["title"] == "aiograpi-rest"
-    assert data["info"]["version"] == "2.0.4"
+    assert data["info"]["version"] == "2.0.5"
 
 
 def test_export_openapi_main_writes_artifact(tmp_path):
@@ -119,7 +120,7 @@ def test_export_openapi_main_writes_artifact(tmp_path):
     output = tmp_path / "openapi.json"
     export_openapi.main([str(output)])
 
-    assert json.loads(output.read_text())["info"]["version"] == "2.0.4"
+    assert json.loads(output.read_text())["info"]["version"] == "2.0.5"
 
 
 def test_export_openapi_script_requires_output_argument():

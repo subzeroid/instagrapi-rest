@@ -2,7 +2,7 @@ FROM python:3.13-slim AS app
 
 ARG GIT_SHA=""
 ARG BUILD_TIME=""
-ARG APP_VERSION="2.0.3"
+ARG APP_VERSION="2.0.5"
 
 LABEL org.opencontainers.image.title="aiograpi-rest" \
       org.opencontainers.image.description="REST API service for aiograpi, the async Instagram Private API client." \
