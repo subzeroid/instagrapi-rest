@@ -15,7 +15,7 @@ def test_pyproject_replaces_requirements_txt():
     assert "aiograpi==0.9.7" in deps
     assert pyproject["project"]["requires-python"] == ">=3.13"
     assert pyproject["project"]["name"] == "aiograpi-rest"
-    assert pyproject["project"]["version"] == "2.0.3"
+    assert pyproject["project"]["version"] == "2.0.4"
     assert pyproject["project"]["urls"]["Repository"] == "https://github.com/subzeroid/aiograpi-rest"
 
 
@@ -95,7 +95,7 @@ def test_release_workflow_publishes_packages_images_and_artifacts():
     assert "BUILD_TIME=${{ steps.build_time.outputs.value }}" in build_step["with"]["build-args"]
 
     pypi_step = next(step for step in steps if step.get("uses") == "pypa/gh-action-pypi-publish@release/v1")
-    assert pypi_step["with"]["password"] == "${{ secrets.PYPI_API_TOKEN }}"
+    assert "with" not in pypi_step
 
     release_step = next(step for step in steps if step.get("uses") == "softprops/action-gh-release@v2")
     assert "release/openapi.json" in release_step["with"]["files"]
@@ -110,7 +110,7 @@ def test_export_openapi_script_writes_artifact(tmp_path):
 
     data = json.loads(output.read_text())
     assert data["info"]["title"] == "aiograpi-rest"
-    assert data["info"]["version"] == "2.0.3"
+    assert data["info"]["version"] == "2.0.4"
 
 
 def test_export_openapi_main_writes_artifact(tmp_path):
@@ -119,7 +119,7 @@ def test_export_openapi_main_writes_artifact(tmp_path):
     output = tmp_path / "openapi.json"
     export_openapi.main([str(output)])
 
-    assert json.loads(output.read_text())["info"]["version"] == "2.0.3"
+    assert json.loads(output.read_text())["info"]["version"] == "2.0.4"
 
 
 def test_export_openapi_script_requires_output_argument():

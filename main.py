@@ -33,7 +33,7 @@ from routers import (
 )
 from storages import ClientStorage
 
-APP_VERSION = "2.0.3"
+APP_VERSION = "2.0.4"
 APP_STARTED_AT = time.monotonic()
 _TOKEN_OVERRIDES = {
     "id": "Id",
